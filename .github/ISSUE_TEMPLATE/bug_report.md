@@ -1,7 +1,7 @@
 ---
 name: 错误报告
 about: 提交报告帮助我们进行改进
-title: "错误报告"
+title: ""
 labels: "错误报告"
 assignees: ""
 ---
