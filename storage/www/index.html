@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-hans">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KFCv50</title>
+  </head>
+
+  <style>
+    :root {
+      --screen-padding: 0px;
+    }
+    html {
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      width: 100%;
+      height: 100vh;
+      box-sizing: border-box;
+      padding: 0 var(--screen-padding);
+    }
+    a {
+      text-decoration: none;
+    }
+    .full {
+      width: 100%;
+      height: 100%;
+    }
+    .container {
+      max-width: 1024px;
+      margin: 0 auto;
+    }
+    .flex-center-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .space-between {
+      justify-content: space-between;
+    }
+    .mt-5 {
+      margin-top: 5rem;
+    }
+    .mb-10 {
+      margin-bottom: 10rem;
+    }
+    .text-xl {
+      font-size: x-large;
+      line-height: 1.5;
+    }
+    @media screen and (max-width: 765px) {
+      :root {
+        --screen-padding: 8px;
+      }
+    }
+  </style>
+
+  <script>
+    window.onload = function () {
+      const slot = document.getElementById("count");
+
+      let text;
+      const day = 4 - new Date().getDay();
+      if (day > 0) text = `${day} 天后`;
+      else if (day < 0) text = `${day + 7} 天后`;
+      else text = "今天";
+
+      slot.innerText = text;
+    };
+  </script>
+
+  <body>
+    <div class="container full flex-center-column space-between">
+      <header class="mt-5">
+        <h1>KFCv50.day</h1>
+      </header>
+      <main>
+        <p class="text-xl">
+          有没有人和我一样很讨厌疯狂星期四的文案，尤其是朋友一发就是发一堆，后面还有人跟着发哈哈哈哈，我不知道笑点在哪里，但是我又不好意思叫他们不要发，然后我就想到一个办法，<span
+            id="count"
+            >X</span
+          >是肯德基疯狂星期四，V 我 50，到时我边吃边告诉你这个办法是什么。
+        </p>
+      </main>
+    </div>
+  </body>
+</html>
