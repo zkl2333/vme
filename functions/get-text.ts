@@ -1,5 +1,6 @@
-import { getKFC } from '@/utils'
+import { getRandomKfcItem } from "@/utils";
 
 export default async function (ctx: FunctionContext) {
-  return getKFC()
+  const item = await getRandomKfcItem();
+  return item.text;
 }

@@ -1,14 +1,6 @@
 import cloud from "@lafjs/cloud";
 const db = cloud.mongo.db;
 
-export async function getKFC() {
-  // const res = await fetch("https://kfc-crazy-thursday.vercel.app/api/index");
-  // const data = await res.text();
-  // return data;
-
-  return getRandomKfcItem();
-}
-
 export async function getRandomKfcItem() {
   const collection = db.collection("kfc");
 
