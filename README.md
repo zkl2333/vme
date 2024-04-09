@@ -1,8 +1,20 @@
 # vme
-肯德基疯狂星期四文案库
+
+## 介绍
+
+这是一个肯德基疯狂星期四文案库，用于收集、展示、分享各种疯狂星期四文案。
+创建的原因之一是朋友给我了有一个 vme.im 域名，我想用它整个活。
+
+## 使用
+
+不稳定的 API 服务（可能会随时修改）：
+
+- 获取随机文本：https://kfc.vme.im/get-text
+- 获取随机 JSON：https://kfc.vme.im/get-json
 
 ## 致敬
-项目创意来自[whitescent/KFC-Crazy-Thursday](https://github.com/whitescent/KFC-Crazy-Thursday)
+
+项目创意来自 [whitescent/KFC-Crazy-Thursday](https://github.com/whitescent/KFC-Crazy-Thursday)
 
 ## 如何添加新的文案？
 
