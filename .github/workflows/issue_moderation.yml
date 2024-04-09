@@ -1,0 +1,36 @@
+name: Issue Moderation
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  moderate-issue:
+    if: contains(github.event.issue.labels.*.name, '文案')
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          cache-dependency-path: "actions_scripts/package-lock.json"
+          node-version: "20.12.1"
+          cache: "npm"
+
+      - name: Install script dependencies
+        run: |
+          cd actions_scripts
+          npm install
+
+      - name: Run moderation script
+        run: |
+          cd actions_scripts
+          node moderateIssue.js
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AI_API_KEY: ${{ secrets.AI_API_KEY }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
