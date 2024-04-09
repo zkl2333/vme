@@ -1,7 +1,7 @@
 ---
 name: 功能建议
 about: 分享你对这个项目的想法
-title: "功能建议"
+title: ""
 labels: "功能请求"
 assignees: ""
 ---
