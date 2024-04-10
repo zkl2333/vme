@@ -1,12 +1,18 @@
+import resolve from "@rollup/plugin-node-resolve";
 import typescript from "@rollup/plugin-typescript";
+import commonjs from "@rollup/plugin-commonjs";
 
 export default {
-  input: "src/moderateIssue.ts", // 你的主入口文件
+  input: ["src/moderateIssue.ts", "src/createData.ts"], // 你的主入口文件
   output: {
-    file: "dist/moderateIssue.js", // 输出文件
-    format: "esm", // 输出格式，根据需要选择 'cjs' (CommonJS), 'esm' (ES Module) 等
+    dir: "dist",
+    format: "esm",
   },
   plugins: [
-    typescript(), // 使用 @rollup/plugin-typescript 插件
+    resolve({
+      preferBuiltins: true,
+    }),
+    typescript(),
+    commonjs(),
   ],
 };

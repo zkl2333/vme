@@ -1,0 +1,19 @@
+name: 创建数据
+
+on:
+  workflow_dispatch:
+
+jobs:
+  createData:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+      - name: 生成数据
+        run: |
+          cd actions_scripts
+          node ./dist/createData.js
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

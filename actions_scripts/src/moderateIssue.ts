@@ -1,5 +1,5 @@
-import * as core from "@actions/core";
-import * as github from "@actions/github";
+import core from "@actions/core";
+import github from "@actions/github";
 import { addCommentToIssue, addLabelsToIssue, closeIssue, removeLabelFromIssue } from "./utils";
 
 const categoriesTextMap: Record<string, string> = {
