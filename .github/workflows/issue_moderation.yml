@@ -1,4 +1,4 @@
-name: Issue Moderation
+name: 文案审核
 
 on:
   issues:
