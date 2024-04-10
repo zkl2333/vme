@@ -40,7 +40,7 @@ describe("moderateIssue", () => {
     delete process.env.AI_API_KEY;
   });
 
-  it("当内容被标记时，应该添加不当标签并关闭 issue", async () => {
+  it("当内容被标记时，应该添加违规标签并关闭 issue", async () => {
     nock("https://api.aiproxy.io")
       .post("/v1/moderations")
       .reply(200, {
@@ -63,13 +63,36 @@ describe("moderateIssue", () => {
 
     await moderateIssue();
 
-    expect(addLabelsToIssue).toHaveBeenCalledWith(1, ["不当"]);
-    expect(removeLabelFromIssue).toHaveBeenCalledWith(1, "文案");
-    expect(addCommentToIssue).toHaveBeenCalledWith(
-      1,
-      expect.stringContaining("问题内容被标记为：暴力。不予收录。")
-    );
+    expect(addLabelsToIssue).toHaveBeenCalledWith(1, ["违规"]);
+    expect(addCommentToIssue).toHaveBeenCalledWith(1, expect.stringContaining("不予收录"));
     expect(closeIssue).toHaveBeenCalledWith(1);
+  });
+
+  it("当内容被标记并且没有准确的分类时，应该添加待审标签", async () => {
+    nock("https://api.aiproxy.io")
+      .post("/v1/moderations")
+      .reply(200, {
+        results: [
+          {
+            categories: {
+              hate: false,
+              sexual: false,
+              violence: false,
+              "hate/threatening": false,
+              "self-harm": false,
+              "sexual/minors": false,
+              "violence/graphic": false,
+            },
+            flagged: true,
+            category_scores: null,
+          },
+        ],
+      });
+
+    await moderateIssue();
+
+    expect(addLabelsToIssue).toHaveBeenCalledWith(1, ["待审"]);
+    expect(addCommentToIssue).toHaveBeenCalledWith(1, expect.stringContaining("审核"));
   });
 
   it("当内容未被标记时，应该添加收录标签并关闭 issue", async () => {
