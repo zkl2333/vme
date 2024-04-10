@@ -36,13 +36,17 @@ export async function moderateIssue() {
     let flaggedCategories = Object.keys(categories).filter((category) => categories[category]);
     let flaggedCategoriesText = flaggedCategories.map((category) => categoriesTextMap[category]);
 
-    await addLabelsToIssue(issueNumber, ["不当"]);
-    await removeLabelFromIssue(issueNumber, "文案");
-    await addCommentToIssue(
-      issueNumber,
-      `问题内容被标记为：${flaggedCategoriesText.join("、")}。不予收录。`
-    );
-    await closeIssue(issueNumber);
+    if (flaggedCategoriesText.length > 0) {
+      await addLabelsToIssue(issueNumber, ["违规"]);
+      await addCommentToIssue(
+        issueNumber,
+        `⛔️您的提供的文案被标记为：${flaggedCategoriesText.join("、")}。不予收录。`
+      );
+      await closeIssue(issueNumber);
+    } else {
+      await addLabelsToIssue(issueNumber, ["待审"]);
+      await addCommentToIssue(issueNumber, `⚠️您的提供的文案疑似违规，请等待人工审核。`);
+    }
   } else {
     await addLabelsToIssue(issueNumber, ["收录"]);
     await closeIssue(issueNumber);
