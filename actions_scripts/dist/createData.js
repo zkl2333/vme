@@ -76,10 +76,10 @@ async function createData() {
     if (!process.env.GITHUB_TOKEN) {
         throw new Error("GITHUB_TOKEN 必须存在");
     }
-    const data = {
+    const data = [
         ...(await fetchIssues("zkl2333", "vme", ["收录"])),
         ...(await fetchIssues("whitescent", "KFC-Crazy-Thursday", ["文案提供"])),
-    };
+    ];
     console.log(`获取到 ${Object.keys(data).length} 条数据`);
     // 输出到文件到仓库根目录
     const filePath = path.join(__dirname, "../..", "data.json");

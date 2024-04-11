@@ -2807,6 +2807,18 @@ async function closeIssue(issueNumber) {
     });
 }
 
+async function dispatchWorkflow(workflow_id, ref) {
+    if (!process.env.GITHUB_TOKEN) {
+        throw new Error("GITHUB_TOKEN not set");
+    }
+    const octokit = getOctokit_1(process.env.GITHUB_TOKEN);
+    await octokit.rest.actions.createWorkflowDispatch({
+        ...context.repo,
+        workflow_id,
+        ref,
+    });
+}
+
 const categoriesTextMap = {
     hate: "仇恨",
     sexual: "色情",
@@ -2849,6 +2861,7 @@ async function moderateIssue() {
     else {
         await addLabelsToIssue(issueNumber, ["收录"]);
         await closeIssue(issueNumber);
+        await dispatchWorkflow("create_data.yml", "main");
     }
 }
 moderateIssue().catch((err) => core.setFailed(err.message));
