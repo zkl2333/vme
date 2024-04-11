@@ -1,6 +1,6 @@
 import { Octokit } from "@octokit/core";
 
-interface IssueNode {
+export interface IssueNode {
   title: string;
   url: string;
   body: string;

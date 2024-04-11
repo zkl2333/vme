@@ -2,7 +2,6 @@ import { O as Octokit, a as core } from './index-n69jnTp_.js';
 import require$$0 from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
-import { fileURLToPath } from 'url';
 import 'os';
 import 'http';
 import 'https';
@@ -23,6 +22,7 @@ import 'perf_hooks';
 import 'util/types';
 import 'async_hooks';
 import 'console';
+import 'url';
 import 'zlib';
 import 'string_decoder';
 import 'diagnostics_channel';
@@ -69,8 +69,6 @@ async function fetchIssues(owner, name, labels, afterCursor = null) {
     }
 }
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 async function createData() {
     console.log("开始创建数据");
     if (!process.env.GITHUB_TOKEN) {
@@ -82,7 +80,7 @@ async function createData() {
     ];
     console.log(`获取到 ${Object.keys(data).length} 条数据`);
     // 输出到文件到仓库根目录
-    const filePath = path.join(__dirname, "../..", "data.json");
+    const filePath = path.join(process.cwd(), "data.json");
     require$$0.writeFileSync(filePath, JSON.stringify(data, null, 2));
     console.log("数据已经写入到 data.json 文件", filePath);
     // 提交到仓库
