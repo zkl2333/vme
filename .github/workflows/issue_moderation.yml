@@ -11,22 +11,9 @@ jobs:
     permissions:
       issues: write
     steps:
-      - name: Checkout repo
+      - name: 检出代码
         uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          cache-dependency-path: "actions_scripts/package-lock.json"
-          node-version: "20.12.1"
-          cache: "npm"
-
-      - name: Install script dependencies
-        run: |
-          cd actions_scripts
-          npm install
-
-      - name: Run moderation script
+      - name: 运行脚本
         run: |
           cd actions_scripts
           node ./dist/moderateIssue.js
