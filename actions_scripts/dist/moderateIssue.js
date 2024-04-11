@@ -2863,7 +2863,7 @@ function minDistance(word1, word2) {
 function isSimilar(str1, str2) {
     const distance = minDistance(removeSeparator(str1), removeSeparator(str2));
     const maxLength = Math.max(str1.length, str2.length);
-    return distance / maxLength < 0.2;
+    return distance / maxLength < 0.1;
 }
 // 读取本地文件保存的所有文案
 async function fetchLocalIssues() {
@@ -2901,7 +2901,7 @@ async function moderateIssue() {
     const similarIssue = await findSimilarIssue(issueBody);
     if (similarIssue) {
         await addLabelsToIssue(issueNumber, ["重复"]);
-        await addCommentToIssue(issueNumber, `⚠️查找到相似文案：${similarIssue.url} 请避免重复提交。`);
+        await addCommentToIssue(issueNumber, `🔍查找到相似文案：${similarIssue.url}`);
         await closeIssue(issueNumber);
         return;
     }
@@ -2924,16 +2924,17 @@ async function moderateIssue() {
         let flaggedCategoriesText = flaggedCategories.map((category) => categoriesTextMap[category]);
         if (flaggedCategoriesText.length > 0) {
             await addLabelsToIssue(issueNumber, ["违规"]);
-            await addCommentToIssue(issueNumber, `⛔️您的提供的文案被标记为：${flaggedCategoriesText.join("、")}。不予收录。`);
+            await addCommentToIssue(issueNumber, `⛔️此内容因包含以下违规类别被标记：${flaggedCategoriesText.join("、")}。不予收录。`);
             await closeIssue(issueNumber);
         }
         else {
             await addLabelsToIssue(issueNumber, ["待审"]);
-            await addCommentToIssue(issueNumber, `⚠️您的提供的文案疑似违规，请等待人工审核。`);
+            await addCommentToIssue(issueNumber, `⚠️内容可能违规，正等待进一步人工审核确认。`);
         }
     }
     else {
         await addLabelsToIssue(issueNumber, ["收录"]);
+        await addCommentToIssue(issueNumber, `🤝您的内容已成功收录，感谢您的贡献！`);
         await closeIssue(issueNumber);
         await dispatchWorkflow("create_data.yml", "main");
     }
