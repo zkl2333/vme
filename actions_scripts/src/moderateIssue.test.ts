@@ -53,7 +53,7 @@ describe("moderateIssue", () => {
     await moderateIssue();
 
     expect(addLabelsToIssue).toHaveBeenCalledWith(1, ["重复"]);
-    expect(addCommentToIssue).toHaveBeenCalledWith(1, expect.stringContaining("重复"));
+    expect(addCommentToIssue).toHaveBeenCalledWith(1, expect.stringContaining("相似"));
     expect(closeIssue).toHaveBeenCalledWith(1);
   });
 
