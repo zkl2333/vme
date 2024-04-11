@@ -3,10 +3,6 @@ import core from "@actions/core";
 import fs from "fs";
 import path from "path";
 import { execSync } from "child_process";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 async function createData() {
   console.log("开始创建数据");
@@ -23,7 +19,7 @@ async function createData() {
   console.log(`获取到 ${Object.keys(data).length} 条数据`);
 
   // 输出到文件到仓库根目录
-  const filePath = path.join(__dirname, "../..", "data.json");
+  const filePath = path.join(process.cwd(), "data.json");
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
   console.log("数据已经写入到 data.json 文件", filePath);
 

@@ -1,7 +1,13 @@
 import core from "@actions/core";
 import github from "@actions/github";
-import { addCommentToIssue, addLabelsToIssue, closeIssue, removeLabelFromIssue } from "./utils";
-import { dispatchWorkflow } from "./utils/dispatchWorkflow";
+import {
+  addCommentToIssue,
+  addLabelsToIssue,
+  closeIssue,
+  findSimilarIssue,
+  // removeLabelFromIssue,
+} from "./utils";
+import { dispatchWorkflow } from "./utils";
 
 const categoriesTextMap: Record<string, string> = {
   hate: "仇恨",
@@ -16,6 +22,20 @@ const categoriesTextMap: Record<string, string> = {
 export async function moderateIssue() {
   const issueNumber = github.context.issue.number;
   const issueBody = process.env.ISSUE_BODY;
+
+  if (!issueBody) {
+    throw new Error("ISSUE_BODY 不存在");
+  }
+
+  // 查找相似的 issue
+  const similarIssue = await findSimilarIssue(issueBody);
+
+  if (similarIssue) {
+    await addLabelsToIssue(issueNumber, ["重复"]);
+    await addCommentToIssue(issueNumber, `⚠️查找到相似文案：${similarIssue.url}，请避免重复提交。`);
+    await closeIssue(issueNumber);
+    return;
+  }
 
   const API_URL = "https://api.aiproxy.io/v1/moderations";
   const response = await fetch(API_URL, {

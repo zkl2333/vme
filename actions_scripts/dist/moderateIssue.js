@@ -1,7 +1,7 @@
 import { l as lib, c as commonjsGlobal, u as undici, g as getAugmentedNamespace, d as distWeb$1, a as core } from './index-n69jnTp_.js';
 import require$$0 from 'fs';
 import require$$0$1 from 'os';
-import 'path';
+import path from 'path';
 import 'http';
 import 'https';
 import 'net';
@@ -28,10 +28,10 @@ import 'diagnostics_channel';
 
 var github = {};
 
-var context$1 = {};
+var context = {};
 
-Object.defineProperty(context$1, "__esModule", { value: true });
-context$1.Context = void 0;
+Object.defineProperty(context, "__esModule", { value: true });
+context.Context = void 0;
 const fs_1 = require$$0;
 const os_1 = require$$0$1;
 let Context$1 = class Context {
@@ -82,7 +82,7 @@ let Context$1 = class Context {
         throw new Error("context.repo requires a GITHUB_REPOSITORY environment variable like 'owner/repo'");
     }
 };
-context$1.Context = Context$1;
+context.Context = Context$1;
 
 var utils$1 = {};
 
@@ -2696,7 +2696,7 @@ var require$$4 = /*@__PURE__*/getAugmentedNamespace(distWeb);
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.getOctokitOptions = exports.GitHub = exports.defaults = exports.context = void 0;
-	const Context = __importStar(context$1);
+	const Context = __importStar(context);
 	const Utils = __importStar(utils);
 	// octokit + plugins
 	const core_1 = require$$2;
@@ -2755,68 +2755,131 @@ var __importStar = (commonjsGlobal && commonjsGlobal.__importStar) || function (
     return result;
 };
 Object.defineProperty(github, "__esModule", { value: true });
-var getOctokit_1 = github.getOctokit = context = github.context = void 0;
-const Context = __importStar(context$1);
+github.getOctokit = github.context = void 0;
+const Context = __importStar(context);
 const utils_1 = utils$1;
-var context = github.context = new Context.Context();
+github.context = new Context.Context();
 /**
  * Returns a hydrated octokit ready to use for GitHub Actions
  *
  * @param     token    the repo PAT or GITHUB_TOKEN
  * @param     options  other options to set
  */
-function getOctokit(token, options, ...additionalPlugins) {
+function getOctokit$1(token, options, ...additionalPlugins) {
     const GitHubWithPlugins = utils_1.GitHub.plugin(...additionalPlugins);
     return new GitHubWithPlugins((0, utils_1.getOctokitOptions)(token, options));
 }
-getOctokit_1 = github.getOctokit = getOctokit;
+github.getOctokit = getOctokit$1;
 
-async function addCommentToIssue(issueNumber, comment) {
+// 去除字符串中的全角和半角分隔符、中文标点以及特定的特殊字符
+function removeSeparator(str) {
+    // 半角标点和空格
+    const halfWidthPunctuations = "\\x20,!@#.;:";
+    // 全角标点和空格
+    const fullWidthPunctuations = "\u3000\uFF0C\u3002\uFF1B\uFF1A";
+    // 中文标点
+    const chinesePunctuations = "\u3001\u201C\u201D\u2018\u2019\uFF08\uFF09\u3010\u3011\u300A\u300B\uFF01\uFF1F\u2014\uFF5E";
+    // 特殊字符，注意需要转义的部分
+    const specialCharacters = "\\^&*()_+=\\-\\[\\]{}|<>?`~";
+    // 组合正则表达式
+    const regex = new RegExp(`[${halfWidthPunctuations}${fullWidthPunctuations}${chinesePunctuations}${specialCharacters}]`, "g");
+    // 使用正则表达式的replace方法替换掉这些分隔符、中文标点和特殊字符
+    return str.replace(regex, "");
+}
+
+// 获取 Octokit 实例
+function getOctokit() {
     if (!process.env.GITHUB_TOKEN) {
         throw new Error("GITHUB_TOKEN not set");
     }
-    const octokit = getOctokit_1(process.env.GITHUB_TOKEN);
+    return github.getOctokit(process.env.GITHUB_TOKEN);
+}
+// 获取仓库的所有 issues
+async function addCommentToIssue(issueNumber, comment) {
+    const octokit = getOctokit();
     await octokit.rest.issues.createComment({
-        ...context.repo,
+        ...github.context.repo,
         issue_number: issueNumber,
         body: comment,
     });
 }
-
+// 为 issue 添加标签
 async function addLabelsToIssue(issueNumber, labels) {
-    if (!process.env.GITHUB_TOKEN) {
-        throw new Error("GITHUB_TOKEN not set");
-    }
-    const octokit = getOctokit_1(process.env.GITHUB_TOKEN);
+    const octokit = getOctokit();
     await octokit.rest.issues.addLabels({
-        ...context.repo,
+        ...github.context.repo,
         issue_number: issueNumber,
         labels: labels,
     });
 }
-
+// 关闭 issue
 async function closeIssue(issueNumber) {
     if (!process.env.GITHUB_TOKEN) {
         throw new Error("GITHUB_TOKEN not set");
     }
-    const octokit = getOctokit_1(process.env.GITHUB_TOKEN);
+    const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
     await octokit.rest.issues.update({
-        ...context.repo,
+        ...github.context.repo,
         issue_number: issueNumber,
         state: "closed",
     });
 }
-
+// 触发工作流
 async function dispatchWorkflow(workflow_id, ref) {
     if (!process.env.GITHUB_TOKEN) {
         throw new Error("GITHUB_TOKEN not set");
     }
-    const octokit = getOctokit_1(process.env.GITHUB_TOKEN);
+    const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
     await octokit.rest.actions.createWorkflowDispatch({
-        ...context.repo,
+        ...github.context.repo,
         workflow_id,
         ref,
     });
+}
+// 最短编辑距离
+function minDistance(word1, word2) {
+    const m = word1.length;
+    const n = word2.length;
+    const dp = new Array(m + 1).fill(0).map(() => new Array(n + 1).fill(0));
+    for (let i = 1; i <= m; i++) {
+        dp[i][0] = i;
+    }
+    for (let j = 1; j <= n; j++) {
+        dp[0][j] = j;
+    }
+    for (let i = 1; i <= m; i++) {
+        for (let j = 1; j <= n; j++) {
+            if (word1[i - 1] === word2[j - 1]) {
+                dp[i][j] = dp[i - 1][j - 1];
+            }
+            else {
+                dp[i][j] = Math.min(dp[i - 1][j - 1] + 1, dp[i - 1][j] + 1, dp[i][j - 1] + 1);
+            }
+        }
+    }
+    return dp[m][n];
+}
+// 判断两个文本是否相似
+function isSimilar(str1, str2) {
+    const distance = minDistance(removeSeparator(str1), removeSeparator(str2));
+    const maxLength = Math.max(str1.length, str2.length);
+    return distance / maxLength < 0.2;
+}
+// 读取本地文件保存的所有文案
+async function fetchLocalIssues() {
+    const filePath = path.join(process.cwd(), "../", "data.json");
+    const data = require$$0.readFileSync(filePath, "utf-8");
+    return JSON.parse(data);
+}
+// 判断新的文案是否有相似的存在，如果有则返回相似的文案
+async function findSimilarIssue(newIssue) {
+    const issues = await fetchLocalIssues();
+    for (const issue of issues) {
+        if (isSimilar(issue.body, newIssue)) {
+            return issue;
+        }
+    }
+    return null;
 }
 
 const categoriesTextMap = {
@@ -2831,6 +2894,17 @@ const categoriesTextMap = {
 async function moderateIssue() {
     const issueNumber = github.context.issue.number;
     const issueBody = process.env.ISSUE_BODY;
+    if (!issueBody) {
+        throw new Error("ISSUE_BODY 不存在");
+    }
+    // 查找相似的 issue
+    const similarIssue = await findSimilarIssue(issueBody);
+    if (similarIssue) {
+        await addLabelsToIssue(issueNumber, ["重复"]);
+        await addCommentToIssue(issueNumber, `⚠️查找到相似文案：${similarIssue.url}，请避免重复提交。`);
+        await closeIssue(issueNumber);
+        return;
+    }
     const API_URL = "https://api.aiproxy.io/v1/moderations";
     const response = await fetch(API_URL, {
         method: "POST",

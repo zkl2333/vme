@@ -1,27 +1,28 @@
 import nock from "nock";
 import { moderateIssue } from "./moderateIssue";
-import * as core from "@actions/core";
-import * as github from "@actions/github";
-import { addCommentToIssue, addLabelsToIssue, closeIssue, removeLabelFromIssue } from "./utils";
+import { addCommentToIssue, addLabelsToIssue, closeIssue, findSimilarIssue } from "./utils";
 
-// 模拟@actions/core和@actions/github及utils中的方法
-jest.mock("@actions/core");
+jest.mock("@actions/core", () => ({
+  setFailed: jest.fn(),
+}));
 jest.mock("@actions/github");
 jest.mock("./utils", () => ({
   addCommentToIssue: jest.fn(),
   addLabelsToIssue: jest.fn(),
   closeIssue: jest.fn(),
-  removeLabelFromIssue: jest.fn(),
+  findSimilarIssue: jest.fn(),
+  dispatchWorkflow: jest.fn(),
 }));
 jest.mock("@actions/github", () => ({
   context: {
-    // 提供一个可以修改的issue对象
     issue: {
       number: 1,
     },
-    // 确保模拟任何其他需要的属性或方法
   },
 }));
+
+// 使用类型断言
+const mockedFindSimilarIssue = findSimilarIssue as jest.MockedFunction<typeof findSimilarIssue>;
 
 nock.emitter.on("no match", (req) => {
   console.log("No match for request", req);
@@ -40,7 +41,24 @@ describe("moderateIssue", () => {
     delete process.env.AI_API_KEY;
   });
 
+  it("当重复提交时，应该添加重复标签并关闭 issue", async () => {
+    const similarIssue = {
+      title: "测试标题",
+      body: "这是一个测试的issue内容",
+      url: "https://github.com/owner/repo/issues/2",
+    };
+
+    mockedFindSimilarIssue.mockResolvedValueOnce(similarIssue);
+
+    await moderateIssue();
+
+    expect(addLabelsToIssue).toHaveBeenCalledWith(1, ["重复"]);
+    expect(addCommentToIssue).toHaveBeenCalledWith(1, expect.stringContaining("重复"));
+    expect(closeIssue).toHaveBeenCalledWith(1);
+  });
+
   it("当内容被标记时，应该添加违规标签并关闭 issue", async () => {
+    mockedFindSimilarIssue.mockResolvedValueOnce(null);
     nock("https://api.aiproxy.io")
       .post("/v1/moderations")
       .reply(200, {
@@ -69,6 +87,7 @@ describe("moderateIssue", () => {
   });
 
   it("当内容被标记并且没有准确的分类时，应该添加待审标签", async () => {
+    mockedFindSimilarIssue.mockResolvedValueOnce(null);
     nock("https://api.aiproxy.io")
       .post("/v1/moderations")
       .reply(200, {
@@ -96,6 +115,7 @@ describe("moderateIssue", () => {
   });
 
   it("当内容未被标记时，应该添加收录标签并关闭 issue", async () => {
+    mockedFindSimilarIssue.mockResolvedValueOnce(null);
     nock("https://api.aiproxy.io")
       .post("/v1/moderations")
       .reply(200, {
@@ -123,6 +143,7 @@ describe("moderateIssue", () => {
   });
 
   it("当接口返回错误时，应该抛出错误", async () => {
+    mockedFindSimilarIssue.mockResolvedValueOnce(null);
     nock("https://api.aiproxy.io")
       .post("/v1/moderations")
       .reply(200, {
