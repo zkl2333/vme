@@ -2,9 +2,7 @@ import cloud from "@lafjs/cloud";
 const db = cloud.mongo.db;
 
 export default async function (ctx: FunctionContext) {
-  const res = await fetch(
-    "https://raw.githubusercontent.com/whitescent/KFC-Crazy-Thursday/main/kfc.json"
-  );
+  const res = await fetch("https://fastly.jsdelivr.net/gh/zkl2333/vme/data.json");
 
   const data = await res.json();
 
@@ -15,9 +13,9 @@ export default async function (ctx: FunctionContext) {
 
     const bulkOps = data.map((item) => ({
       updateOne: {
-        filter: { text: item.text },
+        filter: { body: item.body },
         update: {
-          $setOnInsert: { text: item.text, createdAt: currentTime },
+          $setOnInsert: { ...item, createdAt: currentTime },
           $set: { updatedAt: currentTime },
         },
         upsert: true, // 不存在时插入
