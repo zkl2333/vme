@@ -1,6 +1,7 @@
 import core from "@actions/core";
 import github from "@actions/github";
 import { addCommentToIssue, addLabelsToIssue, closeIssue, removeLabelFromIssue } from "./utils";
+import { dispatchWorkflow } from "./utils/dispatchWorkflow";
 
 const categoriesTextMap: Record<string, string> = {
   hate: "仇恨",
@@ -50,6 +51,7 @@ export async function moderateIssue() {
   } else {
     await addLabelsToIssue(issueNumber, ["收录"]);
     await closeIssue(issueNumber);
+    await dispatchWorkflow("create_data.yml", "main");
   }
 }
 

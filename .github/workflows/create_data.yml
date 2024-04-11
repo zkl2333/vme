@@ -1,13 +1,11 @@
 name: 创建数据
 
 on:
-  issues:
-    types: [labeled]
-    workflow_dispatch:
+  workflow_dispatch:
 
 jobs:
   createData:
-    if: contains(github.event.issue.labels.*.name, '收录') || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       contents: write
