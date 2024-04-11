@@ -32,7 +32,7 @@ export async function moderateIssue() {
 
   if (similarIssue) {
     await addLabelsToIssue(issueNumber, ["重复"]);
-    await addCommentToIssue(issueNumber, `⚠️查找到相似文案：${similarIssue.url}，请避免重复提交。`);
+    await addCommentToIssue(issueNumber, `⚠️查找到相似文案：${similarIssue.url} 请避免重复提交。`);
     await closeIssue(issueNumber);
     return;
   }
