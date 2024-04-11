@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       issues: write
+      actions: write
     steps:
       - name: 检出代码
         uses: actions/checkout@v4
