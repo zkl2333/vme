@@ -1,17 +1,20 @@
 name: 创建数据
 
 on:
-  workflow_dispatch:
+  issues:
+    types: [labeled]
+    workflow_dispatch:
 
 jobs:
   createData:
+    if: contains(github.event.issue.labels.*.name, '收录') || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - name: 检出代码
         uses: actions/checkout@v4
-      - name: 生成数据
+      - name: 运行脚本
         run: |
           cd actions_scripts
           node ./dist/createData.js
