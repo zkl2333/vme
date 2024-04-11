@@ -1,5 +1,7 @@
 # vme
 
+![Social preview](https://repository-images.githubusercontent.com/784130959/c8f54bbe-3f0e-4588-8928-e02702b946e5)
+
 ## 介绍
 
 这是一个肯德基疯狂星期四文案库，用于收集、展示、分享各种疯狂星期四文案。
