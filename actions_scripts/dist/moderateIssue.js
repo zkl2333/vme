@@ -2863,7 +2863,7 @@ function minDistance(word1, word2) {
 function isSimilar(str1, str2) {
     const distance = minDistance(removeSeparator(str1), removeSeparator(str2));
     const maxLength = Math.max(str1.length, str2.length);
-    return distance / maxLength < 0.1;
+    return distance / maxLength < 0.2;
 }
 // 读取本地文件保存的所有文案
 async function fetchLocalIssues() {

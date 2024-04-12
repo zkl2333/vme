@@ -80,7 +80,7 @@ async function createData() {
     ];
     console.log(`获取到 ${Object.keys(data).length} 条数据`);
     // 输出到文件到仓库根目录
-    const filePath = path.join(process.cwd(), "data.json");
+    const filePath = path.join(process.cwd(), "..", "data.json");
     require$$0.writeFileSync(filePath, JSON.stringify(data, null, 2));
     console.log("数据已经写入到 data.json 文件", filePath);
     // 提交到仓库
