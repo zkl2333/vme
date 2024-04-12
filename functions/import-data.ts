@@ -1,7 +1,8 @@
 import cloud from "@lafjs/cloud";
 const db = cloud.mongo.db;
 
-export default async function (ctx: FunctionContext) {
+export default async function () {
+  console.log("开始导入数据");
   const res = await fetch("https://fastly.jsdelivr.net/gh/zkl2333/vme/data.json");
 
   const data = await res.json();
@@ -22,17 +23,16 @@ export default async function (ctx: FunctionContext) {
     const collection = db.collection("kfc");
     const ret = await collection.bulkWrite(bulkOps, { ordered: false });
 
-    console.log("操作结果详情：");
-    console.log("插入的文档数量:", ret.insertedCount);
     console.log("匹配的文档数量 :", ret.matchedCount);
-    console.log("修改的文档数量:", ret.modifiedCount);
+    console.log("插入的文档数量:", ret.insertedCount);
     console.log("删除的文档数量:", ret.deletedCount);
+    console.log("修改的文档数量:", ret.modifiedCount);
     console.log("插入或修改的文档数量:", ret.upsertedCount);
     console.log("插入的新文档ID:", ret.insertedIds);
-    console.log("插入操作的文档ID:", ret.insertedIds);
 
     return ret;
   } else {
     console.error("数据格式错误");
   }
+  console.log("导入数据完成\n");
 }
