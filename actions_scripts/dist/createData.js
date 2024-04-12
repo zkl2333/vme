@@ -37,6 +37,8 @@ async function fetchIssues(owner, name, labels, afterCursor = null) {
             title
             url
             body
+            createdAt
+            updatedAt
             author {
               username: login
               avatarUrl
