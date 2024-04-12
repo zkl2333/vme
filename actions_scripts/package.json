@@ -5,7 +5,7 @@
   "main": "moderateIssue.js",
   "scripts": {
     "clean": "rimraf dist/",
-    "build": "npm run clean && rollup -c",
+    "build": "npm run test && npm run clean && rollup -c",
     "test": "jest"
   },
   "author": "",
