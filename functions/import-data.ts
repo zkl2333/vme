@@ -7,23 +7,29 @@ export default async function (ctx: FunctionContext) {
   const data = await res.json();
 
   if (Array.isArray(data)) {
-    console.log("导入数据:", data.length);
-
-    const currentTime = new Date(); // 获取当前时间
+    console.log("读取到数据数据:", data.length);
 
     const bulkOps = data.map((item) => ({
       updateOne: {
-        filter: { body: item.body },
+        filter: { url: item.url }, // 使用 item.url 作为唯一标识符
         update: {
-          $setOnInsert: { ...item, createdAt: currentTime },
-          $set: { updatedAt: currentTime },
+          $set: { ...item }, // 使用 $set 操作符更新文档
         },
-        upsert: true, // 不存在时插入
+        upsert: true, // 如果不存在则插入新文档
       },
     }));
 
     const collection = db.collection("kfc");
     const ret = await collection.bulkWrite(bulkOps, { ordered: false });
+
+    console.log("操作结果详情：");
+    console.log("插入的文档数量:", ret.insertedCount);
+    console.log("匹配的文档数量 :", ret.matchedCount);
+    console.log("修改的文档数量:", ret.modifiedCount);
+    console.log("删除的文档数量:", ret.deletedCount);
+    console.log("插入或修改的文档数量:", ret.upsertedCount);
+    console.log("插入的新文档ID:", ret.insertedIds);
+    console.log("插入操作的文档ID:", ret.insertedIds);
 
     return ret;
   } else {

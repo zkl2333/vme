@@ -36,6 +36,8 @@ export async function fetchIssues(
             title
             url
             body
+            createdAt
+            updatedAt
             author {
               username: login
               avatarUrl
