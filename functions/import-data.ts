@@ -3,7 +3,7 @@ const db = cloud.mongo.db;
 
 export default async function () {
   console.log("开始导入数据");
-  const res = await fetch("https://fastly.jsdelivr.net/gh/zkl2333/vme/data.json");
+  const res = await fetch("https://raw.githubusercontent.com/zkl2333/vme/main/data.json");
 
   const data = await res.json();
 
@@ -13,9 +13,7 @@ export default async function () {
     const bulkOps = data.map((item) => ({
       updateOne: {
         filter: { url: item.url }, // 使用 item.url 作为唯一标识符
-        update: {
-          $set: { ...item }, // 使用 $set 操作符更新文档
-        },
+        update: { $set: item }, // 使用 $set 操作符更新文档
         upsert: true, // 如果不存在则插入新文档
       },
     }));
@@ -29,6 +27,7 @@ export default async function () {
     console.log("修改的文档数量:", ret.modifiedCount);
     console.log("插入或修改的文档数量:", ret.upsertedCount);
     console.log("插入的新文档ID:", ret.insertedIds);
+    console.log("导入数据完成\n");
 
     return ret;
   } else {
