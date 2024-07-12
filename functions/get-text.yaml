@@ -1,6 +1,0 @@
-name: get-text
-desc: ""
-methods:
-  - GET
-  - POST
-tags: []
