@@ -1,0 +1,4 @@
+{
+  "rewrites": [{ "source": "/:path*", "destination": "/api/:path*" }],
+  "regions": ["hkg1", "hnd1", "sin1", "kix1"]
+}

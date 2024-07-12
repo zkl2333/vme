@@ -5,11 +5,6 @@
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
     "baseUrl": ".",
-    "paths": {
-      "@/*": [
-        "functions/*"
-      ]
-    },
     "declaration": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
@@ -30,15 +25,8 @@
     "skipLibCheck": true,
     "target": "ES2022",
     "alwaysStrict": true,
-    "lib": [
-      "ES2022"
-    ]
+    "lib": ["ES2022"]
   },
-  "include": [
-    "functions/**/*",
-    "types/**/*"
-  ],
-  "exclude": [
-    "tests"
-  ]
+  "include": ["api/**/*"],
+  "exclude": ["tests"]
 }
