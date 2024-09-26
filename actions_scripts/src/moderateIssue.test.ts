@@ -43,6 +43,7 @@ describe("moderateIssue", () => {
 
   it("当重复提交时，应该添加重复标签并关闭 issue", async () => {
     const similarIssue = {
+      id: "abc123",
       title: "测试标题",
       body: "这是一个测试的issue内容",
       url: "https://github.com/owner/repo/issues/2",

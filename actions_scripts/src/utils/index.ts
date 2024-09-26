@@ -43,7 +43,7 @@ export async function removeLabelFromIssue(issueNumber: number, label: string) {
 }
 
 // 关闭 issue
-export async function closeIssue(issueNumber: any) {
+export async function closeIssue(issueNumber: number) {
   if (!process.env.GITHUB_TOKEN) {
     throw new Error("GITHUB_TOKEN not set");
   }
