@@ -15,7 +15,7 @@ interface KfcItem {
 }
 
 export async function getRandomKfcItem(): Promise<KfcItem> {
-  const pathToFile = path.resolve(__dirname, "../data.json");
+  const pathToFile = path.resolve(process.cwd(), "data.json");
   const data = await fs.promises.readFile(pathToFile, "utf-8");
   const items = JSON.parse(data);
   const randomIndex = Math.floor(Math.random() * items.length);
