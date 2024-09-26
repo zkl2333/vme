@@ -1,6 +1,7 @@
 import { Octokit } from "@octokit/core";
 
 export interface IssueNode {
+  id: string;
   title: string;
   url: string;
   body: string;
@@ -33,6 +34,7 @@ export async function fetchIssues(
       issues(labels: $labels, first: 10, after: $afterCursor) {
         edges {
           node {
+            id
             title
             url
             body

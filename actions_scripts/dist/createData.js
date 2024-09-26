@@ -34,6 +34,7 @@ async function fetchIssues(owner, name, labels, afterCursor = null) {
       issues(labels: $labels, first: 10, after: $afterCursor) {
         edges {
           node {
+            id
             title
             url
             body
