@@ -91,7 +91,7 @@ export const KfcItem = function ({ item }: { item: IKfcItem }) {
         <ArticleHeader id={item.id} date={item.createdAt} />
         <ContentWrapper className="typography">
           <h3 className="truncate text-3xl font-bold">{item.title}</h3>
-          <p className="overflow-auto whitespace-pre-wrap">{item.body}</p>
+          <p className="overflow-auto whitespace-pre-wrap leading-5">{item.body}</p>
           <div className="flex items-center space-x-2">
             <a
               href={item.author.url}

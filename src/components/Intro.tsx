@@ -37,8 +37,8 @@ export function Intro() {
         <a
           href="https://github.com/whitescent/KFC-Crazy-Thursday"
           className="text-sky-300"
-          target='_blank'
-          rel='noopener noreferrer'
+          target="_blank"
+          rel="noopener noreferrer"
         >
           whitescent/KFC-Crazy-Thursday
         </a>
@@ -52,8 +52,8 @@ export function Intro() {
         <a
           href="https://github.com/zkl2333/vme/issues/new?labels=%E6%96%87%E6%A1%88"
           className="text-sky-300"
-          target='_blank'
-          rel='noopener noreferrer'
+          target="_blank"
+          rel="noopener noreferrer"
         >
           Issue
         </a>{' '}
