@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getRandomKfcItem } from "./_utils";
+import { getRandomKfcItem } from "../lib/_utils";
 
 export async function GET(request: NextRequest) {
   // 处理跨域请求
