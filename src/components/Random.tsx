@@ -23,7 +23,7 @@ const Random = ({ ids }: { ids: string[] }) => {
   return (
     <div className="fixed bottom-4 right-4">
       <button
-        className="flex h-12 w-12 items-center justify-center rounded-full bg-white transition-transform hover:scale-105 hover:text-sky-900"
+        className="flex h-12 w-12 items-center justify-center rounded-full bg-white transition-transform hover:scale-105 dark:bg-gray-950"
         onClick={(e) => {
           const randomId = ids[Math.floor(Math.random() * ids.length)]
           handleScroll(e, randomId)
