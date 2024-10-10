@@ -2,12 +2,12 @@ import fs from 'fs'
 import path from 'path'
 
 const cache: {
-  kfcItems: KfcItem[]
+  kfcItems: IKfcItem[]
 } = {
   kfcItems: [],
 }
 
-interface KfcItem {
+export interface IKfcItem {
   id: string
   title: string
   url: string
@@ -21,7 +21,7 @@ interface KfcItem {
   }
 }
 
-export async function getKfcItems(): Promise<KfcItem[]> {
+export async function getKfcItems(): Promise<IKfcItem[]> {
   if (cache.kfcItems.length) {
     return cache.kfcItems
   }
@@ -29,7 +29,7 @@ export async function getKfcItems(): Promise<KfcItem[]> {
   const data = await fs.promises.readFile(pathToFile, 'utf-8')
   try {
     const items = JSON.parse(data)
-    cache.kfcItems = items.sort((a: KfcItem, b: KfcItem) => {
+    cache.kfcItems = items.sort((a: IKfcItem, b: IKfcItem) => {
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     })
     return cache.kfcItems
@@ -39,7 +39,7 @@ export async function getKfcItems(): Promise<KfcItem[]> {
   }
 }
 
-export async function getRandomKfcItem(): Promise<KfcItem> {
+export async function getRandomKfcItem(): Promise<IKfcItem> {
   const items = await getKfcItems()
   const randomIndex = Math.floor(Math.random() * items.length)
   return items[randomIndex]

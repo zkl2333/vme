@@ -3,6 +3,7 @@ import { useRef, useState, useEffect } from 'react'
 import clsx from 'clsx'
 import Link from 'next/link'
 import { FormattedDate } from './FormattedDate'
+import { IKfcItem } from '@/app/lib/utils'
 
 export function ContentWrapper({
   className,
@@ -55,15 +56,7 @@ export function ArticleHeader({
   )
 }
 
-export const KfcItem = function ({
-  id,
-  date,
-  children,
-}: {
-  id: string
-  date: string | Date
-  children: React.ReactNode
-}) {
+export const KfcItem = function ({ item }: { item: IKfcItem }) {
   let heightRef = useRef<React.ElementRef<'div'>>(null)
   let [heightAdjustment, setHeightAdjustment] = useState(0)
 
@@ -90,13 +83,44 @@ export const KfcItem = function ({
 
   return (
     <article
-      id={id}
+      id={item.id}
       className="scroll-mt-16"
       style={{ paddingBottom: `${heightAdjustment}px` }}
     >
       <div ref={heightRef}>
-        <ArticleHeader id={id} date={date} />
-        <ContentWrapper className="typography">{children}</ContentWrapper>
+        <ArticleHeader id={item.id} date={item.createdAt} />
+        <ContentWrapper className="typography">
+          <h3 className="truncate text-3xl font-bold">{item.title}</h3>
+          <p className="overflow-auto whitespace-pre-wrap">{item.body}</p>
+          <div className="flex items-center space-x-2">
+            <a
+              href={item.author.url}
+              className="flex items-center space-x-1"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={item.author.avatarUrl}
+                alt=""
+                className="h-4 w-4 rounded-full"
+              />
+              <span>{item.author.username}</span>
+            </a>
+            <a href={item.url} target="_blank" rel="noopener noreferrer">
+              查看原文
+            </a>
+            <a
+              className="cursor-pointer"
+              onClick={() => {
+                navigator.clipboard.writeText(item.body)
+                alert('已复制文案')
+              }}
+            >
+              复制文案
+            </a>
+          </div>
+        </ContentWrapper>
       </div>
     </article>
   )
