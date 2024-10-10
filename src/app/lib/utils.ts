@@ -1,6 +1,12 @@
 import fs from 'fs'
 import path from 'path'
 
+const cache: {
+  kfcItems: KfcItem[]
+} = {
+  kfcItems: [],
+}
+
 interface KfcItem {
   id: string
   title: string
@@ -16,13 +22,17 @@ interface KfcItem {
 }
 
 export async function getKfcItems(): Promise<KfcItem[]> {
+  if (cache.kfcItems.length) {
+    return cache.kfcItems
+  }
   const pathToFile = path.resolve(process.cwd(), 'data.json')
   const data = await fs.promises.readFile(pathToFile, 'utf-8')
   try {
     const items = JSON.parse(data)
-    return items.sort((a: KfcItem, b: KfcItem) => {
+    cache.kfcItems = items.sort((a: KfcItem, b: KfcItem) => {
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     })
+    return cache.kfcItems
   } catch (error) {
     console.error('Error reading file:', error)
     return []

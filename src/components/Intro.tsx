@@ -24,7 +24,11 @@ export function Intro() {
       </h1>
       <p className="mt-4 text-sm/6 text-gray-300">
         这是一个肯德基疯狂星期四文案库，用于收集、展示、分享各种疯狂星期四文案。
-        创建的原因之一是朋友给了我一个 vme.im 域名，我想用它整点儿有趣的东西。
+        创建的原因之一是朋友给了我一个{' '}
+        <a href="https://vme.im" className="text-sky-300">
+          vme.im
+        </a>{' '}
+        域名，我想用它整点儿有趣的东西。
       </p>
 
       <h2 className="mt-8 font-display text-2xl font-light text-white">致敬</h2>
@@ -33,6 +37,8 @@ export function Intro() {
         <a
           href="https://github.com/whitescent/KFC-Crazy-Thursday"
           className="text-sky-300"
+          target='_blank'
+          rel='noopener noreferrer'
         >
           whitescent/KFC-Crazy-Thursday
         </a>
@@ -42,7 +48,16 @@ export function Intro() {
         如何贡献文案？
       </h2>
       <p className="mt-4 text-sm/6 text-gray-300">
-        新建一个新的 issue，填写标题（随意）和文本即可。
+        新建一个新的{' '}
+        <a
+          href="https://github.com/zkl2333/vme/issues/new?labels=%E6%96%87%E6%A1%88"
+          className="text-sky-300"
+          target='_blank'
+          rel='noopener noreferrer'
+        >
+          Issue
+        </a>{' '}
+        填写标题和文本即可。
       </p>
     </>
   )
