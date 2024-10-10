@@ -55,7 +55,7 @@ export function ArticleHeader({
   )
 }
 
-export const Article = function Article({
+export const KfcItem = function ({
   id,
   date,
   children,

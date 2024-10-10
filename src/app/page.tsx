@@ -1,6 +1,6 @@
 import { Layout } from '@/components/Layout'
 import { getKfcItems } from './lib/utils'
-import { Article } from '@/components/Article'
+import { KfcItem } from '@/components/KfcItem'
 
 export default async function Page() {
   const kfcItems = await getKfcItems()
@@ -8,7 +8,7 @@ export default async function Page() {
   return (
     <Layout>
       {kfcItems.map((kfcItem) => (
-        <Article key={kfcItem.id} id={kfcItem.id} date={kfcItem.createdAt}>
+        <KfcItem key={kfcItem.id} id={kfcItem.id} date={kfcItem.createdAt}>
           <h3 className="truncate text-3xl font-bold">{kfcItem.title}</h3>
           <p className="overflow-auto whitespace-pre-wrap">{kfcItem.body}</p>
           <div className="flex items-center space-x-2">
@@ -30,7 +30,7 @@ export default async function Page() {
               查看原文
             </a>
           </div>
-        </Article>
+        </KfcItem>
       ))}
     </Layout>
   )
