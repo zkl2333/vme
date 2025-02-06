@@ -2,11 +2,13 @@ name: 文案审核
 
 on:
   issues:
-    types: [opened]
+    types: [opened, labeled]
 
 jobs:
   moderate-issue:
-    if: contains(github.event.issue.labels.*.name, '文案')
+    if: |
+      (github.event_name == 'issues' && github.event.action == 'opened' && contains(github.event.issue.labels.*.name, '文案')) ||
+      (github.event_name == 'issues' && github.event.action == 'labeled' && github.event.label.name == '文案')
     runs-on: ubuntu-latest
     permissions:
       issues: write
