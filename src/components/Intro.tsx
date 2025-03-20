@@ -2,6 +2,7 @@ import Link from 'next/link'
 
 import { IconLink } from '@/components/IconLink'
 import { Logo } from '@/components/Logo'
+import { Button } from '@/components/Button'
 
 function GitHubIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
   return (
@@ -48,17 +49,16 @@ export function Intro() {
         如何贡献文案？
       </h2>
       <p className="mt-4 text-sm/6 text-gray-300">
-        新建一个新的{' '}
-        <a
-          href="https://github.com/zkl2333/vme/issues/new?labels=%E6%96%87%E6%A1%88"
-          className="text-sky-300"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Issue
-        </a>{' '}
-        填写标题和文本即可。
+        点击下方按钮新建一个 Issue 填写标题和文本即可。
       </p>
+      <Button
+        href="https://github.com/zkl2333/vme/issues/new?labels=%E6%96%87%E6%A1%88"
+        className="inline-block mt-6 bg-gradient-to-r from-sky-500 to-indigo-500 px-6 py-2 text-lg font-bold shadow-lg shadow-sky-500/30 transition-all hover:scale-105 hover:shadow-sky-500/50"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        贡献文案
+      </Button>
     </>
   )
 }
