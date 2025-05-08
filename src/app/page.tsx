@@ -67,17 +67,19 @@ export default function Page() {
         <KfcItem key={kfcItem.id} item={kfcItem}></KfcItem>
       ))}
 
-      <div ref={loadingRef} className="py-4 text-center">
-        {loading ? (
-          <div className="flex items-center justify-center">
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-gray-600 border-t-transparent"></div>
-            <span className="ml-2">加载中...</span>
-          </div>
-        ) : hasMore ? (
-          <span className="text-gray-500">向下滚动加载更多</span>
-        ) : (
-          <span className="text-gray-500">没有更多内容了</span>
-        )}
+      <div ref={loadingRef} className="mx-auto max-w-7xl px-6 lg:flex lg:px-8">
+        <div className="lg:ml-96 lg:flex lg:w-full lg:justify-end lg:pl-32">
+          {loading ? (
+            <div className="flex items-center justify-center">
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-gray-600 border-t-transparent"></div>
+              <span className="ml-2">加载中...</span>
+            </div>
+          ) : hasMore ? (
+            <span className="text-gray-500">向下滚动加载更多</span>
+          ) : (
+            <span className="text-gray-500">没有更多内容了</span>
+          )}
+        </div>
       </div>
     </Layout>
   )

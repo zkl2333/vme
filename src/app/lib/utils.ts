@@ -4,9 +4,15 @@ import path from 'path'
 const cache: {
   kfcItems: Record<string, IKfcItem[]>
   allMonths: string[]
+  summary: {
+    totalItems: number
+    months: { month: string; count: number }[]
+    updatedAt: string
+  } | null
 } = {
   kfcItems: {},
   allMonths: [],
+  summary: null,
 }
 
 export interface IKfcItem {
@@ -29,21 +35,17 @@ export async function getAvailableMonths(): Promise<string[]> {
     return cache.allMonths
   }
 
-  const dataDir = path.resolve(process.cwd(), 'data')
-  try {
-    const files = await fs.promises.readdir(dataDir)
-    // 过滤出形如 YYYY-MM.json 的文件
-    const months = files
-      .filter((file) => /^\d{4}-\d{2}\.json$/.test(file))
-      .map((file) => file.replace('.json', ''))
-      .sort((a, b) => b.localeCompare(a)) // 按照日期降序排序
-
-    cache.allMonths = months
-    return months
-  } catch (error) {
-    console.error('Error reading data directory:', error)
-    return []
+  // 从summary信息获取月份列表
+  const summary = await getSummary()
+  if (!summary || !summary.months || summary.months.length === 0) {
+    throw new Error('无法获取月份信息：summary数据不可用')
   }
+
+  const months = summary.months.map(
+    (item: { month: string; count: number }) => item.month,
+  )
+  cache.allMonths = months
+  return months
 }
 
 // 按月获取数据
@@ -75,7 +77,36 @@ export async function getKfcItemsByMonth(month: string): Promise<IKfcItem[]> {
   }
 }
 
-// 获取分页数据
+// 获取汇总信息
+export async function getSummary() {
+  if (cache.summary) {
+    return cache.summary
+  }
+
+  try {
+    const filePath = path.resolve(process.cwd(), 'data', 'summary.json')
+    if (!fs.existsSync(filePath)) {
+      throw new Error('汇总数据文件不存在')
+    }
+
+    const data = await fs.promises.readFile(filePath, 'utf-8')
+    const summary = JSON.parse(data)
+
+    if (!summary.totalItems || !Array.isArray(summary.months)) {
+      throw new Error('汇总数据格式不正确')
+    }
+
+    cache.summary = summary
+    return summary
+  } catch (error) {
+    console.error('读取汇总数据失败:', error)
+    throw new Error(
+      `无法获取汇总信息: ${error instanceof Error ? error.message : '未知错误'}`,
+    )
+  }
+}
+
+// 获取分页数据（使用汇总信息优化totalPages计算）
 export async function getKfcItemsWithPagination(
   page = 1,
   pageSize = 20,
@@ -88,6 +119,14 @@ export async function getKfcItemsWithPagination(
 }> {
   const months = await getAvailableMonths()
   let allItems: IKfcItem[] = []
+
+  // 获取汇总信息来确定正确的total和totalPages
+  const summary = await getSummary()
+  if (!summary) {
+    throw new Error('无法获取分页信息：summary数据不可用')
+  }
+
+  const totalItems = summary.totalItems
 
   // 只加载必要的月份数据，直到满足分页需求
   let itemsNeeded = page * pageSize
@@ -102,10 +141,10 @@ export async function getKfcItemsWithPagination(
   }
 
   // 计算分页结果
-  const total = allItems.length
+  const total = totalItems
   const totalPages = Math.ceil(total / pageSize)
   const startIndex = (page - 1) * pageSize
-  const endIndex = Math.min(startIndex + pageSize, total)
+  const endIndex = Math.min(startIndex + pageSize, allItems.length)
   const paginatedItems = allItems.slice(startIndex, endIndex)
 
   return {
@@ -132,19 +171,35 @@ export async function getAllKfcItems(): Promise<IKfcItem[]> {
 }
 
 // 获取随机项目
-export async function getRandomKfcItem(): Promise<IKfcItem | null> {
-  // 随机选择一个月份
-  const months = await getAvailableMonths()
-  if (!months.length) return null
+export async function getRandomKfcItem(): Promise<IKfcItem> {
+  // 从summary中获取数据分布信息
+  const summary = await getSummary()
+  if (!summary || !summary.months || !summary.months.length) {
+    throw new Error('无法获取随机项目：summary数据不可用')
+  }
 
-  const randomMonthIndex = Math.floor(Math.random() * months.length)
-  const randomMonth = months[randomMonthIndex]
+  // 随机选择一个月份，但考虑各月份的数据量进行加权
+  const totalItems = summary.totalItems
+  const randomIndex = Math.floor(Math.random() * totalItems)
+
+  let cumulativeCount = 0
+  let selectedMonth = summary.months[0].month
+
+  for (const monthInfo of summary.months) {
+    cumulativeCount += monthInfo.count
+    if (randomIndex < cumulativeCount) {
+      selectedMonth = monthInfo.month
+      break
+    }
+  }
 
   // 获取该月的项目
-  const items = await getKfcItemsByMonth(randomMonth)
-  if (!items.length) return null
+  const items = await getKfcItemsByMonth(selectedMonth)
+  if (!items.length) {
+    throw new Error(`无法获取随机项目：${selectedMonth}月数据为空`)
+  }
 
   // 随机选择一个项目
-  const randomIndex = Math.floor(Math.random() * items.length)
-  return items[randomIndex]
+  const randomItemIndex = Math.floor(Math.random() * items.length)
+  return items[randomItemIndex]
 }
