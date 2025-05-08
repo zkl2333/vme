@@ -1,6 +1,6 @@
-import { l as lib, c as commonjsGlobal, u as undici, g as getAugmentedNamespace, d as distWeb$1, a as core } from './index-n69jnTp_.js';
-import require$$0 from 'fs';
-import require$$0$1 from 'os';
+import { l as lib, c as commonjsGlobal, u as undici, g as getAugmentedNamespace, d as distWeb$1, a as core } from './index-BzGGsphW.js';
+import fs from 'fs';
+import require$$0 from 'os';
 import path from 'path';
 import 'http';
 import 'https';
@@ -32,8 +32,8 @@ var context = {};
 
 Object.defineProperty(context, "__esModule", { value: true });
 context.Context = void 0;
-const fs_1 = require$$0;
-const os_1 = require$$0$1;
+const fs_1 = fs;
+const os_1 = require$$0;
 let Context$1 = class Context {
     /**
      * Hydrate the context from the environment
@@ -2877,7 +2877,7 @@ function isSimilar(str1, str2) {
 // 读取本地文件保存的所有文案
 async function fetchLocalIssues() {
     const filePath = path.join(process.cwd(), '../', 'data.json');
-    const data = require$$0.readFileSync(filePath, 'utf-8');
+    const data = fs.readFileSync(filePath, 'utf-8');
     return JSON.parse(data);
 }
 // 判断新的文案是否有相似的存在，如果有则返回相似的文案

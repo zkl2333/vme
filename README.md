@@ -13,12 +13,16 @@
 
 ## 使用
 
-### 不稳定的 API 服务，（包含其他数据来源，可能 api 会随时修改）：
+### API 服务
 
-- 获取随机文本：https://vme.im/api?format=text
-- 获取随机 JSON：https://vme.im/api?format=json
+#### 获取随机文案
+- `GET /api/random` - 随机获取一条文案（JSON格式）
+- `GET /api/random?format=text` - 随机获取一条文案（纯文本格式）
 
-### 获取所有数据
+#### 获取所有文案
+- `GET /api/items` - 获取所有文案数据（JSON格式）
+
+### 获取所有数据（旧版，不推荐）
 
 https://fastly.jsdelivr.net/gh/zkl2333/vme/data.json
 
