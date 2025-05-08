@@ -2,6 +2,7 @@ import { O as Octokit, a as core } from './index-BzGGsphW.js';
 import fs from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
+import { fileURLToPath } from 'url';
 import 'os';
 import 'http';
 import 'https';
@@ -22,7 +23,6 @@ import 'perf_hooks';
 import 'util/types';
 import 'async_hooks';
 import 'console';
-import 'url';
 import 'zlib';
 import 'string_decoder';
 import 'diagnostics_channel';
@@ -72,6 +72,10 @@ async function fetchIssues(owner, name, labels, afterCursor = null) {
     }
 }
 
+// 获取当前文件的路径
+const __filename = fileURLToPath(import.meta.url);
+// 获取当前文件所在的目录
+const __dirname = path.dirname(__filename);
 async function createData() {
     console.log('开始创建数据');
     if (!process.env.GITHUB_TOKEN) {
