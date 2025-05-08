@@ -2790,9 +2790,18 @@ function removeSeparator(str) {
 // 获取 Octokit 实例
 function getOctokit() {
     if (!process.env.GITHUB_TOKEN) {
-        throw new Error("GITHUB_TOKEN not set");
+        throw new Error('GITHUB_TOKEN not set');
     }
     return github.getOctokit(process.env.GITHUB_TOKEN);
+}
+// 获取 issue 的标签
+async function getIssueLabels(issueNumber) {
+    const octokit = getOctokit();
+    const response = await octokit.rest.issues.listLabelsOnIssue({
+        ...github.context.repo,
+        issue_number: issueNumber,
+    });
+    return response.data.map((label) => label.name);
 }
 // 获取仓库的所有 issues
 async function addCommentToIssue(issueNumber, comment) {
@@ -2815,19 +2824,19 @@ async function addLabelsToIssue(issueNumber, labels) {
 // 关闭 issue
 async function closeIssue(issueNumber) {
     if (!process.env.GITHUB_TOKEN) {
-        throw new Error("GITHUB_TOKEN not set");
+        throw new Error('GITHUB_TOKEN not set');
     }
     const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
     await octokit.rest.issues.update({
         ...github.context.repo,
         issue_number: issueNumber,
-        state: "closed",
+        state: 'closed',
     });
 }
 // 触发工作流
 async function dispatchWorkflow(workflow_id, ref) {
     if (!process.env.GITHUB_TOKEN) {
-        throw new Error("GITHUB_TOKEN not set");
+        throw new Error('GITHUB_TOKEN not set');
     }
     const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
     await octokit.rest.actions.createWorkflowDispatch({
@@ -2867,8 +2876,8 @@ function isSimilar(str1, str2) {
 }
 // 读取本地文件保存的所有文案
 async function fetchLocalIssues() {
-    const filePath = path.join(process.cwd(), "../", "data.json");
-    const data = require$$0.readFileSync(filePath, "utf-8");
+    const filePath = path.join(process.cwd(), '../', 'data.json');
+    const data = require$$0.readFileSync(filePath, 'utf-8');
     return JSON.parse(data);
 }
 // 判断新的文案是否有相似的存在，如果有则返回相似的文案
@@ -2883,34 +2892,42 @@ async function findSimilarIssue(newIssue) {
 }
 
 const categoriesTextMap = {
-    hate: "仇恨",
-    sexual: "色情",
-    violence: "暴力",
-    "hate/threatening": "仇恨/威胁",
-    "self-harm": "自残",
-    "sexual/minors": "未成年人色情",
-    "violence/graphic": "暴力/血腥",
+    hate: '仇恨',
+    sexual: '色情',
+    violence: '暴力',
+    'hate/threatening': '仇恨/威胁',
+    'self-harm': '自残',
+    'sexual/minors': '未成年人色情',
+    'violence/graphic': '暴力/血腥',
 };
 async function moderateIssue() {
     const issueNumber = github.context.issue.number;
     const issueBody = process.env.ISSUE_BODY;
     if (!issueBody) {
-        throw new Error("ISSUE_BODY 不存在");
+        throw new Error('ISSUE_BODY 不存在');
+    }
+    // 检查issue是否已被审核（已有特定标签）
+    const currentLabels = await getIssueLabels(issueNumber);
+    const moderationLabels = ['违规', '收录', '重复', '待审'];
+    // 如果已有任何审核相关标签，跳过审核
+    if (currentLabels.some((label) => moderationLabels.includes(label))) {
+        console.log(`Issue #${issueNumber} 已有审核标签: ${currentLabels.join(', ')}，跳过审核。`);
+        return;
     }
     // 查找相似的 issue
     const similarIssue = await findSimilarIssue(issueBody);
     if (similarIssue) {
-        await addLabelsToIssue(issueNumber, ["重复"]);
+        await addLabelsToIssue(issueNumber, ['重复']);
         await addCommentToIssue(issueNumber, `🔍查找到相似文案：${similarIssue.url}`);
         await closeIssue(issueNumber);
         return;
     }
-    const API_URL = "https://api.aiproxy.io/v1/moderations";
+    const API_URL = 'https://api.aiproxy.io/v1/moderations';
     const response = await fetch(API_URL, {
-        method: "POST",
+        method: 'POST',
         headers: {
             Authorization: `Bearer ${process.env.AI_API_KEY}`,
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
         },
         body: JSON.stringify({ input: issueBody }),
     });
@@ -2923,20 +2940,20 @@ async function moderateIssue() {
         let flaggedCategories = Object.keys(categories).filter((category) => categories[category]);
         let flaggedCategoriesText = flaggedCategories.map((category) => categoriesTextMap[category]);
         if (flaggedCategoriesText.length > 0) {
-            await addLabelsToIssue(issueNumber, ["违规"]);
-            await addCommentToIssue(issueNumber, `⛔️此内容因包含以下违规类别被标记：${flaggedCategoriesText.join("、")}。不予收录。`);
+            await addLabelsToIssue(issueNumber, ['违规']);
+            await addCommentToIssue(issueNumber, `⛔️此内容因包含以下违规类别被标记：${flaggedCategoriesText.join('、')}。不予收录。`);
             await closeIssue(issueNumber);
         }
         else {
-            await addLabelsToIssue(issueNumber, ["待审"]);
+            await addLabelsToIssue(issueNumber, ['待审']);
             await addCommentToIssue(issueNumber, `⚠️内容可能违规，正等待进一步人工审核确认。`);
         }
     }
     else {
-        await addLabelsToIssue(issueNumber, ["收录"]);
+        await addLabelsToIssue(issueNumber, ['收录']);
         await addCommentToIssue(issueNumber, `🤝您的内容已成功收录，感谢您的贡献！`);
         await closeIssue(issueNumber);
-        await dispatchWorkflow("create_data.yml", "main");
+        await dispatchWorkflow('create_data.yml', 'main');
     }
 }
 moderateIssue().catch((err) => core.setFailed(err.message));

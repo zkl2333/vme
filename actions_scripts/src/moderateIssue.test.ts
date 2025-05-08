@@ -1,67 +1,114 @@
-import nock from "nock";
-import { moderateIssue } from "./moderateIssue";
-import { addCommentToIssue, addLabelsToIssue, closeIssue, findSimilarIssue } from "./utils";
+import nock from 'nock'
+import { moderateIssue } from './moderateIssue'
+import {
+  addCommentToIssue,
+  addLabelsToIssue,
+  closeIssue,
+  findSimilarIssue,
+  getIssueLabels,
+} from './utils'
 
-jest.mock("@actions/core", () => ({
+jest.mock('@actions/core', () => ({
   setFailed: jest.fn(),
-}));
-jest.mock("@actions/github");
-jest.mock("./utils", () => ({
+}))
+jest.mock('@actions/github')
+jest.mock('./utils', () => ({
   addCommentToIssue: jest.fn(),
   addLabelsToIssue: jest.fn(),
   closeIssue: jest.fn(),
   findSimilarIssue: jest.fn(),
   dispatchWorkflow: jest.fn(),
-}));
-jest.mock("@actions/github", () => ({
+  getIssueLabels: jest.fn(),
+}))
+jest.mock('@actions/github', () => ({
   context: {
     issue: {
       number: 1,
     },
   },
-}));
+}))
 
 // 使用类型断言
-const mockedFindSimilarIssue = findSimilarIssue as jest.MockedFunction<typeof findSimilarIssue>;
+const mockedFindSimilarIssue = findSimilarIssue as jest.MockedFunction<
+  typeof findSimilarIssue
+>
+const mockedGetIssueLabels = getIssueLabels as jest.MockedFunction<
+  typeof getIssueLabels
+>
 
-nock.emitter.on("no match", (req) => {
-  console.log("No match for request", req);
-});
+nock.emitter.on('no match', (req) => {
+  console.log('No match for request', req)
+})
 
-describe("moderateIssue", () => {
+describe('moderateIssue', () => {
   beforeEach(() => {
-    process.env.ISSUE_BODY = "这是一个测试的issue内容";
-    process.env.AI_API_KEY = "test-api-key";
-  });
+    process.env.ISSUE_BODY = '这是一个测试的issue内容'
+    process.env.AI_API_KEY = 'test-api-key'
+  })
 
   afterEach(() => {
-    nock.cleanAll();
-    jest.clearAllMocks();
-    delete process.env.ISSUE_BODY;
-    delete process.env.AI_API_KEY;
-  });
+    nock.cleanAll()
+    jest.clearAllMocks()
+    delete process.env.ISSUE_BODY
+    delete process.env.AI_API_KEY
+  })
 
-  it("当重复提交时，应该添加重复标签并关闭 issue", async () => {
+  it('当issue已有审核标签时，应该跳过审核过程', async () => {
+    // 模拟issue已有"收录"标签
+    mockedGetIssueLabels.mockResolvedValueOnce(['bug', '收录'])
+
+    await moderateIssue()
+
+    // 验证不再进行后续的审核操作
+    expect(findSimilarIssue).not.toHaveBeenCalled()
+    expect(addLabelsToIssue).not.toHaveBeenCalled()
+    expect(addCommentToIssue).not.toHaveBeenCalled()
+    expect(closeIssue).not.toHaveBeenCalled()
+  })
+
+  it('当issue已有待审标签时，应该跳过审核过程', async () => {
+    // 模拟issue已有"待审"标签
+    mockedGetIssueLabels.mockResolvedValueOnce(['待审'])
+
+    await moderateIssue()
+
+    // 验证不再进行后续的审核操作
+    expect(findSimilarIssue).not.toHaveBeenCalled()
+    expect(addLabelsToIssue).not.toHaveBeenCalled()
+    expect(addCommentToIssue).not.toHaveBeenCalled()
+    expect(closeIssue).not.toHaveBeenCalled()
+  })
+
+  it('当重复提交时，应该添加重复标签并关闭 issue', async () => {
+    // 模拟issue没有任何审核标签
+    mockedGetIssueLabels.mockResolvedValueOnce([])
+
     const similarIssue = {
-      id: "abc123",
-      title: "测试标题",
-      body: "这是一个测试的issue内容",
-      url: "https://github.com/owner/repo/issues/2",
-    };
+      id: 'abc123',
+      title: '测试标题',
+      body: '这是一个测试的issue内容',
+      url: 'https://github.com/owner/repo/issues/2',
+    }
 
-    mockedFindSimilarIssue.mockResolvedValueOnce(similarIssue);
+    mockedFindSimilarIssue.mockResolvedValueOnce(similarIssue)
 
-    await moderateIssue();
+    await moderateIssue()
 
-    expect(addLabelsToIssue).toHaveBeenCalledWith(1, ["重复"]);
-    expect(addCommentToIssue).toHaveBeenCalledWith(1, expect.stringContaining("相似"));
-    expect(closeIssue).toHaveBeenCalledWith(1);
-  });
+    expect(addLabelsToIssue).toHaveBeenCalledWith(1, ['重复'])
+    expect(addCommentToIssue).toHaveBeenCalledWith(
+      1,
+      expect.stringContaining('相似'),
+    )
+    expect(closeIssue).toHaveBeenCalledWith(1)
+  })
 
-  it("当内容被标记时，应该添加违规标签并关闭 issue", async () => {
-    mockedFindSimilarIssue.mockResolvedValueOnce(null);
-    nock("https://api.aiproxy.io")
-      .post("/v1/moderations")
+  it('当内容被标记时，应该添加违规标签并关闭 issue', async () => {
+    // 模拟issue没有任何审核标签
+    mockedGetIssueLabels.mockResolvedValueOnce([])
+
+    mockedFindSimilarIssue.mockResolvedValueOnce(null)
+    nock('https://api.aiproxy.io')
+      .post('/v1/moderations')
       .reply(200, {
         results: [
           {
@@ -69,28 +116,34 @@ describe("moderateIssue", () => {
               hate: false,
               sexual: false,
               violence: true,
-              "hate/threatening": false,
-              "self-harm": false,
-              "sexual/minors": false,
-              "violence/graphic": false,
+              'hate/threatening': false,
+              'self-harm': false,
+              'sexual/minors': false,
+              'violence/graphic': false,
             },
             flagged: true,
             category_scores: null,
           },
         ],
-      });
+      })
 
-    await moderateIssue();
+    await moderateIssue()
 
-    expect(addLabelsToIssue).toHaveBeenCalledWith(1, ["违规"]);
-    expect(addCommentToIssue).toHaveBeenCalledWith(1, expect.stringContaining("不予收录"));
-    expect(closeIssue).toHaveBeenCalledWith(1);
-  });
+    expect(addLabelsToIssue).toHaveBeenCalledWith(1, ['违规'])
+    expect(addCommentToIssue).toHaveBeenCalledWith(
+      1,
+      expect.stringContaining('不予收录'),
+    )
+    expect(closeIssue).toHaveBeenCalledWith(1)
+  })
 
-  it("当内容被标记并且没有准确的分类时，应该添加待审标签", async () => {
-    mockedFindSimilarIssue.mockResolvedValueOnce(null);
-    nock("https://api.aiproxy.io")
-      .post("/v1/moderations")
+  it('当内容被标记并且没有准确的分类时，应该添加待审标签', async () => {
+    // 模拟issue没有任何审核标签
+    mockedGetIssueLabels.mockResolvedValueOnce([])
+
+    mockedFindSimilarIssue.mockResolvedValueOnce(null)
+    nock('https://api.aiproxy.io')
+      .post('/v1/moderations')
       .reply(200, {
         results: [
           {
@@ -98,27 +151,33 @@ describe("moderateIssue", () => {
               hate: false,
               sexual: false,
               violence: false,
-              "hate/threatening": false,
-              "self-harm": false,
-              "sexual/minors": false,
-              "violence/graphic": false,
+              'hate/threatening': false,
+              'self-harm': false,
+              'sexual/minors': false,
+              'violence/graphic': false,
             },
             flagged: true,
             category_scores: null,
           },
         ],
-      });
+      })
 
-    await moderateIssue();
+    await moderateIssue()
 
-    expect(addLabelsToIssue).toHaveBeenCalledWith(1, ["待审"]);
-    expect(addCommentToIssue).toHaveBeenCalledWith(1, expect.stringContaining("审核"));
-  });
+    expect(addLabelsToIssue).toHaveBeenCalledWith(1, ['待审'])
+    expect(addCommentToIssue).toHaveBeenCalledWith(
+      1,
+      expect.stringContaining('审核'),
+    )
+  })
 
-  it("当内容未被标记时，应该添加收录标签并关闭 issue", async () => {
-    mockedFindSimilarIssue.mockResolvedValueOnce(null);
-    nock("https://api.aiproxy.io")
-      .post("/v1/moderations")
+  it('当内容未被标记时，应该添加收录标签并关闭 issue', async () => {
+    // 模拟issue没有任何审核标签
+    mockedGetIssueLabels.mockResolvedValueOnce([])
+
+    mockedFindSimilarIssue.mockResolvedValueOnce(null)
+    nock('https://api.aiproxy.io')
+      .post('/v1/moderations')
       .reply(200, {
         results: [
           {
@@ -126,33 +185,36 @@ describe("moderateIssue", () => {
               hate: false,
               sexual: false,
               violence: false,
-              "hate/threatening": false,
-              "self-harm": false,
-              "sexual/minors": false,
-              "violence/graphic": false,
+              'hate/threatening': false,
+              'self-harm': false,
+              'sexual/minors': false,
+              'violence/graphic': false,
             },
             flagged: false,
             category_scores: null,
           },
         ],
-      });
+      })
 
-    await moderateIssue();
+    await moderateIssue()
 
-    expect(addLabelsToIssue).toHaveBeenCalledWith(1, ["收录"]);
-    expect(closeIssue).toHaveBeenCalledWith(1);
-  });
+    expect(addLabelsToIssue).toHaveBeenCalledWith(1, ['收录'])
+    expect(closeIssue).toHaveBeenCalledWith(1)
+  })
 
-  it("当接口返回错误时，应该抛出错误", async () => {
-    mockedFindSimilarIssue.mockResolvedValueOnce(null);
-    nock("https://api.aiproxy.io")
-      .post("/v1/moderations")
+  it('当接口返回错误时，应该抛出错误', async () => {
+    // 模拟issue没有任何审核标签
+    mockedGetIssueLabels.mockResolvedValueOnce([])
+
+    mockedFindSimilarIssue.mockResolvedValueOnce(null)
+    nock('https://api.aiproxy.io')
+      .post('/v1/moderations')
       .reply(200, {
         error: {
-          message: "接口错误",
+          message: '接口错误',
         },
-      });
+      })
 
-    await expect(moderateIssue()).rejects.toThrow("接口错误");
-  });
-});
+    await expect(moderateIssue()).rejects.toThrow('接口错误')
+  })
+})
