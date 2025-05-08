@@ -88,6 +88,13 @@ describe('moderateIssue', () => {
       title: '测试标题',
       body: '这是一个测试的issue内容',
       url: 'https://github.com/owner/repo/issues/2',
+      createdAt: '2021-01-01T00:00:00Z',
+      updatedAt: '2021-01-01T00:00:00Z',
+      author: {
+        username: 'test-user',
+        avatarUrl: 'https://github.com/test-user.png',
+        url: 'https://github.com/test-user',
+      },
     }
 
     mockedFindSimilarIssue.mockResolvedValueOnce(similarIssue)
