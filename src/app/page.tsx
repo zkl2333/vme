@@ -3,15 +3,14 @@
 import { Layout } from '@/components/Layout'
 import { IKfcItem } from './lib/utils'
 import { KfcItem } from '@/components/KfcItem'
-import { useEffect, useState, useRef, useCallback } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 
 export default function Page() {
   const [kfcItems, setKfcItems] = useState<IKfcItem[]>([])
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(false)
   const [hasMore, setHasMore] = useState(true)
-  const observerRef = useRef<IntersectionObserver | null>(null)
-  const loadingRef = useRef<HTMLDivElement>(null)
+  const [totalPages, setTotalPages] = useState(1)
 
   const loadMoreItems = useCallback(async () => {
     if (loading || !hasMore) return
@@ -27,6 +26,7 @@ export default function Page() {
         setKfcItems((prev) => [...prev, ...data.items])
       }
 
+      setTotalPages(data.totalPages)
       setHasMore(page < data.totalPages)
       setPage((prev) => prev + 1)
     } catch (error) {
@@ -36,30 +36,12 @@ export default function Page() {
     }
   }, [page, loading, hasMore])
 
+  // 只在初始加载第一页数据
   useEffect(() => {
-    loadMoreItems()
-  }, [loadMoreItems])
-
-  useEffect(() => {
-    if (loadingRef.current) {
-      observerRef.current = new IntersectionObserver(
-        (entries) => {
-          if (entries[0].isIntersecting && !loading && hasMore) {
-            loadMoreItems()
-          }
-        },
-        { threshold: 1.0 },
-      )
-
-      observerRef.current.observe(loadingRef.current)
+    if (page === 1) {
+      loadMoreItems()
     }
-
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect()
-      }
-    }
-  }, [loadMoreItems, loading, hasMore])
+  }, [loadMoreItems, page])
 
   return (
     <Layout>
@@ -67,7 +49,7 @@ export default function Page() {
         <KfcItem key={kfcItem.id} item={kfcItem}></KfcItem>
       ))}
 
-      <div ref={loadingRef} className="mx-auto max-w-7xl px-6 lg:flex lg:px-8">
+      <div className="mx-auto max-w-7xl px-6 lg:flex lg:px-8">
         <div className="lg:ml-96 lg:flex lg:w-full lg:justify-end lg:pl-32">
           {loading ? (
             <div className="flex items-center justify-center">
@@ -75,9 +57,14 @@ export default function Page() {
               <span className="ml-2">加载中...</span>
             </div>
           ) : hasMore ? (
-            <span className="text-gray-500">向下滚动加载更多</span>
+            <button
+              onClick={loadMoreItems}
+              className="my-4 rounded-md bg-blue-500 px-4 py-2 font-semibold text-white hover:bg-blue-600"
+            >
+              加载更多 ({page - 1}/{totalPages})
+            </button>
           ) : (
-            <span className="text-gray-500">没有更多内容了</span>
+            <span className="block py-4 text-gray-500">没有更多内容了</span>
           )}
         </div>
       </div>
