@@ -46,6 +46,24 @@ async function createData() {
   // 记录更改的文件
   const changedFiles: string[] = []
 
+  // 生成汇总信息
+  const summary = {
+    totalItems: data.length,
+    months: Object.entries(dataByMonth)
+      .map(([month, items]) => ({
+        month,
+        count: items.length,
+      }))
+      .sort((a, b) => b.month.localeCompare(a.month)), // 按月份降序排序
+    updatedAt: new Date().toISOString(),
+  }
+
+  // 写入汇总信息
+  const summaryPath = path.join(dataDir, 'summary.json')
+  fs.writeFileSync(summaryPath, JSON.stringify(summary, null, 2))
+  console.log(`汇总信息已写入: ${summaryPath}`)
+  changedFiles.push(summaryPath)
+
   // 将数据按月份写入对应文件
   for (const [month, items] of Object.entries(dataByMonth)) {
     const filePath = path.join(dataDir, `${month}.json`)
