@@ -52,12 +52,8 @@ async function createData() {
     fs.writeFileSync(filePath, JSON.stringify(items, null, 2))
     console.log(`月份数据已写入: ${filePath}，共 ${items.length} 条`)
 
-    // 记录相对路径用于git操作
-    const relativeFilePath = path.relative(
-      path.join(process.cwd(), '..'),
-      filePath,
-    )
-    changedFiles.push(relativeFilePath)
+    // 直接记录文件的绝对路径
+    changedFiles.push(filePath)
   }
 
   // 提交到仓库
@@ -72,7 +68,8 @@ async function createData() {
     try {
       // 添加所有更改的文件
       changedFiles.forEach((file) => {
-        execSync(`git add ${file}`)
+        console.log(`正在添加: ${file}`)
+        execSync(`git add "${file}"`)
       })
 
       execSync('git commit -m "自动更新按月份数据"')
