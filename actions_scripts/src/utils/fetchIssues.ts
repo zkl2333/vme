@@ -1,10 +1,17 @@
 import { Octokit } from "@octokit/core";
 
 export interface IssueNode {
-  id: string;
-  title: string;
-  url: string;
-  body: string;
+  id: string
+  title: string
+  url: string
+  body: string
+  createdAt: string
+  updatedAt: string
+  author: {
+    username: string
+    avatarUrl: string
+    url: string
+  }
 }
 
 interface IssuesResult {
