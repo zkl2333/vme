@@ -93,7 +93,7 @@ async function createData() {
         dataByMonth[month].push(item);
     });
     // 确保data目录存在
-    const dataDir = path.join(process.cwd(), '..', 'data');
+    const dataDir = path.join(__dirname, '..', '..', 'data');
     if (!fs.existsSync(dataDir)) {
         fs.mkdirSync(dataDir, { recursive: true });
         console.log(`创建目录: ${dataDir}`);
