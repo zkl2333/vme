@@ -53,7 +53,7 @@ export async function moderateIssue() {
     return
   }
 
-  const API_URL = 'https://api.aiproxy.io/v1/moderations'
+  const API_URL = 'https://aihubmix.com/v1/moderations'
   const response = await fetch(API_URL, {
     method: 'POST',
     headers: {
