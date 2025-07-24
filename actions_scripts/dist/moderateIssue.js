@@ -2922,7 +2922,7 @@ async function moderateIssue() {
         await closeIssue(issueNumber);
         return;
     }
-    const API_URL = 'https://api.aiproxy.io/v1/moderations';
+    const API_URL = 'https://aihubmix.com/v1/moderations';
     const response = await fetch(API_URL, {
         method: 'POST',
         headers: {

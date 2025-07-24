@@ -114,7 +114,7 @@ describe('moderateIssue', () => {
     mockedGetIssueLabels.mockResolvedValueOnce([])
 
     mockedFindSimilarIssue.mockResolvedValueOnce(null)
-    nock('https://api.aiproxy.io')
+    nock('https://aihubmix.com')
       .post('/v1/moderations')
       .reply(200, {
         results: [
@@ -149,7 +149,7 @@ describe('moderateIssue', () => {
     mockedGetIssueLabels.mockResolvedValueOnce([])
 
     mockedFindSimilarIssue.mockResolvedValueOnce(null)
-    nock('https://api.aiproxy.io')
+    nock('https://aihubmix.com')
       .post('/v1/moderations')
       .reply(200, {
         results: [
@@ -183,7 +183,7 @@ describe('moderateIssue', () => {
     mockedGetIssueLabels.mockResolvedValueOnce([])
 
     mockedFindSimilarIssue.mockResolvedValueOnce(null)
-    nock('https://api.aiproxy.io')
+    nock('https://aihubmix.com')
       .post('/v1/moderations')
       .reply(200, {
         results: [
@@ -214,7 +214,7 @@ describe('moderateIssue', () => {
     mockedGetIssueLabels.mockResolvedValueOnce([])
 
     mockedFindSimilarIssue.mockResolvedValueOnce(null)
-    nock('https://api.aiproxy.io')
+    nock('https://aihubmix.com')
       .post('/v1/moderations')
       .reply(200, {
         error: {
