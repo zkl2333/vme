@@ -1,7 +1,8 @@
 import { FormattedDate } from '@/components/FormattedDate'
 import Image from 'next/image'
 import { IKfcItem } from '@/types'
-import { getJokeStats } from '@/lib/server-utils'
+import { getIssueStats } from '@/app/lib/github-stats'
+import { Octokit } from '@octokit/core'
 
 // 获取随机段子
 async function getRandomJoke(): Promise<IKfcItem | null> {
@@ -53,9 +54,12 @@ export default async function RandomJokeServer() {
   }
 
   // 获取统计数据
-  const stats = await getJokeStats([joke])
-  const likes = stats.get(joke.id)?.reactions || 0
-  const comments = stats.get(joke.id)?.comments || 0
+  const octokit = new Octokit({
+    auth: process.env.GITHUB_TOKEN,
+  })
+  const stats = await getIssueStats(octokit, joke.id)
+  const likes = stats.reactions
+  const comments = stats.comments
 
   return (
     <section className="mb-12">

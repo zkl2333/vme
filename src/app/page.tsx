@@ -69,22 +69,16 @@ export default async function Page({ searchParams }: PageProps) {
 
       {/* 梗王排行榜 - 服务端渲染 */}
       <section className="mb-12">
-        <div className="rounded-2xl bg-white p-6 shadow-kfc">
-          <h2 className="mb-5 flex items-center gap-2 text-xl font-bold md:text-2xl">
-            <i className="fa fa-crown text-kfc-yellow"></i> 梗王排行榜
-          </h2>
-
-          <Suspense
-            fallback={
-              <div className="flex items-center justify-center py-12">
-                <div className="h-8 w-8 animate-spin rounded-full border-2 border-kfc-red border-t-transparent"></div>
-                <span className="ml-2 text-gray-600">加载排行榜中...</span>
-              </div>
-            }
-          >
-            <LeaderboardServer sortBy={sortBy} />
-          </Suspense>
-        </div>
+        <Suspense
+          fallback={
+            <div className="flex items-center justify-center py-12">
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-kfc-red border-t-transparent"></div>
+              <span className="ml-2 text-gray-600">加载排行榜中...</span>
+            </div>
+          }
+        >
+          <LeaderboardServer sortBy={sortBy} />
+        </Suspense>
       </section>
 
       {/* 提交段子区（强化参与引导） */}

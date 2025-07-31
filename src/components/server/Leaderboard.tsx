@@ -1,8 +1,7 @@
 import { Octokit } from '@octokit/core'
 import Image from 'next/image'
-import { IKfcItem } from '@/types'
+import Link from 'next/link'
 import LeaderboardSortTabs from '../LeaderboardSortTabs'
-import LeaderboardPagination from '../LeaderboardPagination'
 
 interface AuthorStats {
   username: string
@@ -26,6 +25,7 @@ interface LeaderboardServerProps {
 }
 
 async function getLeaderboardData(sortBy: string = 'score') {
+
   // 检查是否有GitHub Token
   if (!process.env.GITHUB_TOKEN) {
     console.warn(
@@ -133,22 +133,6 @@ async function getLeaderboardData(sortBy: string = 'score') {
           return b.totalComments - a.totalComments
         case 'posts':
           return b.totalPosts - a.totalPosts
-        case 'recent':
-          // 按最新发布排序
-          const aLatest = Math.max(
-            ...a.posts.map((p) => new Date(p.createdAt).getTime()),
-          )
-          const bLatest = Math.max(
-            ...b.posts.map((p) => new Date(p.createdAt).getTime()),
-          )
-          return bLatest - aLatest
-        case 'active':
-          // 按活跃度排序（评论数+点赞数）
-          return (
-            b.totalReactions +
-            b.totalComments -
-            (a.totalReactions + a.totalComments)
-          )
         case 'score':
         default:
           return b.score - a.score
@@ -185,6 +169,9 @@ async function getLeaderboardData(sortBy: string = 'score') {
   }
 }
 
+// 设置组件级别的缓存时间（30分钟）
+export const revalidate = 1800
+
 export default async function LeaderboardServer({
   sortBy = 'score',
 }: LeaderboardServerProps) {
@@ -192,216 +179,258 @@ export default async function LeaderboardServer({
 
   if (!data) {
     return (
-      <div className="py-8 text-center">
+      <div className="rounded-lg bg-red-50 p-8 text-center">
         <div className="text-6xl">😅</div>
-        <h3 className="mt-4 text-xl font-bold text-gray-600">
+        <h2 className="mt-4 text-2xl font-bold text-red-600">
           排行榜暂时无法加载
-        </h3>
-        <p className="mt-2 text-gray-500">请稍后再试或检查 GitHub Token 配置</p>
+        </h2>
+        <p className="mt-2 text-red-500">请稍后再试或检查 GitHub Token 配置</p>
       </div>
     )
   }
 
-  // 获取排序标题
-  const getSortTitle = (sortBy: string) => {
-    switch (sortBy) {
-      case 'score':
-        return '综合排名榜'
-      case 'reactions':
-        return '点赞王排行榜'
-      case 'posts':
-        return '产量王排行榜'
-      case 'comments':
-        return '互动王排行榜'
-      case 'active':
-        return '活跃王排行榜'
-      case 'recent':
-        return '新锐王排行榜'
-      default:
-        return '综合排名榜'
-    }
-  }
-
-  // 获取排序描述
-  const getSortDescription = (sortBy: string) => {
-    switch (sortBy) {
-      case 'score':
-        return '根据发布数量、点赞和评论综合评分'
-      case 'reactions':
-        return '获得点赞数最多的用户'
-      case 'posts':
-        return '发布段子数量最多的用户'
-      case 'comments':
-        return '获得评论数最多的用户'
-      case 'active':
-        return '点赞+评论总数最高的用户'
-      case 'recent':
-        return '最近发布段子的活跃用户'
-      default:
-        return '根据发布数量、点赞和评论综合评分'
-    }
-  }
-
-  // 获取统计值显示
-  const getStatValue = (author: AuthorStats, sortBy: string) => {
-    switch (sortBy) {
-      case 'reactions':
-        return `${author.totalReactions.toLocaleString()} 赞`
-      case 'posts':
-        return `${author.totalPosts} 个段子`
-      case 'comments':
-        return `${author.totalComments} 评论`
-      case 'active':
-        return `${(author.totalReactions + author.totalComments).toLocaleString()} 互动`
-      case 'recent':
-        return `${author.totalPosts} 个段子`
-      case 'score':
-      default:
-        return `${author.totalReactions.toLocaleString()} 赞`
-    }
-  }
-
   return (
     <>
-      {/* 排序选择 */}
-      <LeaderboardSortTabs currentSort={data.sortBy} />
+      <div className="mb-6 flex items-center justify-between">
+        <h2 className="flex items-center gap-2 text-2xl font-bold text-gray-800">
+          <i className="fa fa-book text-kfc-red"></i> 梗王排行榜
+        </h2>
 
-      {/* 当前排行榜标题 */}
-      <div className="mb-6 text-center">
-        <h3 className="mb-2 text-2xl font-bold text-gray-800">
-          {getSortTitle(data.sortBy)}
-        </h3>
-        <p className="text-gray-600">{getSortDescription(data.sortBy)}</p>
+        {/* 排序选择 */}
+        <LeaderboardSortTabs currentSort={data.sortBy} />
       </div>
 
-      {/* Top 3 特殊展示 */}
-      {data.authors.length > 0 && (
-        <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
-          {data.authors.slice(0, 3).map((author, index) => {
-            const badgeColors = [
-              'bg-kfc-yellow',
-              'bg-gray-400',
-              'bg-orange-600',
-            ]
-            const borderColors = [
-              'border-kfc-yellow',
-              'border-gray-200',
-              'border-orange-300',
-            ]
-            const bgColors = [
-              'from-yellow-50',
-              'from-gray-50',
-              'from-orange-50',
-            ]
-            const statColors = [
-              'bg-yellow-100 text-yellow-800',
-              'bg-gray-100 text-gray-700',
-              'bg-orange-100 text-orange-700',
-            ]
-
-            return (
-              <div
-                key={author.username}
-                className={`flex flex-col items-center bg-gradient-to-b p-4 ${bgColors[index]} rounded-xl border to-white ${borderColors[index]}`}
-              >
-                <div
-                  className={`h-12 w-12 rounded-full ${badgeColors[index]} mb-3 flex items-center justify-center font-bold text-white`}
-                >
-                  {index + 1}
-                </div>
-                <Image
-                  src={author.avatarUrl}
-                  alt={`${author.username}的头像`}
-                  width={80}
-                  height={80}
-                  className={`h-16 w-16 rounded-full border-2 ${borderColors[index]} mb-3`}
-                />
-                <h3 className="mb-1 font-bold">@{author.username}</h3>
-                <p className="mb-2 text-sm text-gray-500">
-                  发布 {author.totalPosts} 个段子
-                </p>
-                <div
-                  className={`${statColors[index]} rounded-full px-3 py-1 text-xs`}
-                >
-                  {getStatValue(author, data.sortBy)}
-                </div>
+      <div className="space-y-8 rounded-2xl bg-white p-6 shadow-kfc">
+        {/* 统计概览 */}
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+          {[
+            {
+              label: '总段子数',
+              value: data.stats.totalPosts.toLocaleString(),
+              icon: '📝',
+              color: 'text-blue-600',
+              bgColor: 'bg-blue-50',
+            },
+            {
+              label: '总点赞数',
+              value: data.stats.totalReactions.toLocaleString(),
+              icon: '👍',
+              color: 'text-red-600',
+              bgColor: 'bg-red-50',
+            },
+            {
+              label: '总评论数',
+              value: data.stats.totalComments.toLocaleString(),
+              icon: '💬',
+              color: 'text-green-600',
+              bgColor: 'bg-green-50',
+            },
+            {
+              label: '贡献者数',
+              value: data.stats.totalAuthors.toLocaleString(),
+              icon: '👥',
+              color: 'text-purple-600',
+              bgColor: 'bg-purple-50',
+            },
+          ].map((item, index) => (
+            <div
+              key={index}
+              className={`rounded-lg border border-gray-200 ${item.bgColor} p-4 text-center shadow-sm`}
+            >
+              <div className="text-2xl">{item.icon}</div>
+              <div className={`mt-2 text-2xl font-bold ${item.color}`}>
+                {item.value}
               </div>
-            )
-          })}
+              <div className="text-sm font-medium text-gray-600">
+                {item.label}
+              </div>
+            </div>
+          ))}
         </div>
-      )}
 
-      {/* 4-10名列表 */}
-      {data.authors.length > 3 && (
-        <div className="mb-8">
-          <h4 className="mb-4 text-lg font-semibold text-gray-800">
-            完整排行榜
-          </h4>
-          <div className="space-y-3">
-            {data.authors.slice(3, 10).map((author, index) => (
-              <div
-                key={author.username}
-                className="flex items-center justify-between rounded-lg border border-gray-100 p-4 transition-colors hover:bg-gray-50"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-sm font-bold text-gray-700">
-                    {index + 4}
+        {/* Top 3 特殊展示 */}
+        {data.authors.length >= 3 && (
+          <div className="mb-8">
+            <h2 className="mb-6 text-center text-2xl font-bold text-gray-800">
+              🥇 殿堂级梗王 🥇
+            </h2>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+              {data.authors.slice(0, 3).map((author, index) => {
+                const getRankStyle = (rank: number) => {
+                  switch (rank) {
+                    case 1:
+                      return {
+                        border: 'border-yellow-200',
+                        bg: 'bg-gradient-to-b from-yellow-50 to-white',
+                        badgeBg:
+                          'bg-gradient-to-r from-yellow-400 to-yellow-500',
+                        avatarBorder: 'border-yellow-400',
+                        textColor: 'text-yellow-700',
+                      }
+                    case 2:
+                      return {
+                        border: 'border-gray-200',
+                        bg: 'bg-gradient-to-b from-gray-50 to-white',
+                        badgeBg: 'bg-gradient-to-r from-gray-400 to-gray-500',
+                        avatarBorder: 'border-gray-400',
+                        textColor: 'text-gray-700',
+                      }
+                    case 3:
+                      return {
+                        border: 'border-orange-200',
+                        bg: 'bg-gradient-to-b from-orange-50 to-white',
+                        badgeBg:
+                          'bg-gradient-to-r from-orange-400 to-orange-500',
+                        avatarBorder: 'border-orange-400',
+                        textColor: 'text-orange-700',
+                      }
+                    default:
+                      return {
+                        border: 'border-gray-200',
+                        bg: 'bg-white',
+                        badgeBg: 'bg-gray-400',
+                        avatarBorder: 'border-gray-300',
+                        textColor: 'text-gray-700',
+                      }
+                  }
+                }
+
+                const style = getRankStyle(index + 1)
+
+                return (
+                  <div
+                    key={author.username}
+                    className={`relative rounded-xl border-2 ${style.border} ${style.bg} p-6 text-center shadow-lg transition-transform hover:scale-105`}
+                  >
+                    {/* 排名徽章 */}
+                    <div
+                      className={`absolute -top-3 left-1/2 flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full ${style.badgeBg} text-sm font-bold text-white shadow-md`}
+                    >
+                      {index + 1}
+                    </div>
+
+                    {/* 头像 */}
+                    <div className="mb-4 flex justify-center">
+                      <Image
+                        src={author.avatarUrl}
+                        alt={`${author.username}的头像`}
+                        width={80}
+                        height={80}
+                        className={`h-20 w-20 rounded-full border-4 ${style.avatarBorder} shadow-md`}
+                      />
+                    </div>
+
+                    {/* 用户信息 */}
+                    <h3 className="mb-2 text-lg font-bold text-gray-900">
+                      @{author.username}
+                    </h3>
+
+                    <div className="mb-4 space-y-1 text-sm text-gray-600">
+                      <div>发布 {author.totalPosts} 个段子</div>
+                      <div>
+                        获得 {author.totalReactions.toLocaleString()} 个赞
+                      </div>
+                      <div>收到 {author.totalComments} 条评论</div>
+                    </div>
+
+                    {/* 综合评分 */}
+                    <div
+                      className={`rounded-full px-4 py-2 text-sm font-bold ${style.textColor} bg-opacity-20`}
+                      style={{
+                        backgroundColor:
+                          style.textColor
+                            .replace('text-', '')
+                            .replace('-700', '') + '20',
+                      }}
+                    >
+                      综合评分: {Math.round(author.score)}
+                    </div>
+
+                    {/* GitHub 链接 */}
+                    <Link
+                      href={author.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-4 inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800"
+                    >
+                      <span>GitHub</span>
+                      <svg
+                        className="h-3 w-3"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </Link>
                   </div>
-                  <Image
-                    src={author.avatarUrl}
-                    alt={`${author.username}的头像`}
-                    width={40}
-                    height={40}
-                    className="h-10 w-10 rounded-full"
-                  />
-                  <div>
-                    <div className="font-semibold">@{author.username}</div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* 完整排行榜 */}
+        {data.authors.length > 3 && (
+          <div>
+            <h2 className="mb-6 text-center text-2xl font-bold text-gray-800">
+              📊 完整排行榜
+            </h2>
+            <div className="space-y-4">
+              {data.authors.slice(3, 10).map((author, index) => (
+                <div
+                  key={author.username}
+                  className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
+                >
+                  <div className="flex items-center gap-4">
+                    {/* 排名 */}
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-sm font-bold text-gray-700">
+                      {index + 4}
+                    </div>
+
+                    {/* 头像 */}
+                    <Image
+                      src={author.avatarUrl}
+                      alt={`${author.username}的头像`}
+                      width={48}
+                      height={48}
+                      className="h-12 w-12 rounded-full"
+                    />
+
+                    {/* 用户信息 */}
+                    <div>
+                      <h3 className="font-semibold text-gray-900">
+                        @{author.username}
+                      </h3>
+                      <div className="text-sm text-gray-500">
+                        {author.totalPosts} 个段子 • 评分{' '}
+                        {Math.round(author.score)}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 统计数据 */}
+                  <div className="text-right">
+                    <div className="font-semibold text-kfc-red">
+                      {author.totalReactions.toLocaleString()} 赞
+                    </div>
                     <div className="text-sm text-gray-500">
-                      {author.totalPosts} 个段子
+                      {author.totalComments} 评论
                     </div>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="font-semibold text-kfc-red">
-                    {getStatValue(author, data.sortBy)}
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    {author.totalComments} 评论
-                  </div>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* 统计概览 */}
-      <div className="mt-8 rounded-lg bg-gray-50 p-4">
-        <div className="grid grid-cols-3 gap-4 text-center">
-          <div>
-            <div className="text-xl font-bold text-kfc-red">
-              {data.stats.totalPosts}
-            </div>
-            <div className="text-sm text-gray-600">总段子数</div>
-          </div>
-          <div>
-            <div className="text-xl font-bold text-kfc-red">
-              {data.stats.totalReactions.toLocaleString()}
-            </div>
-            <div className="text-sm text-gray-600">总点赞数</div>
-          </div>
-          <div>
-            <div className="text-xl font-bold text-kfc-red">
-              {data.stats.totalComments.toLocaleString()}
-            </div>
-            <div className="text-sm text-gray-600">总评论数</div>
-          </div>
+        {/* 更新时间 */}
+        <div className="text-center text-sm text-gray-500">
+          最后更新: {new Date(data.updatedAt).toLocaleString('zh-CN')}
         </div>
-      </div>
-
-      {/* 更新时间 */}
-      <div className="mt-4 text-center text-xs text-gray-400">
-        最后更新: {new Date(data.updatedAt).toLocaleString('zh-CN')}
       </div>
     </>
   )

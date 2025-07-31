@@ -1,7 +1,9 @@
 import { FormattedDate } from '@/components/FormattedDate'
 import Image from 'next/image'
 import JokesPagination from '../JokesPagination'
-import { getJokeStats, getKfcItemsWithPagination } from '@/lib/server-utils'
+import { getKfcItemsWithPagination } from '@/lib/server-utils'
+import { getBatchIssueStats } from '@/app/lib/github-stats'
+import { Octokit } from '@octokit/core'
 
 interface JokesServerProps {
   currentPage: number
@@ -14,14 +16,27 @@ export default async function JokesServer({ currentPage }: JokesServerProps) {
   )
 
   // 获取统计数据
-  const stats = await getJokeStats(items)
+  const octokit = new Octokit({
+    auth: process.env.GITHUB_TOKEN,
+  })
+  const stats = await getBatchIssueStats(
+    octokit,
+    items.map((item) => item.id),
+  )
 
   return (
     <section id="jokes-list" className="mb-12">
       {/* 段子列表标题 */}
-      <div className="mb-8 text-center">
-        <h2 className="mb-2 text-3xl font-bold text-gray-800">段子总库</h2>
-        <p className="text-gray-600">精选肯德基疯狂星期四段子，让你笑出腹肌</p>
+      <div className="mb-6 flex items-center justify-between">
+        <h2 className="flex items-center gap-2 text-2xl font-bold text-gray-800">
+          <i className="fa fa-book text-kfc-red"></i> 段子总库
+        </h2>
+        <div className="flex items-center gap-2 rounded-full bg-white px-3 py-1 text-sm shadow-sm">
+          <span>
+            共收录: <span className="font-bold text-kfc-red">{total}</span>
+            个段子
+          </span>
+        </div>
       </div>
 
       {/* 段子列表 */}
