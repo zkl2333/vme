@@ -27,6 +27,12 @@ export interface IKfcItem {
     avatarUrl: string
     url: string
   }
+  reactions?: {
+    totalCount: number
+  }
+  comments?: {
+    totalCount: number
+  }
 }
 
 // 获取所有可用的月份文件

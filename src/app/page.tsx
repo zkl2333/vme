@@ -4,6 +4,7 @@ import { IKfcItem } from './lib/utils'
 import { useEffect, useState, useCallback } from 'react'
 import { FormattedDate } from '@/components/FormattedDate'
 import Image from 'next/image'
+import { useIssueStats } from '@/hooks/useIssueStats'
 
 interface JokeDisplayItem {
   content: string
@@ -23,9 +24,13 @@ export default function Page() {
   const [randomJoke, setRandomJoke] = useState<JokeDisplayItem | null>(null)
   const [contributorsCount, setContributorsCount] = useState(42)
 
+  // 使用统计数据hook
+  const { stats, fetchStats } = useIssueStats()
+
   // 将IKfcItem转换为JokeDisplayItem的辅助函数
   const convertToJokeDisplay = useCallback(
     (item: IKfcItem): JokeDisplayItem => {
+      const issueStats = stats.get(item.id)
       return {
         content: item.body,
         author: `@${item.author.username}`,
@@ -34,42 +39,55 @@ export default function Page() {
           month: '2-digit',
           day: '2-digit',
         }),
-        likes: Math.floor(Math.random() * 500) + 50, // 模拟点赞数
-        comments: Math.floor(Math.random() * 50) + 5, // 模拟评论数
+        likes: issueStats?.reactions || 0, // 使用实时统计数据
+        comments: issueStats?.comments || 0, // 使用实时统计数据
       }
     },
-    [],
+    [stats],
   )
 
-  const loadPage = useCallback(async (pageNum: number) => {
-    setLoading(true)
-    try {
-      const response = await fetch(
-        `/api/items/page?page=${pageNum}&pageSize=10`,
-      )
-      const data = await response.json()
+  const loadPage = useCallback(
+    async (pageNum: number) => {
+      setLoading(true)
+      try {
+        const response = await fetch(
+          `/api/items/page?page=${pageNum}&pageSize=10`,
+        )
+        const data = await response.json()
 
-      setKfcItems(data.items)
-      setTotalPages(data.totalPages)
-      setTotalItems(data.total)
-      setCurrentPage(pageNum)
-    } catch (error) {
-      console.error('加载数据失败:', error)
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+        setKfcItems(data.items)
+        setTotalPages(data.totalPages)
+        setTotalItems(data.total)
+        setCurrentPage(pageNum)
+
+        // 获取当前页面所有项目的统计数据
+        if (data.items && data.items.length > 0) {
+          const issueIds = data.items.map((item: IKfcItem) => item.id)
+          fetchStats(issueIds)
+        }
+      } catch (error) {
+        console.error('加载数据失败:', error)
+      } finally {
+        setLoading(false)
+      }
+    },
+    [fetchStats],
+  )
 
   // 获取随机段子
   const getRandomJoke = useCallback(async () => {
     try {
       const response = await fetch('/api/random')
       const randomItem = await response.json()
+
+      // 获取随机段子的统计数据
+      fetchStats([randomItem.id])
+
       setRandomJoke(convertToJokeDisplay(randomItem))
     } catch (error) {
       console.error('获取随机段子失败:', error)
     }
-  }, [convertToJokeDisplay])
+  }, [convertToJokeDisplay, fetchStats])
 
   // 初始化数据加载
   useEffect(() => {
@@ -319,7 +337,6 @@ export default function Page() {
 
           <div className="space-y-4">
             {kfcItems.map((item, index) => {
-              const jokeDisplay = convertToJokeDisplay(item)
               const isHot = index < 3 // 前3个标记为热门
 
               return (
@@ -358,10 +375,12 @@ export default function Page() {
                       <span
                         className={`flex items-center gap-1 ${isHot ? 'text-kfc-red' : ''}`}
                       >
-                        <i className="fa fa-thumbs-up"></i> {jokeDisplay.likes}
+                        <i className="fa fa-thumbs-up"></i>{' '}
+                        {stats.get(item.id)?.reactions || 0}
                       </span>
                       <span className="flex items-center gap-1">
-                        <i className="fa fa-share"></i> {jokeDisplay.comments}
+                        <i className="fa fa-comment"></i>{' '}
+                        {stats.get(item.id)?.comments || 0}
                       </span>
                     </div>
                   </div>
@@ -526,7 +545,7 @@ export default function Page() {
                 </p>
 
                 <a
-                  href="https://github.com/yourusername/yourrepo/issues/new"
+                  href="https://github.com/zkl2333/vme/issues/new?assignees=&labels=%E6%96%87%E6%A1%88&projects=&template=data_provided.md&title="
                   target="_blank"
                   className="shine-effect flex items-center gap-2 rounded-full bg-white px-6 py-3 text-lg font-bold text-kfc-red shadow-lg transition-all duration-300 hover:shadow-xl"
                 >
