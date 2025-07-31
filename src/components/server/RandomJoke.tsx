@@ -1,32 +1,12 @@
 import { FormattedDate } from '@/components/FormattedDate'
 import Image from 'next/image'
-import { IKfcItem } from '@/types'
 import { getIssueStats } from '@/app/lib/github-stats'
 import { Octokit } from '@octokit/core'
-
-// 获取随机段子
-async function getRandomJoke(): Promise<IKfcItem | null> {
-  try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/random`,
-      {
-        next: { revalidate: 300 }, // 5分钟缓存
-      },
-    )
-
-    if (response.ok) {
-      return await response.json()
-    }
-  } catch (error) {
-    console.error('Error fetching random joke:', error)
-  }
-
-  return null
-}
+import { getRandomKfcItem } from '@/lib/server-utils'
 
 export default async function RandomJokeServer() {
   // 如果没有传入随机段子，则获取一个
-  const joke = await getRandomJoke()
+  const joke = await getRandomKfcItem()
 
   if (!joke) {
     return (
