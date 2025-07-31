@@ -16,9 +16,8 @@ interface JokeDisplayItem {
 
 export default function Page() {
   const [kfcItems, setKfcItems] = useState<IKfcItem[]>([])
-  const [page, setPage] = useState(1)
+  const [currentPage, setCurrentPage] = useState(1)
   const [loading, setLoading] = useState(false)
-  const [hasMore, setHasMore] = useState(true)
   const [totalPages, setTotalPages] = useState(1)
   const [totalItems, setTotalItems] = useState(0)
   const [randomJoke, setRandomJoke] = useState<JokeDisplayItem | null>(null)
@@ -42,30 +41,24 @@ export default function Page() {
     [],
   )
 
-  const loadMoreItems = useCallback(async () => {
-    if (loading || !hasMore) return
-
+  const loadPage = useCallback(async (pageNum: number) => {
     setLoading(true)
     try {
-      const response = await fetch(`/api/items/page?page=${page}&pageSize=10`)
+      const response = await fetch(
+        `/api/items/page?page=${pageNum}&pageSize=10`,
+      )
       const data = await response.json()
 
-      if (page === 1) {
-        setKfcItems(data.items)
-      } else {
-        setKfcItems((prev) => [...prev, ...data.items])
-      }
-
+      setKfcItems(data.items)
       setTotalPages(data.totalPages)
       setTotalItems(data.total)
-      setHasMore(page < data.totalPages)
-      setPage((prev) => prev + 1)
+      setCurrentPage(pageNum)
     } catch (error) {
       console.error('加载数据失败:', error)
     } finally {
       setLoading(false)
     }
-  }, [page, loading, hasMore])
+  }, [])
 
   // 获取随机段子
   const getRandomJoke = useCallback(async () => {
@@ -80,11 +73,10 @@ export default function Page() {
 
   // 初始化数据加载
   useEffect(() => {
-    if (page === 1) {
-      loadMoreItems()
-      getRandomJoke()
-    }
-  }, [loadMoreItems, getRandomJoke, page])
+    loadPage(1)
+    getRandomJoke()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // 只在组件挂载时执行一次
 
   // 贡献者数量动画
   useEffect(() => {
@@ -103,6 +95,70 @@ export default function Page() {
 
   const handleNewJoke = () => {
     getRandomJoke()
+  }
+
+  // 翻页相关函数
+  const goToPage = (pageNum: number) => {
+    if (loading) return // 防止并发请求
+    if (pageNum >= 1 && pageNum <= totalPages && pageNum !== currentPage) {
+      loadPage(pageNum)
+    }
+  }
+
+  const goToPrevPage = () => {
+    if (loading) return // 防止并发请求
+    if (currentPage > 1) {
+      loadPage(currentPage - 1)
+    }
+  }
+
+  const goToNextPage = () => {
+    if (loading) return // 防止并发请求
+    if (currentPage < totalPages) {
+      loadPage(currentPage + 1)
+    }
+  }
+
+  // 生成页码数组（包含省略号逻辑）
+  const generatePageNumbers = () => {
+    const pageNumbers = []
+    const maxVisiblePages = 5 // 最多显示5个页码
+
+    if (totalPages <= maxVisiblePages) {
+      // 总页数较少时，显示所有页码
+      for (let i = 1; i <= totalPages; i++) {
+        pageNumbers.push(i)
+      }
+    } else {
+      // 总页数较多时，使用省略号
+      if (currentPage <= 3) {
+        // 当前页在前面
+        pageNumbers.push(1, 2, 3, 4, '...', totalPages)
+      } else if (currentPage >= totalPages - 2) {
+        // 当前页在后面
+        pageNumbers.push(
+          1,
+          '...',
+          totalPages - 3,
+          totalPages - 2,
+          totalPages - 1,
+          totalPages,
+        )
+      } else {
+        // 当前页在中间
+        pageNumbers.push(
+          1,
+          '...',
+          currentPage - 1,
+          currentPage,
+          currentPage + 1,
+          '...',
+          totalPages,
+        )
+      }
+    }
+
+    return pageNumbers
   }
 
   return (
@@ -198,7 +254,7 @@ export default function Page() {
                   </h2>
                 </div>
 
-                <div className="mb-6 min-h-[120px] border-l-4 border-kfc-yellow px-1 text-lg leading-relaxed md:text-xl">
+                <div className="mb-6 min-h-[120px] whitespace-pre-wrap border-l-4 border-kfc-yellow px-1 text-lg leading-relaxed md:text-xl">
                   {randomJoke.content}
                 </div>
 
@@ -278,7 +334,9 @@ export default function Page() {
                       热门
                     </div>
                   )}
-                  <p className="mb-4">{item.body}</p>
+                  <p className="mb-4 overflow-auto whitespace-pre-wrap leading-5">
+                    {item.body}
+                  </p>
                   <div className="flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-2">
                     <div className="flex items-center gap-2">
                       <Image
@@ -312,25 +370,71 @@ export default function Page() {
             })}
           </div>
 
-          {/* 加载更多按钮 */}
+          {/* 分页控件 */}
           <div className="mt-6 flex justify-center">
             {loading ? (
               <div className="flex items-center justify-center">
                 <div className="h-6 w-6 animate-spin rounded-full border-2 border-kfc-red border-t-transparent"></div>
                 <span className="ml-2">加载中...</span>
               </div>
-            ) : hasMore ? (
-              <button
-                onClick={loadMoreItems}
-                className="rounded-full bg-kfc-red px-6 py-3 font-bold text-white shadow-kfc transition-all duration-300 hover:bg-kfc-darkRed hover:shadow-kfc-hover"
-              >
-                加载更多段子 ({page - 1}/{totalPages})
-              </button>
-            ) : (
-              <span className="block py-4 text-gray-500">
-                已经到底了，去写个段子吧！
-              </span>
-            )}
+            ) : totalPages > 1 ? (
+              <nav className="flex items-center gap-1">
+                {/* 上一页按钮 */}
+                <button
+                  onClick={goToPrevPage}
+                  disabled={currentPage === 1}
+                  className={`flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+                    currentPage === 1
+                      ? 'cursor-not-allowed border-gray-200 text-gray-400'
+                      : 'border-gray-200 hover:border-kfc-red hover:text-kfc-red'
+                  }`}
+                >
+                  <i className="fa fa-chevron-left text-sm"></i>
+                </button>
+
+                {/* 页码按钮 */}
+                {generatePageNumbers().map((pageNum, index) => {
+                  if (pageNum === '...') {
+                    return (
+                      <span
+                        key={`ellipsis-${index}`}
+                        className="flex h-9 w-9 items-center justify-center"
+                      >
+                        ...
+                      </span>
+                    )
+                  }
+
+                  const isCurrentPage = pageNum === currentPage
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => goToPage(pageNum as number)}
+                      className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
+                        isCurrentPage
+                          ? 'bg-kfc-red text-white'
+                          : 'hover:bg-gray-100'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  )
+                })}
+
+                {/* 下一页按钮 */}
+                <button
+                  onClick={goToNextPage}
+                  disabled={currentPage === totalPages}
+                  className={`flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+                    currentPage === totalPages
+                      ? 'cursor-not-allowed border-gray-200 text-gray-400'
+                      : 'border-gray-200 hover:border-kfc-red hover:text-kfc-red'
+                  }`}
+                >
+                  <i className="fa fa-chevron-right text-sm"></i>
+                </button>
+              </nav>
+            ) : null}
           </div>
         </section>
 
