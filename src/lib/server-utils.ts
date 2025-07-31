@@ -1,5 +1,8 @@
+// 服务端专用工具函数 - 包含 Node.js 模块，仅在服务端使用
 import fs from 'fs'
 import path from 'path'
+import { IKfcItem } from '@/types'
+import { Octokit } from '@octokit/core'
 
 const cache: {
   kfcItems: Record<string, IKfcItem[]>
@@ -13,26 +16,6 @@ const cache: {
   kfcItems: {},
   allMonths: [],
   summary: null,
-}
-
-export interface IKfcItem {
-  id: string
-  title: string
-  url: string
-  body: string
-  createdAt: string
-  updatedAt: string
-  author: {
-    username: string
-    avatarUrl: string
-    url: string
-  }
-  reactions?: {
-    totalCount: number
-  }
-  comments?: {
-    totalCount: number
-  }
 }
 
 // 获取所有可用的月份文件
@@ -112,6 +95,20 @@ export async function getSummary() {
   }
 }
 
+// 获取所有KFC项目（不分页）- 服务端专用
+export async function getAllKfcItems(): Promise<IKfcItem[]> {
+  const months = await getAvailableMonths()
+  let allItems: IKfcItem[] = []
+
+  // 加载所有月份的数据
+  for (const month of months) {
+    const items = await getKfcItemsByMonth(month)
+    allItems = [...allItems, ...items]
+  }
+
+  return allItems
+}
+
 // 获取分页数据（使用汇总信息优化totalPages计算）
 export async function getKfcItemsWithPagination(
   page = 1,
@@ -162,20 +159,6 @@ export async function getKfcItemsWithPagination(
   }
 }
 
-// 获取所有KFC项目（不分页）
-export async function getAllKfcItems(): Promise<IKfcItem[]> {
-  const months = await getAvailableMonths()
-  let allItems: IKfcItem[] = []
-
-  // 加载所有月份的数据
-  for (const month of months) {
-    const items = await getKfcItemsByMonth(month)
-    allItems = [...allItems, ...items]
-  }
-
-  return allItems
-}
-
 // 获取随机项目
 export async function getRandomKfcItem(): Promise<IKfcItem> {
   // 从summary中获取数据分布信息
@@ -208,4 +191,66 @@ export async function getRandomKfcItem(): Promise<IKfcItem> {
   // 随机选择一个项目
   const randomItemIndex = Math.floor(Math.random() * items.length)
   return items[randomItemIndex]
+}
+
+// 获取段子统计数据
+export async function getJokeStats(items: IKfcItem[]) {
+  const stats = new Map()
+
+  // 检查GitHub Token是否配置
+  if (!process.env.GITHUB_TOKEN) {
+    console.warn('GitHub token not configured. Using fallback stats.')
+    for (const item of items) {
+      stats.set(item.id, {
+        reactions: item.reactions?.totalCount || 0,
+        comments: item.comments?.totalCount || 0,
+      })
+    }
+    return stats
+  }
+
+  const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN })
+
+  for (const item of items) {
+    try {
+      const query = `
+        query GetIssueStats($issueId: ID!) {
+          node(id: $issueId) {
+            ... on Issue {
+              id
+              reactions {
+                totalCount
+              }
+              comments {
+                totalCount
+              }
+            }
+          }
+        }
+      `
+
+      const response = await octokit.graphql<{
+        node: {
+          id: string
+          reactions: { totalCount: number }
+          comments: { totalCount: number }
+        }
+      }>(query, { issueId: item.id })
+
+      if (response.node) {
+        stats.set(item.id, {
+          reactions: response.node.reactions.totalCount,
+          comments: response.node.comments.totalCount,
+        })
+      }
+    } catch (error) {
+      console.error(`Error fetching stats for issue ${item.id}:`, error)
+      stats.set(item.id, {
+        reactions: item.reactions?.totalCount || 0,
+        comments: item.comments?.totalCount || 0,
+      })
+    }
+  }
+
+  return stats
 }

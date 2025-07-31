@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Octokit } from '@octokit/core'
+import { getIssueStats } from '@/app/lib/github-stats'
 
 // 缓存结果，避免频繁请求GitHub API
 const cache = new Map<string, { data: any; timestamp: number }>()
@@ -47,46 +48,16 @@ export async function POST(request: NextRequest) {
       }
 
       try {
-        // 使用GitHub GraphQL API获取单个Issue的统计数据
-        const query = `
-          query GetIssueStats($issueId: ID!) {
-            node(id: $issueId) {
-              ... on Issue {
-                id
-                reactions {
-                  totalCount
-                }
-                comments {
-                  totalCount
-                }
-              }
-            }
-          }
-        `
+        // 使用封装的函数获取Issue统计数据
+        const stats = await getIssueStats(octokit, issueId)
 
-        const response = await octokit.graphql<{
-          node: {
-            id: string
-            reactions: { totalCount: number }
-            comments: { totalCount: number }
-          }
-        }>(query, { issueId })
+        // 缓存结果
+        cache.set(issueId, {
+          data: stats,
+          timestamp: Date.now(),
+        })
 
-        if (response.node) {
-          const stats: IssueStats = {
-            id: response.node.id,
-            reactions: response.node.reactions.totalCount,
-            comments: response.node.comments.totalCount,
-          }
-
-          // 缓存结果
-          cache.set(issueId, {
-            data: stats,
-            timestamp: Date.now(),
-          })
-
-          results.push(stats)
-        }
+        results.push(stats)
       } catch (error) {
         console.error(`Failed to fetch stats for issue ${issueId}:`, error)
         // 如果单个请求失败，返回默认值

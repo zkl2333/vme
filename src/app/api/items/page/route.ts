@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getKfcItemsWithPagination } from '../../../lib/utils'
+import { getKfcItemsWithPagination } from '@/lib/server-utils'
 
 export const revalidate = 60 // 设置重新验证间隔为60秒
 

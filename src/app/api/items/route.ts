@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getAllKfcItems } from '../../lib/utils'
+import { getAllKfcItems } from '@/lib/server-utils'
 
 export const revalidate = 3600 // 设置重新验证间隔为1小时
 
