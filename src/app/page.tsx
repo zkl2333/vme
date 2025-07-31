@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
 import Image from 'next/image'
 import LeaderboardServer from '@/components/server/Leaderboard'
-import RandomJokeServer from '@/components/server/RandomJoke'
+import RandomJoke from '@/components/RandomJoke'
 import JokesServer from '@/components/server/Jokes'
 
 // 获取URL参数的类型定义
@@ -53,7 +53,7 @@ export default async function Page({ searchParams }: PageProps) {
       </div>
 
       {/* 随机段子展示 */}
-      <RandomJokeServer />
+      <RandomJoke />
 
       {/* 段子列表 */}
       <Suspense
