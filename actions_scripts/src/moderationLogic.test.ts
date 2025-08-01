@@ -3,6 +3,7 @@ import { moderateContent, triggerDataUpdate } from './moderationLogic'
 // Mock utils模块
 jest.mock('./utils', () => ({
   getIssueLabels: jest.fn().mockResolvedValue([]),
+  getIssueId: jest.fn().mockResolvedValue('test-issue-id'),
   addCommentToIssue: jest.fn().mockResolvedValue({}),
   addLabelsToIssue: jest.fn().mockResolvedValue({}),
   closeIssue: jest.fn().mockResolvedValue({}),

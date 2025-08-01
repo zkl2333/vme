@@ -3,6 +3,7 @@ import {
   addLabelsToIssue,
   closeIssue,
   findSimilarIssue,
+  getIssueId,
   getIssueLabels,
   dispatchWorkflow,
 } from './utils'
@@ -40,9 +41,12 @@ export async function moderateContent(
     return { type: 'approved' } // 已审核，视为通过
   }
 
+  // 获取当前issue的ID
+  const currentIssueId = await getIssueId(issueNumber)
+
   // 查找相似的 issue
   console.log(`开始查找相似文案，当前文案长度: ${issueBody.length}`)
-  const similarIssue = await findSimilarIssue(issueBody)
+  const similarIssue = await findSimilarIssue(issueBody, currentIssueId)
 
   if (similarIssue) {
     console.log(`找到相似文案: ${similarIssue.url}`)

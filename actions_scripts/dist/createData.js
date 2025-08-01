@@ -86,11 +86,13 @@ async function createData() {
         ...(await fetchIssues('whitescent', 'KFC-Crazy-Thursday', ['文案提供'])),
     ];
     console.log(`获取到 ${Object.keys(data).length} 条数据`);
-    // 按月份分组数据
+    // 按月份分组数据（使用中国时间 UTC+8）
     const dataByMonth = {};
     data.forEach((item) => {
-        const date = new Date(item.createdAt);
-        const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        // 创建中国时区的日期对象
+        const utcDate = new Date(item.createdAt);
+        const chinaTime = new Date(utcDate.getTime() + 8 * 60 * 60 * 1000); // UTC+8
+        const month = `${chinaTime.getFullYear()}-${String(chinaTime.getMonth() + 1).padStart(2, '0')}`;
         if (!dataByMonth[month]) {
             dataByMonth[month] = [];
         }
