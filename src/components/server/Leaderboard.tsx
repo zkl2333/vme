@@ -129,19 +129,8 @@ async function getLeaderboardData(sortBy: string = 'score') {
     // 只取前10名
     const topAuthors = authorsList.slice(0, 10)
 
-    // 计算统计数据
-    const stats = {
-      totalPosts: allItems.length,
-      totalReactions: authorsList.reduce(
-        (sum, author) => sum + author.totalReactions,
-        0,
-      ),
-      totalAuthors: authorsList.length,
-    }
-
     return {
       authors: topAuthors,
-      stats,
       sortBy,
       totalAuthors: authorsList.length,
       updatedAt: new Date().toISOString(),
@@ -184,46 +173,6 @@ export default async function LeaderboardServer({
       </div>
 
       <div className="space-y-8 rounded-2xl bg-white p-6 shadow-kfc">
-        {/* 统计概览 */}
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          {[
-            {
-              label: '总段子数',
-              value: data.stats.totalPosts.toLocaleString(),
-              icon: '📝',
-              color: 'text-blue-600',
-              bgColor: 'bg-blue-50',
-            },
-            {
-              label: '总点赞数',
-              value: data.stats.totalReactions.toLocaleString(),
-              icon: '👍',
-              color: 'text-red-600',
-              bgColor: 'bg-red-50',
-            },
-            {
-              label: '贡献者数',
-              value: data.stats.totalAuthors.toLocaleString(),
-              icon: '👥',
-              color: 'text-purple-600',
-              bgColor: 'bg-purple-50',
-            },
-          ].map((item, index) => (
-            <div
-              key={index}
-              className={`rounded-lg border border-gray-200 ${item.bgColor} p-4 text-center shadow-sm`}
-            >
-              <div className="text-2xl">{item.icon}</div>
-              <div className={`mt-2 text-2xl font-bold ${item.color}`}>
-                {item.value}
-              </div>
-              <div className="text-sm font-medium text-gray-600">
-                {item.label}
-              </div>
-            </div>
-          ))}
-        </div>
-
         {/* Top 3 特殊展示 */}
         {data.authors.length >= 3 && (
           <div className="mb-8">
