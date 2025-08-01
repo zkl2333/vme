@@ -1,0 +1,44 @@
+name: 手动文案审核
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: '是否为试运行模式（不实际执行操作）'
+        required: false
+        default: 'false'
+        type: string
+
+jobs:
+  manual-moderate-issues:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      actions: write
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置Node.js环境
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 安装依赖
+        run: |
+          cd actions_scripts
+          npm ci
+
+      - name: 构建项目
+        run: |
+          cd actions_scripts
+          npm run build
+
+      - name: 运行手动审核脚本
+        run: |
+          cd actions_scripts
+          node ./dist/manualModeration.js
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AI_API_KEY: ${{ secrets.AI_API_KEY }}
+          DRY_RUN: ${{ inputs.dry_run }}
