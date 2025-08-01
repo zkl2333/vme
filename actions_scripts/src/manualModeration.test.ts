@@ -37,19 +37,10 @@ jest.mock('@actions/github', () => ({
   },
 }))
 
-// Mock utils模块
-jest.mock('./utils', () => ({
-  getIssueLabels: jest.fn().mockResolvedValue([]),
-  addCommentToIssue: jest.fn().mockResolvedValue({}),
-  addLabelsToIssue: jest.fn().mockResolvedValue({}),
-  closeIssue: jest.fn().mockResolvedValue({}),
-  findSimilarIssue: jest.fn().mockResolvedValue(null),
-  dispatchWorkflow: jest.fn().mockResolvedValue({}),
-}))
-
-// Mock moderateIssue模块
-jest.mock('./moderateIssue', () => ({
-  moderateIssue: jest.fn().mockResolvedValue(undefined),
+// Mock moderationLogic模块
+jest.mock('./moderationLogic', () => ({
+  moderateContent: jest.fn().mockResolvedValue({ type: 'approved' }),
+  triggerDataUpdate: jest.fn().mockResolvedValue(undefined),
 }))
 
 // Mock fetch
@@ -75,71 +66,54 @@ describe('manualModeration', () => {
   })
 
   test('正常审核流程', async () => {
-    // 模拟getIssueLabels返回空数组（没有审核标签）
-    const { getIssueLabels } = await import('./utils')
-    ;(getIssueLabels as jest.Mock)
-      .mockResolvedValueOnce([]) // 第一个issue初始检查
-      .mockResolvedValueOnce(['收录']) // 第一个issue审核后
-      .mockResolvedValueOnce([]) // 第二个issue初始检查
-      .mockResolvedValueOnce(['违规']) // 第二个issue审核后
-
-    // 模拟moderateIssue成功执行
-    const { moderateIssue } = await import('./moderateIssue')
-    ;(moderateIssue as jest.Mock).mockResolvedValue(undefined)
+    const { moderateContent } = await import('./moderationLogic')
+    ;(moderateContent as jest.Mock)
+      .mockResolvedValueOnce({ type: 'approved' })
+      .mockResolvedValueOnce({ type: 'violation' })
 
     await manualModeration()
 
     // 验证调用了相关函数
-    expect(moderateIssue).toHaveBeenCalledTimes(2)
-    expect(moderateIssue).toHaveBeenCalledWith(1, '这是第一个测试文案')
-    expect(moderateIssue).toHaveBeenCalledWith(2, '这是第二个测试文案')
-    expect(getIssueLabels).toHaveBeenCalled()
+    expect(moderateContent).toHaveBeenCalledTimes(2)
+    expect(moderateContent).toHaveBeenCalledWith(1, '这是第一个测试文案', false)
+    expect(moderateContent).toHaveBeenCalledWith(2, '这是第二个测试文案', false)
   })
 
-  test('跳过已有审核标签的issues', async () => {
-    const { getIssueLabels } = await import('./utils')
-    ;(getIssueLabels as jest.Mock).mockResolvedValue(['收录'])
+  test('试运行模式', async () => {
+    process.env.DRY_RUN = 'true'
 
-    const { moderateIssue } = await import('./moderateIssue')
+    const { moderateContent } = await import('./moderationLogic')
+    ;(moderateContent as jest.Mock).mockResolvedValue({ type: 'approved' })
 
     await manualModeration()
 
-    // 应该跳过这个issue，不调用moderateIssue
-    expect(moderateIssue).not.toHaveBeenCalled()
+    // 在试运行模式下，应该传递dryRun=true
+    expect(moderateContent).toHaveBeenCalledWith(1, '这是第一个测试文案', true)
+
+    // 清理环境变量
+    delete process.env.DRY_RUN
   })
 
   test('处理审核结果统计', async () => {
-    const { getIssueLabels } = await import('./utils')
-    const { moderateIssue } = await import('./moderateIssue')
-
-    // 模拟第一个issue被标记为重复
-    ;(getIssueLabels as jest.Mock)
-      .mockResolvedValueOnce([]) // 初始检查
-      .mockResolvedValueOnce(['重复']) // 审核后
-
-    // 模拟第二个issue被标记为违规
-    ;(getIssueLabels as jest.Mock)
-      .mockResolvedValueOnce([]) // 初始检查
-      .mockResolvedValueOnce(['违规']) // 审核后
-    ;(moderateIssue as jest.Mock).mockResolvedValue(undefined)
+    const { moderateContent } = await import('./moderationLogic')
+    ;(moderateContent as jest.Mock)
+      .mockResolvedValueOnce({ type: 'similar' })
+      .mockResolvedValueOnce({ type: 'violation' })
 
     await manualModeration()
 
-    expect(moderateIssue).toHaveBeenCalledTimes(2)
-    expect(moderateIssue).toHaveBeenCalledWith(1, '这是第一个测试文案')
-    expect(moderateIssue).toHaveBeenCalledWith(2, '这是第二个测试文案')
+    expect(moderateContent).toHaveBeenCalledTimes(2)
+    expect(moderateContent).toHaveBeenCalledWith(1, '这是第一个测试文案', false)
+    expect(moderateContent).toHaveBeenCalledWith(2, '这是第二个测试文案', false)
   })
 
   test('处理API错误', async () => {
-    const { getIssueLabels } = await import('./utils')
-    const { moderateIssue } = await import('./moderateIssue')
-
-    ;(getIssueLabels as jest.Mock).mockResolvedValue([])
-    ;(moderateIssue as jest.Mock).mockRejectedValue(new Error('API错误'))
+    const { moderateContent } = await import('./moderationLogic')
+    ;(moderateContent as jest.Mock).mockRejectedValue(new Error('API错误'))
 
     await manualModeration()
 
-    // 应该调用moderateIssue但会抛出错误
-    expect(moderateIssue).toHaveBeenCalledWith(1, '这是第一个测试文案')
+    // 应该调用moderateContent但会抛出错误
+    expect(moderateContent).toHaveBeenCalledWith(1, '这是第一个测试文案', false)
   })
 })

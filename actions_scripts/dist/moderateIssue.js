@@ -1,5 +1,5 @@
-import './index-BHzAQa0b.js';
-export { m as moderateIssue } from './moderateIssue-BF2mMH6T.js';
+import { c as core } from './index-BHzAQa0b.js';
+import { g as github, m as moderateContent, t as triggerDataUpdate } from './moderationLogic-CxynQiGk.js';
 import 'os';
 import 'fs';
 import 'path';
@@ -26,3 +26,20 @@ import 'url';
 import 'zlib';
 import 'string_decoder';
 import 'diagnostics_channel';
+
+async function moderateIssue(issueNumber, issueBody) {
+    // 如果没有传入参数，则使用环境变量（向后兼容）
+    const targetIssueNumber = issueNumber || github.context.issue.number;
+    const targetIssueBody = issueBody || process.env.ISSUE_BODY;
+    if (!targetIssueBody) {
+        throw new Error('ISSUE_BODY 不存在');
+    }
+    const result = await moderateContent(targetIssueNumber, targetIssueBody, false);
+    // 如果审核通过，触发数据更新
+    if (result.type === 'approved') {
+        await triggerDataUpdate();
+    }
+}
+moderateIssue().catch((err) => core.setFailed(err.message));
+
+export { moderateIssue };

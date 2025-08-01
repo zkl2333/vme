@@ -1,5 +1,5 @@
 import { c as core } from './index-BHzAQa0b.js';
-import { g as github, a as getIssueLabels, m as moderateIssue } from './moderateIssue-BF2mMH6T.js';
+import { g as github, m as moderateContent, t as triggerDataUpdate } from './moderationLogic-CxynQiGk.js';
 import 'os';
 import 'fs';
 import 'path';
@@ -56,31 +56,24 @@ async function manualModeration() {
             console.log('跳过：issue内容为空');
             continue;
         }
-        // 检查issue是否已被审核（已有特定标签）
-        const currentLabels = await getIssueLabels(issue.number);
-        const moderationLabels = ['违规', '收录', '重复', '待审'];
-        // 如果已有任何审核相关标签，跳过审核
-        if (currentLabels.some((label) => moderationLabels.includes(label))) {
-            console.log(`跳过：已有审核标签: ${currentLabels.join(', ')}`);
-            continue;
-        }
         processedCount++;
         try {
-            // 直接调用moderateIssue函数，传递issue信息
-            await moderateIssue(issue.number, issue.body);
+            // 使用新的审核逻辑模块
+            const result = await moderateContent(issue.number, issue.body, dryRun);
             // 根据审核结果统计
-            const finalLabels = await getIssueLabels(issue.number);
-            if (finalLabels.includes('重复')) {
-                similarCount++;
-            }
-            else if (finalLabels.includes('违规')) {
-                violationCount++;
-            }
-            else if (finalLabels.includes('收录')) {
-                approvedCount++;
-            }
-            else if (finalLabels.includes('待审')) {
-                pendingCount++;
+            switch (result.type) {
+                case 'similar':
+                    similarCount++;
+                    break;
+                case 'violation':
+                    violationCount++;
+                    break;
+                case 'approved':
+                    approvedCount++;
+                    break;
+                case 'pending':
+                    pendingCount++;
+                    break;
             }
         }
         catch (error) {
@@ -99,7 +92,7 @@ async function manualModeration() {
     }
     else if (approvedCount > 0) {
         console.log('\n触发数据更新工作流...');
-        // 这里可以触发数据更新工作流
+        await triggerDataUpdate();
     }
 }
 manualModeration().catch((err) => core.setFailed(err.message));
