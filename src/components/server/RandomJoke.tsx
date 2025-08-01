@@ -3,6 +3,7 @@ import Image from 'next/image'
 import { getIssueStats } from '@/app/lib/github-stats'
 import { Octokit } from '@octokit/core'
 import { getRandomKfcItem } from '@/lib/server-utils'
+import ReactionsDisplay from '../ReactionsDisplay'
 
 export default async function RandomJokeServer() {
   // 如果没有传入随机段子，则获取一个
@@ -38,7 +39,8 @@ export default async function RandomJokeServer() {
     auth: process.env.GITHUB_TOKEN,
   })
   const stats = await getIssueStats(octokit, joke.id)
-  const likes = stats.reactions
+  const interactions = stats.reactions
+  const reactionDetails = stats.reactionDetails || []
 
   return (
     <section className="mb-12">
@@ -74,16 +76,16 @@ export default async function RandomJokeServer() {
                   <span className="text-kfc-red">@{joke.author.username}</span>
                 </div>
                 <div className="text-sm text-gray-500">
-                  <FormattedDate date={joke.createdAt} /> · {likes}人笑了
+                  <FormattedDate date={joke.createdAt} /> · {interactions}次互动
                 </div>
               </div>
             </div>
 
             <div className="flex items-center gap-4">
-              <button className="flex items-center gap-1 text-gray-500 transition-colors hover:text-kfc-red">
-                <i className="fa fa-thumbs-up"></i>
-                <span>{likes}</span>
-              </button>
+              <ReactionsDisplay
+                reactionDetails={reactionDetails}
+                totalInteractions={interactions}
+              />
             </div>
           </div>
 

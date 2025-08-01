@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { FormattedDate } from '@/components/FormattedDate'
 import Image from 'next/image'
 import { IKfcItem } from '@/types'
+import ReactionsDisplay from './ReactionsDisplay'
 
 export default function RandomJoke() {
   const [joke, setJoke] = useState<IKfcItem | null>(null)
@@ -102,6 +103,10 @@ export default function RandomJoke() {
     return null
   }
 
+  // 获取reactions信息
+  const reactionDetails = (joke.reactions as any)?.details || []
+  const totalInteractions = joke.reactions?.totalCount || 0
+
   return (
     <section className="mb-12">
       <div className="relative overflow-hidden rounded-2xl bg-white p-6 shadow-kfc md:p-8">
@@ -136,17 +141,17 @@ export default function RandomJoke() {
                   <span className="text-kfc-red">@{joke.author.username}</span>
                 </div>
                 <div className="text-sm text-gray-500">
-                  <FormattedDate date={joke.createdAt} /> ·{' '}
-                  {joke.reactions?.totalCount || 0}人笑了
+                  <FormattedDate date={joke.createdAt} /> · {totalInteractions}
+                  次互动
                 </div>
               </div>
             </div>
 
             <div className="flex items-center gap-4">
-              <button className="flex items-center gap-1 text-gray-500 transition-colors hover:text-kfc-red">
-                <i className="fa fa-thumbs-up"></i>
-                <span>{joke.reactions?.totalCount || 0}</span>
-              </button>
+              <ReactionsDisplay
+                reactionDetails={reactionDetails}
+                totalInteractions={totalInteractions}
+              />
             </div>
           </div>
 

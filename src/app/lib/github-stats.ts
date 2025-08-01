@@ -1,8 +1,16 @@
 import { Octokit } from '@octokit/core'
 
+interface ReactionGroup {
+  content: string
+  users: {
+    totalCount: number
+  }
+}
+
 interface IssueStats {
   id: string
   reactions: number
+  reactionDetails: ReactionGroup[]
 }
 
 /**
@@ -20,6 +28,12 @@ export async function getIssueStats(
           reactions {
             totalCount
           }
+          reactionGroups {
+            content
+            users {
+              totalCount
+            }
+          }
         }
       }
     }
@@ -29,6 +43,7 @@ export async function getIssueStats(
     node: {
       id: string
       reactions: { totalCount: number }
+      reactionGroups: ReactionGroup[]
     }
   }>(query, { issueId })
 
@@ -39,6 +54,7 @@ export async function getIssueStats(
   return {
     id: response.node.id,
     reactions: response.node.reactions.totalCount,
+    reactionDetails: response.node.reactionGroups || [],
   }
 }
 
@@ -68,6 +84,12 @@ export async function getBatchIssueStats(
               reactions {
                 totalCount
               }
+              reactionGroups {
+                content
+                users {
+                  totalCount
+                }
+              }
             }
           }
         }
@@ -77,6 +99,7 @@ export async function getBatchIssueStats(
         nodes: Array<{
           id: string
           reactions: { totalCount: number }
+          reactionGroups: ReactionGroup[]
         }>
       }>(query, { issueIds: batch })
 
@@ -86,6 +109,7 @@ export async function getBatchIssueStats(
           statsMap.set(node.id, {
             id: node.id,
             reactions: node.reactions.totalCount,
+            reactionDetails: node.reactionGroups || [],
           })
         }
       }
@@ -98,7 +122,7 @@ export async function getBatchIssueStats(
       console.error(`Failed to fetch batch stats:`, error)
       // 如果批次失败，为这批设置默认值
       batch.forEach((id) => {
-        statsMap.set(id, { id, reactions: 0 })
+        statsMap.set(id, { id, reactions: 0, reactionDetails: [] })
       })
     }
   }

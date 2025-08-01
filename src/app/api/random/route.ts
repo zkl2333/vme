@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getRandomKfcItem } from '@/lib/server-utils'
+import { getIssueStats } from '@/app/lib/github-stats'
+import { Octokit } from '@octokit/core'
 
 export async function GET(request: NextRequest) {
   // 处理跨域请求
@@ -22,11 +24,26 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    // 获取详细的reactions信息
+    const octokit = new Octokit({
+      auth: process.env.GITHUB_TOKEN,
+    })
+    const stats = await getIssueStats(octokit, randomItem.id)
+
+    // 合并数据
+    const enrichedItem = {
+      ...randomItem,
+      reactions: {
+        totalCount: stats.reactions,
+        details: stats.reactionDetails || [],
+      },
+    }
+
     if (format === 'text') {
       return new NextResponse(randomItem.body || '暂无数据', { headers })
     } else {
       // 默认返回 JSON 格式
-      return NextResponse.json(randomItem, { headers })
+      return NextResponse.json(enrichedItem, { headers })
     }
   } catch (error) {
     console.error(error)

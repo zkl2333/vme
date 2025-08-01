@@ -8,12 +8,12 @@ interface AuthorStats {
   avatarUrl: string
   url: string
   totalPosts: number
-  totalReactions: number
+  totalInteractions: number
   score: number
   posts: Array<{
     id: string
     title: string
-    reactions: number
+    interactions: number
     createdAt: string
   }>
 }
@@ -55,7 +55,7 @@ async function getLeaderboardData(sortBy: string = 'score') {
           avatarUrl,
           url,
           totalPosts: 0,
-          totalReactions: 0,
+          totalInteractions: 0,
           score: 0,
           posts: [],
         })
@@ -66,7 +66,7 @@ async function getLeaderboardData(sortBy: string = 'score') {
       author.posts.push({
         id: item.id,
         title: item.title,
-        reactions: 0,
+        interactions: 0,
         createdAt: item.createdAt,
       })
     }
@@ -82,7 +82,7 @@ async function getLeaderboardData(sortBy: string = 'score') {
 
     // 更新作者统计数据
     for (const [username, author] of authorMap) {
-      let totalReactions = 0
+      let totalInteractions = 0
 
       // 更新每个段子的统计数据
       author.posts = author.posts.map((post) => {
@@ -90,23 +90,23 @@ async function getLeaderboardData(sortBy: string = 'score') {
           id: post.id,
           reactions: 0,
         }
-        totalReactions += stats.reactions
+        totalInteractions += stats.reactions
 
         return {
           ...post,
-          reactions: stats.reactions,
+          interactions: stats.reactions,
         }
       })
 
-      author.totalReactions = totalReactions
+      author.totalInteractions = totalInteractions
 
-      // 计算综合评分：点赞数 * 1.5 + 段子数 * 5
-      author.score = totalReactions * 1.5 + author.totalPosts * 5
+      // 计算综合评分：互动数 * 1.5 + 段子数 * 5
+      author.score = totalInteractions * 1.5 + author.totalPosts * 5
 
       // 按热度排序作者的段子
       author.posts.sort((a, b) => {
-        const scoreA = a.reactions
-        const scoreB = b.reactions
+        const scoreA = a.interactions
+        const scoreB = b.interactions
         return scoreB - scoreA
       })
     }
@@ -116,8 +116,8 @@ async function getLeaderboardData(sortBy: string = 'score') {
 
     authorsList.sort((a, b) => {
       switch (sortBy) {
-        case 'reactions':
-          return b.totalReactions - a.totalReactions
+        case 'interactions':
+          return b.totalInteractions - a.totalInteractions
         case 'posts':
           return b.totalPosts - a.totalPosts
         case 'score':
@@ -253,7 +253,7 @@ export default async function LeaderboardServer({
                     <div className="mb-4 space-y-1 text-sm text-gray-600">
                       <div>发布 {author.totalPosts} 个段子</div>
                       <div>
-                        获得 {author.totalReactions.toLocaleString()} 个赞
+                        获得 {author.totalInteractions.toLocaleString()} 次互动
                       </div>
                     </div>
 
@@ -339,7 +339,7 @@ export default async function LeaderboardServer({
                   {/* 统计数据 */}
                   <div className="text-right">
                     <div className="font-semibold text-kfc-red">
-                      {author.totalReactions.toLocaleString()} 赞
+                      {author.totalInteractions.toLocaleString()} 次互动
                     </div>
                   </div>
                 </div>

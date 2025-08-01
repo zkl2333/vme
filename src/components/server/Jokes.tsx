@@ -4,6 +4,7 @@ import JokesPagination from '../JokesPagination'
 import { getKfcItemsWithPagination } from '@/lib/server-utils'
 import { getBatchIssueStats } from '@/app/lib/github-stats'
 import { Octokit } from '@octokit/core'
+import ReactionsDisplay from '../ReactionsDisplay'
 
 interface JokesServerProps {
   currentPage: number
@@ -43,8 +44,10 @@ export default async function JokesServer({ currentPage }: JokesServerProps) {
       <div className="space-y-6">
         {items.map((item) => {
           const itemStats = stats.get(item.id)
-          const likes = itemStats?.reactions || item.reactions?.totalCount || 0
-          const isHot = likes >= 10
+          const interactions =
+            itemStats?.reactions || item.reactions?.totalCount || 0
+          const reactionDetails = itemStats?.reactionDetails || []
+          const isHot = interactions >= 10
 
           return (
             <div
@@ -84,11 +87,11 @@ export default async function JokesServer({ currentPage }: JokesServerProps) {
                         <i className="fa fa-calendar"></i>{' '}
                         <FormattedDate date={item.createdAt} />
                       </span>
-                      <span
-                        className={`flex items-center gap-1 ${isHot ? 'text-kfc-red' : ''}`}
-                      >
-                        <i className="fa fa-thumbs-up"></i> {likes}
-                      </span>
+
+                      <ReactionsDisplay
+                        reactionDetails={reactionDetails}
+                        totalInteractions={interactions}
+                      />
                     </div>
                   </div>
                 </div>
