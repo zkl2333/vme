@@ -44,8 +44,7 @@ export default async function JokesServer({ currentPage }: JokesServerProps) {
         {items.map((item) => {
           const itemStats = stats.get(item.id)
           const likes = itemStats?.reactions || item.reactions?.totalCount || 0
-          const comments = itemStats?.comments || item.comments?.totalCount || 0
-          const isHot = likes >= 10 || comments >= 5
+          const isHot = likes >= 10
 
           return (
             <div
@@ -89,9 +88,6 @@ export default async function JokesServer({ currentPage }: JokesServerProps) {
                         className={`flex items-center gap-1 ${isHot ? 'text-kfc-red' : ''}`}
                       >
                         <i className="fa fa-thumbs-up"></i> {likes}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <i className="fa fa-comment"></i> {comments}
                       </span>
                     </div>
                   </div>

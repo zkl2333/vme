@@ -6,7 +6,6 @@ import { useSearchParams } from 'next/navigation'
 const sortOptions = [
   { key: 'score', label: '综合评分', icon: '🏆' },
   { key: 'reactions', label: '点赞数', icon: '👍' },
-  { key: 'comments', label: '评论数', icon: '💬' },
   { key: 'posts', label: '段子数', icon: '📝' },
 ]
 

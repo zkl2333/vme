@@ -15,9 +15,6 @@ export interface IKfcItem {
   reactions?: {
     totalCount: number
   }
-  comments?: {
-    totalCount: number
-  }
 }
 
 export interface JokeDisplayItem {
@@ -26,12 +23,10 @@ export interface JokeDisplayItem {
   avatar: string
   date: string
   likes: number
-  comments: number
 }
 
 export interface IssueStats {
   [key: string]: {
     reactions: number
-    comments: number
   }
 }

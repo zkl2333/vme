@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import localFont from 'next/font/local'
 import Image from 'next/image'
 import clsx from 'clsx'
+import { Analytics } from '@vercel/analytics/next'
 
 import { Providers } from '@/app/providers'
 
@@ -107,6 +108,7 @@ export default function RootLayout({
             </div>
           </footer>
         </Providers>
+        <Analytics />
       </body>
     </html>
   )

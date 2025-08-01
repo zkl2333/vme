@@ -147,10 +147,6 @@ export default function RandomJoke() {
                 <i className="fa fa-thumbs-up"></i>
                 <span>{joke.reactions?.totalCount || 0}</span>
               </button>
-              <button className="flex items-center gap-1 text-gray-500 transition-colors hover:text-kfc-red">
-                <i className="fa fa-comment"></i>
-                <span>{joke.comments?.totalCount || 0}</span>
-              </button>
             </div>
           </div>
 

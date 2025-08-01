@@ -39,7 +39,6 @@ export default async function RandomJokeServer() {
   })
   const stats = await getIssueStats(octokit, joke.id)
   const likes = stats.reactions
-  const comments = stats.comments
 
   return (
     <section className="mb-12">
@@ -84,10 +83,6 @@ export default async function RandomJokeServer() {
               <button className="flex items-center gap-1 text-gray-500 transition-colors hover:text-kfc-red">
                 <i className="fa fa-thumbs-up"></i>
                 <span>{likes}</span>
-              </button>
-              <button className="flex items-center gap-1 text-gray-500 transition-colors hover:text-kfc-red">
-                <i className="fa fa-comment"></i>
-                <span>{comments}</span>
               </button>
             </div>
           </div>

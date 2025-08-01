@@ -9,13 +9,11 @@ interface AuthorStats {
   url: string
   totalPosts: number
   totalReactions: number
-  totalComments: number
   score: number
   posts: Array<{
     id: string
     title: string
     reactions: number
-    comments: number
     createdAt: string
   }>
 }
@@ -25,7 +23,6 @@ interface LeaderboardServerProps {
 }
 
 async function getLeaderboardData(sortBy: string = 'score') {
-
   // 检查是否有GitHub Token
   if (!process.env.GITHUB_TOKEN) {
     console.warn(
@@ -59,7 +56,6 @@ async function getLeaderboardData(sortBy: string = 'score') {
           url,
           totalPosts: 0,
           totalReactions: 0,
-          totalComments: 0,
           score: 0,
           posts: [],
         })
@@ -71,7 +67,6 @@ async function getLeaderboardData(sortBy: string = 'score') {
         id: item.id,
         title: item.title,
         reactions: 0,
-        comments: 0,
         createdAt: item.createdAt,
       })
     }
@@ -88,36 +83,30 @@ async function getLeaderboardData(sortBy: string = 'score') {
     // 更新作者统计数据
     for (const [username, author] of authorMap) {
       let totalReactions = 0
-      let totalComments = 0
 
       // 更新每个段子的统计数据
       author.posts = author.posts.map((post) => {
         const stats = statsMap.get(post.id) || {
           id: post.id,
           reactions: 0,
-          comments: 0,
         }
         totalReactions += stats.reactions
-        totalComments += stats.comments
 
         return {
           ...post,
           reactions: stats.reactions,
-          comments: stats.comments,
         }
       })
 
       author.totalReactions = totalReactions
-      author.totalComments = totalComments
 
-      // 计算综合评分：点赞数 * 1.5 + 评论数 * 2 + 段子数 * 5
-      author.score =
-        totalReactions * 1.5 + totalComments * 2 + author.totalPosts * 5
+      // 计算综合评分：点赞数 * 1.5 + 段子数 * 5
+      author.score = totalReactions * 1.5 + author.totalPosts * 5
 
       // 按热度排序作者的段子
       author.posts.sort((a, b) => {
-        const scoreA = a.reactions * 1.5 + a.comments * 2
-        const scoreB = b.reactions * 1.5 + b.comments * 2
+        const scoreA = a.reactions
+        const scoreB = b.reactions
         return scoreB - scoreA
       })
     }
@@ -129,8 +118,6 @@ async function getLeaderboardData(sortBy: string = 'score') {
       switch (sortBy) {
         case 'reactions':
           return b.totalReactions - a.totalReactions
-        case 'comments':
-          return b.totalComments - a.totalComments
         case 'posts':
           return b.totalPosts - a.totalPosts
         case 'score':
@@ -147,10 +134,6 @@ async function getLeaderboardData(sortBy: string = 'score') {
       totalPosts: allItems.length,
       totalReactions: authorsList.reduce(
         (sum, author) => sum + author.totalReactions,
-        0,
-      ),
-      totalComments: authorsList.reduce(
-        (sum, author) => sum + author.totalComments,
         0,
       ),
       totalAuthors: authorsList.length,
@@ -217,13 +200,6 @@ export default async function LeaderboardServer({
               icon: '👍',
               color: 'text-red-600',
               bgColor: 'bg-red-50',
-            },
-            {
-              label: '总评论数',
-              value: data.stats.totalComments.toLocaleString(),
-              icon: '💬',
-              color: 'text-green-600',
-              bgColor: 'bg-green-50',
             },
             {
               label: '贡献者数',
@@ -330,7 +306,6 @@ export default async function LeaderboardServer({
                       <div>
                         获得 {author.totalReactions.toLocaleString()} 个赞
                       </div>
-                      <div>收到 {author.totalComments} 条评论</div>
                     </div>
 
                     {/* 综合评分 */}
@@ -416,9 +391,6 @@ export default async function LeaderboardServer({
                   <div className="text-right">
                     <div className="font-semibold text-kfc-red">
                       {author.totalReactions.toLocaleString()} 赞
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {author.totalComments} 评论
                     </div>
                   </div>
                 </div>
