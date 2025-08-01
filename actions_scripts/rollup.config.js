@@ -2,7 +2,7 @@ import resolve from '@rollup/plugin-node-resolve'
 import typescript from '@rollup/plugin-typescript'
 import commonjs from '@rollup/plugin-commonjs'
 
-export default {
+const config = {
   input: [
     'src/moderateIssue.ts',
     'src/createData.ts',
@@ -20,3 +20,5 @@ export default {
     commonjs(),
   ],
 }
+
+export default config
