@@ -1,6 +1,10 @@
 {
-  "totalItems": 250,
+  "totalItems": 251,
   "months": [
+    {
+      "month": "2025-08",
+      "count": 1
+    },
     {
       "month": "2025-07",
       "count": 6
@@ -118,5 +122,5 @@
       "count": 57
     }
   ],
-  "updatedAt": "2025-07-31T06:20:14.480Z"
+  "updatedAt": "2025-08-01T04:08:21.585Z"
 }
