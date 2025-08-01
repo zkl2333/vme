@@ -2780,6 +2780,15 @@ async function getIssueLabels(issueNumber) {
     });
     return response.data.map((label) => label.name);
 }
+// 获取 issue 的 ID
+async function getIssueId(issueNumber) {
+    const octokit = getOctokit();
+    const response = await octokit.rest.issues.get({
+        ...github.context.repo,
+        issue_number: issueNumber,
+    });
+    return response.data.node_id;
+}
 // 获取仓库的所有 issues
 async function addCommentToIssue(issueNumber, comment) {
     const octokit = getOctokit();
@@ -2876,11 +2885,16 @@ async function fetchLocalIssues() {
     }
 }
 // 判断新的文案是否有相似的存在，如果有则返回相似的文案
-async function findSimilarIssue(newIssue) {
+async function findSimilarIssue(newIssue, currentIssueId) {
     const issues = await fetchLocalIssues();
     console.log(`从data.json中读取到 ${issues.length} 个文案`);
     for (let i = 0; i < issues.length; i++) {
         const issue = issues[i];
+        // 如果提供了当前issue ID，则跳过自身
+        if (currentIssueId && issue.id === currentIssueId) {
+            console.log(`跳过当前issue ID: ${currentIssueId}`);
+            continue;
+        }
         const similarity = isSimilar(issue.body, newIssue);
         if (similarity) {
             console.log(`在第 ${i + 1} 个文案中找到相似内容: ${issue.title}`);
@@ -2909,9 +2923,11 @@ async function moderateContent(issueNumber, issueBody, dryRun = false) {
         console.log(`Issue #${issueNumber} 已有审核标签: ${currentLabels.join(', ')}，跳过审核。`);
         return { type: 'approved' }; // 已审核，视为通过
     }
+    // 获取当前issue的ID
+    const currentIssueId = await getIssueId(issueNumber);
     // 查找相似的 issue
     console.log(`开始查找相似文案，当前文案长度: ${issueBody.length}`);
-    const similarIssue = await findSimilarIssue(issueBody);
+    const similarIssue = await findSimilarIssue(issueBody, currentIssueId);
     if (similarIssue) {
         console.log(`找到相似文案: ${similarIssue.url}`);
         if (!dryRun) {

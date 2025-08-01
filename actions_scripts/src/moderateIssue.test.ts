@@ -19,6 +19,7 @@ jest.mock('./utils', () => ({
   findSimilarIssue: jest.fn(),
   dispatchWorkflow: jest.fn(),
   getIssueLabels: jest.fn(),
+  getIssueId: jest.fn().mockResolvedValue('test-issue-id'),
 }))
 jest.mock('@actions/github', () => ({
   context: {

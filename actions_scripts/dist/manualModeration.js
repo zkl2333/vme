@@ -1,5 +1,5 @@
 import { c as core } from './index-BHzAQa0b.js';
-import { g as github, m as moderateContent, t as triggerDataUpdate } from './moderationLogic-CxynQiGk.js';
+import { g as github, m as moderateContent, t as triggerDataUpdate } from './moderationLogic-CeewVetu.js';
 import 'os';
 import 'fs';
 import 'path';

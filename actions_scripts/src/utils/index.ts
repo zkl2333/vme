@@ -22,6 +22,16 @@ export async function getIssueLabels(issueNumber: number): Promise<string[]> {
   return response.data.map((label) => label.name)
 }
 
+// 获取 issue 的 ID
+export async function getIssueId(issueNumber: number): Promise<string> {
+  const octokit = getOctokit()
+  const response = await octokit.rest.issues.get({
+    ...github.context.repo,
+    issue_number: issueNumber,
+  })
+  return response.data.node_id
+}
+
 // 获取仓库的所有 issues
 export async function addCommentToIssue(issueNumber: number, comment: string) {
   const octokit = getOctokit()
@@ -147,12 +157,20 @@ export async function fetchLocalIssues(): Promise<IssueNode[]> {
 // 判断新的文案是否有相似的存在，如果有则返回相似的文案
 export async function findSimilarIssue(
   newIssue: string,
+  currentIssueId?: string,
 ): Promise<IssueNode | null> {
   const issues = await fetchLocalIssues()
   console.log(`从data.json中读取到 ${issues.length} 个文案`)
 
   for (let i = 0; i < issues.length; i++) {
     const issue = issues[i]
+
+    // 如果提供了当前issue ID，则跳过自身
+    if (currentIssueId && issue.id === currentIssueId) {
+      console.log(`跳过当前issue ID: ${currentIssueId}`)
+      continue
+    }
+
     const similarity = isSimilar(issue.body, newIssue)
     if (similarity) {
       console.log(`在第 ${i + 1} 个文案中找到相似内容: ${issue.title}`)
