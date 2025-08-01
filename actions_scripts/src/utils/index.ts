@@ -116,9 +116,32 @@ export function isSimilar(str1: string, str2: string): boolean {
 
 // 读取本地文件保存的所有文案
 export async function fetchLocalIssues(): Promise<IssueNode[]> {
-  const filePath = path.join(process.cwd(), '../', 'data.json')
-  const data = fs.readFileSync(filePath, 'utf-8')
-  return JSON.parse(data)
+  const dataDir = path.join(process.cwd(), '../', 'data')
+  const allIssues: IssueNode[] = []
+
+  try {
+    // 读取data目录下的所有JSON文件
+    const files = fs.readdirSync(dataDir)
+    const jsonFiles = files.filter(
+      (file) => file.endsWith('.json') && file !== 'summary.json',
+    )
+
+    console.log(`找到 ${jsonFiles.length} 个月份数据文件`)
+
+    for (const file of jsonFiles) {
+      const filePath = path.join(dataDir, file)
+      const data = fs.readFileSync(filePath, 'utf-8')
+      const issues = JSON.parse(data)
+      allIssues.push(...issues)
+      console.log(`从 ${file} 读取了 ${issues.length} 条文案`)
+    }
+
+    console.log(`总共读取到 ${allIssues.length} 条文案`)
+    return allIssues
+  } catch (error) {
+    console.error('读取数据文件时出错:', error)
+    return []
+  }
 }
 
 // 判断新的文案是否有相似的存在，如果有则返回相似的文案
@@ -126,10 +149,16 @@ export async function findSimilarIssue(
   newIssue: string,
 ): Promise<IssueNode | null> {
   const issues = await fetchLocalIssues()
-  for (const issue of issues) {
-    if (isSimilar(issue.body, newIssue)) {
+  console.log(`从data.json中读取到 ${issues.length} 个文案`)
+
+  for (let i = 0; i < issues.length; i++) {
+    const issue = issues[i]
+    const similarity = isSimilar(issue.body, newIssue)
+    if (similarity) {
+      console.log(`在第 ${i + 1} 个文案中找到相似内容: ${issue.title}`)
       return issue
     }
   }
+  console.log('遍历完所有文案，未找到相似内容')
   return null
 }
