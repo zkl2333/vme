@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { FormattedDate } from '@/components/FormattedDate'
 import Image from 'next/image'
 import { IKfcItem } from '@/types'
-import ReactionsDisplay from './ReactionsDisplay'
+// import ReactionsDisplay from './ReactionsDisplay'
 
 export default function RandomJoke() {
   const [joke, setJoke] = useState<IKfcItem | null>(null)
@@ -148,10 +148,10 @@ export default function RandomJoke() {
             </div>
 
             <div className="flex items-center gap-4">
-              <ReactionsDisplay
+              {/* <ReactionsDisplay
                 reactionDetails={reactionDetails}
                 totalInteractions={totalInteractions}
-              />
+              /> */}
             </div>
           </div>
 

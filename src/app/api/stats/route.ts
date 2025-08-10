@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { Octokit } from '@octokit/core'
 import { getIssueStats } from '@/app/lib/github-stats'
+import { getOctokitInstance } from '@/lib/server-utils'
 
 // 缓存结果，避免频繁请求GitHub API
 const cache = new Map<string, { data: any; timestamp: number }>()
@@ -9,6 +9,8 @@ const CACHE_DURATION = 5 * 60 * 1000 // 5分钟缓存
 interface IssueStats {
   id: string
   reactions: number
+  reactionDetails: any[]
+  reactionNodes: any[]
 }
 
 export async function POST(request: NextRequest) {
@@ -32,9 +34,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const octokit = new Octokit({
-      auth: process.env.GITHUB_TOKEN,
-    })
+    // 优先使用用户权限
+    const octokit = await getOctokitInstance()
 
     const results: IssueStats[] = []
 
@@ -63,6 +64,8 @@ export async function POST(request: NextRequest) {
         results.push({
           id: issueId,
           reactions: 0,
+          reactionDetails: [],
+          reactionNodes: [],
         })
       }
     }

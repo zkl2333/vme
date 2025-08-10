@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getRandomKfcItem } from '@/lib/server-utils'
+import { getRandomKfcItem, getOctokitInstance } from '@/lib/server-utils'
 import { getIssueStats } from '@/app/lib/github-stats'
-import { Octokit } from '@octokit/core'
 
 export async function GET(request: NextRequest) {
   // 处理跨域请求
@@ -24,10 +23,8 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // 获取详细的reactions信息
-    const octokit = new Octokit({
-      auth: process.env.GITHUB_TOKEN,
-    })
+    // 获取详细的reactions信息 - 优先使用用户权限
+    const octokit = await getOctokitInstance()
     const stats = await getIssueStats(octokit, randomItem.id)
 
     // 合并数据

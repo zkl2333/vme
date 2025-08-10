@@ -3,6 +3,9 @@ import fs from 'fs'
 import path from 'path'
 import { IKfcItem } from '@/types'
 import { Octokit } from '@octokit/core'
+import { getServerSession } from 'next-auth/next'
+import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { ServerSession } from '@/types/server-auth'
 
 const cache: {
   kfcItems: Record<string, IKfcItem[]>
@@ -191,4 +194,28 @@ export async function getRandomKfcItem(): Promise<IKfcItem> {
   // 随机选择一个项目
   const randomItemIndex = Math.floor(Math.random() * items.length)
   return items[randomItemIndex]
+}
+
+/**
+ * 获取Octokit实例，优先使用用户token，如果没有则使用环境变量token
+ */
+export async function getOctokitInstance(): Promise<Octokit> {
+  try {
+    // 尝试获取用户session
+    const session = await getServerSession(authOptions) as ServerSession | null
+    
+    if (session?.accessToken) {
+      // 用户已登录，使用用户token
+      return new Octokit({
+        auth: session.accessToken,
+      })
+    }
+  } catch (error) {
+    console.warn('获取用户session失败，使用环境变量token:', error)
+  }
+  
+  // 用户未登录或获取失败，使用环境变量token
+  return new Octokit({
+    auth: process.env.GITHUB_TOKEN,
+  })
 }

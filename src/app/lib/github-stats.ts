@@ -7,10 +7,19 @@ interface ReactionGroup {
   }
 }
 
+interface ReactionNode {
+  id: string
+  content: string
+  user: {
+    login: string
+  }
+}
+
 interface IssueStats {
   id: string
   reactions: number
   reactionDetails: ReactionGroup[]
+  reactionNodes: ReactionNode[]
 }
 
 /**
@@ -25,8 +34,15 @@ export async function getIssueStats(
       node(id: $issueId) {
         ... on Issue {
           id
-          reactions {
+          reactions(first: 100) {
             totalCount
+            nodes {
+              id
+              content
+              user {
+                login
+              }
+            }
           }
           reactionGroups {
             content
@@ -42,7 +58,10 @@ export async function getIssueStats(
   const response = await octokit.graphql<{
     node: {
       id: string
-      reactions: { totalCount: number }
+      reactions: { 
+        totalCount: number
+        nodes: ReactionNode[]
+      }
       reactionGroups: ReactionGroup[]
     }
   }>(query, { issueId })
@@ -55,6 +74,7 @@ export async function getIssueStats(
     id: response.node.id,
     reactions: response.node.reactions.totalCount,
     reactionDetails: response.node.reactionGroups || [],
+    reactionNodes: response.node.reactions.nodes || [],
   }
 }
 
@@ -81,8 +101,15 @@ export async function getBatchIssueStats(
           nodes(ids: $issueIds) {
             ... on Issue {
               id
-              reactions {
+              reactions(first: 100) {
                 totalCount
+                nodes {
+                  id
+                  content
+                  user {
+                    login
+                  }
+                }
               }
               reactionGroups {
                 content
@@ -98,7 +125,10 @@ export async function getBatchIssueStats(
       const response = await octokit.graphql<{
         nodes: Array<{
           id: string
-          reactions: { totalCount: number }
+          reactions: { 
+            totalCount: number
+            nodes: ReactionNode[]
+          }
           reactionGroups: ReactionGroup[]
         }>
       }>(query, { issueIds: batch })
@@ -110,6 +140,7 @@ export async function getBatchIssueStats(
             id: node.id,
             reactions: node.reactions.totalCount,
             reactionDetails: node.reactionGroups || [],
+            reactionNodes: node.reactions.nodes || [],
           })
         }
       }
@@ -122,7 +153,7 @@ export async function getBatchIssueStats(
       console.error(`Failed to fetch batch stats:`, error)
       // 如果批次失败，为这批设置默认值
       batch.forEach((id) => {
-        statsMap.set(id, { id, reactions: 0, reactionDetails: [] })
+        statsMap.set(id, { id, reactions: 0, reactionDetails: [], reactionNodes: [] })
       })
     }
   }

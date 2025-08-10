@@ -1,4 +1,4 @@
-import { type Metadata } from 'next'
+import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import localFont from 'next/font/local'
 import Image from 'next/image'
@@ -6,6 +6,7 @@ import clsx from 'clsx'
 import { Analytics } from '@vercel/analytics/next'
 
 import { Providers } from '@/app/providers'
+import LoginButton from '@/components/LoginButton'
 
 import '@/styles/tailwind.css'
 
@@ -76,6 +77,7 @@ export default function RootLayout({
                     贡献者: <span id="contributors-count">42</span>
                   </span>
                 </div>
+                <LoginButton />
               </div>
             </div>
           </header>

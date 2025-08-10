@@ -41,7 +41,8 @@ export default async function Page({ searchParams }: PageProps) {
                   <i className="fa fa-list"></i> 看段子
                 </a>
                 <a
-                  href="#submit-joke"
+                  href="https://github.com/zkl2333/vme/issues/new?assignees=&labels=%E6%96%87%E6%A1%88&projects=&template=data_provided.md&title="
+                  target="_blank"
                   className="flex items-center gap-1 rounded-full bg-kfc-yellow px-4 py-2 font-bold text-kfc-red transition-colors duration-300 hover:brightness-110"
                 >
                   <i className="fa fa-pencil"></i> 写段子

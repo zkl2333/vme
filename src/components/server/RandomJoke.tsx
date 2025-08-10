@@ -1,9 +1,8 @@
 import { FormattedDate } from '@/components/FormattedDate'
 import Image from 'next/image'
 import { getIssueStats } from '@/app/lib/github-stats'
-import { Octokit } from '@octokit/core'
-import { getRandomKfcItem } from '@/lib/server-utils'
-import ReactionsDisplay from '../ReactionsDisplay'
+import { getRandomKfcItem, getOctokitInstance } from '@/lib/server-utils'
+// import ReactionsDisplay from '../ReactionsDisplay'
 
 export default async function RandomJokeServer() {
   // 如果没有传入随机段子，则获取一个
@@ -34,10 +33,8 @@ export default async function RandomJokeServer() {
     )
   }
 
-  // 获取统计数据
-  const octokit = new Octokit({
-    auth: process.env.GITHUB_TOKEN,
-  })
+  // 获取统计数据 - 优先使用用户权限
+  const octokit = await getOctokitInstance()
   const stats = await getIssueStats(octokit, joke.id)
   const interactions = stats.reactions
   const reactionDetails = stats.reactionDetails || []
@@ -82,10 +79,10 @@ export default async function RandomJokeServer() {
             </div>
 
             <div className="flex items-center gap-4">
-              <ReactionsDisplay
+              {/* <ReactionsDisplay
                 reactionDetails={reactionDetails}
                 totalInteractions={interactions}
-              />
+              /> */}
             </div>
           </div>
 

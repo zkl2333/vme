@@ -1,7 +1,7 @@
-import { Octokit } from '@octokit/core'
 import Image from 'next/image'
 import Link from 'next/link'
 import LeaderboardSortTabs from '../LeaderboardSortTabs'
+import { getOctokitInstance } from '@/lib/server-utils'
 
 interface AuthorStats {
   username: string
@@ -32,9 +32,8 @@ async function getLeaderboardData(sortBy: string = 'score') {
   }
 
   try {
-    const octokit = new Octokit({
-      auth: process.env.GITHUB_TOKEN,
-    })
+    // 优先使用用户权限
+    const octokit = await getOctokitInstance()
 
     // 动态导入服务端工具函数，避免客户端bundle包含fs模块
     const { getAllKfcItems } = await import('@/lib/server-utils')

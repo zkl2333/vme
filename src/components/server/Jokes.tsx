@@ -1,10 +1,9 @@
 import { FormattedDate } from '@/components/FormattedDate'
 import Image from 'next/image'
 import JokesPagination from '../JokesPagination'
-import { getKfcItemsWithPagination } from '@/lib/server-utils'
+import { getKfcItemsWithPagination, getOctokitInstance } from '@/lib/server-utils'
 import { getBatchIssueStats } from '@/app/lib/github-stats'
-import { Octokit } from '@octokit/core'
-import ReactionsDisplay from '../ReactionsDisplay'
+import InteractiveReactions from '../InteractiveReactions'
 
 interface JokesServerProps {
   currentPage: number
@@ -16,10 +15,8 @@ export default async function JokesServer({ currentPage }: JokesServerProps) {
     10,
   )
 
-  // 获取统计数据
-  const octokit = new Octokit({
-    auth: process.env.GITHUB_TOKEN,
-  })
+  // 获取统计数据 - 优先使用用户权限
+  const octokit = await getOctokitInstance()
   const stats = await getBatchIssueStats(
     octokit,
     items.map((item) => item.id),
@@ -47,6 +44,7 @@ export default async function JokesServer({ currentPage }: JokesServerProps) {
           const interactions =
             itemStats?.reactions || item.reactions?.totalCount || 0
           const reactionDetails = itemStats?.reactionDetails || []
+          const reactionNodes = itemStats?.reactionNodes || []
           const isHot = interactions >= 10
 
           return (
@@ -67,7 +65,7 @@ export default async function JokesServer({ currentPage }: JokesServerProps) {
               </p>
 
               {/* 作者信息和互动数据 */}
-              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-2">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-4">
                 <div className="flex items-center gap-2">
                   <Image
                     src={item.author.avatarUrl}
@@ -80,20 +78,18 @@ export default async function JokesServer({ currentPage }: JokesServerProps) {
                     @{item.author.username}
                   </span>
                 </div>
+                
                 <div className="flex items-center gap-4 text-sm text-gray-500">
-                  <div>
-                    <div className="flex items-center gap-4 text-sm text-gray-500">
-                      <span className="flex items-center gap-1">
-                        <i className="fa fa-calendar"></i>{' '}
-                        <FormattedDate date={item.createdAt} />
-                      </span>
-
-                      <ReactionsDisplay
-                        reactionDetails={reactionDetails}
-                        totalInteractions={interactions}
-                      />
-                    </div>
-                  </div>
+                  <span className="flex items-center gap-1">
+                    <i className="fa fa-calendar"></i>
+                    <FormattedDate date={item.createdAt} />
+                  </span>
+                  
+                  <InteractiveReactions
+                    issueId={item.id}
+                    reactionDetails={reactionDetails}
+                    reactionNodes={reactionNodes}
+                  />
                 </div>
               </div>
             </div>
