@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react'
 import { FormattedDate } from '@/components/FormattedDate'
 import Image from 'next/image'
 import { IKfcItem } from '@/types'
-// import ReactionsDisplay from './ReactionsDisplay'
+import CopyButton from './CopyButton'
+import InteractiveReactions from './InteractiveReactions'
 
 export default function RandomJoke() {
   const [joke, setJoke] = useState<IKfcItem | null>(null)
@@ -105,7 +106,7 @@ export default function RandomJoke() {
 
   // 获取reactions信息
   const reactionDetails = (joke.reactions as any)?.details || []
-  const totalInteractions = joke.reactions?.totalCount || 0
+  const reactionNodes = (joke.reactions as any)?.nodes || []
 
   return (
     <section className="mb-12">
@@ -124,6 +125,9 @@ export default function RandomJoke() {
 
           <div className="mb-6 min-h-[120px] whitespace-pre-wrap border-l-4 border-kfc-yellow px-1 text-lg leading-relaxed md:text-xl">
             {joke.body}
+            <div className="mt-3 flex justify-end">
+              <CopyButton text={joke.body} />
+            </div>
           </div>
 
           <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
@@ -141,17 +145,18 @@ export default function RandomJoke() {
                   <span className="text-kfc-red">@{joke.author.username}</span>
                 </div>
                 <div className="text-sm text-gray-500">
-                  <FormattedDate date={joke.createdAt} /> · {totalInteractions}
-                  次互动
+                  <FormattedDate date={joke.createdAt} />
                 </div>
               </div>
             </div>
 
             <div className="flex items-center gap-4">
-              {/* <ReactionsDisplay
+              <InteractiveReactions
+                issueId={joke.id}
                 reactionDetails={reactionDetails}
-                totalInteractions={totalInteractions}
-              /> */}
+                reactionNodes={reactionNodes}
+                className="flex-wrap"
+              />
             </div>
           </div>
 

@@ -1,19 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
+import { getToken } from 'next-auth/jwt'
 import { authOptions } from '../auth/[...nextauth]/route'
 import { Octokit } from '@octokit/core'
 import { LikeRequest, LikeResponse } from '@/types'
-import { ServerSession } from '@/types/server-auth'
+
+
 
 export async function POST(request: NextRequest) {
   try {
     // 获取用户session
-    const session = await getServerSession(authOptions) as ServerSession | null
+    const session = await getServerSession(authOptions)
 
-    if (!session?.accessToken) {
+    if (!session?.user?.username) {
       return NextResponse.json<LikeResponse>({
         success: false,
         message: '请先登录GitHub',
+      }, { status: 401 })
+    }
+
+    // 从JWT token中获取access token（仅在服务器端）
+    const secret = process.env.NEXTAUTH_SECRET
+    const token = await getToken({ req: request, secret })
+    const accessToken = token?.accessToken
+
+    if (!accessToken) {
+      return NextResponse.json<LikeResponse>({
+        success: false,
+        message: '认证信息无效，请重新登录',
       }, { status: 401 })
     }
 
@@ -31,21 +45,15 @@ export async function POST(request: NextRequest) {
 
     // 创建Octokit实例，使用用户的access token
     const octokit = new Octokit({
-      auth: session.accessToken,
+      auth: accessToken,
     })
 
-    // 使用GraphQL API通过issue ID获取issue信息
+    // 验证issue是否存在
     const graphqlQuery = `
       query GetIssue($id: ID!) {
         node(id: $id) {
           ... on Issue {
-            repository {
-              owner {
-                login
-              }
-              name
-            }
-            number
+            id
           }
         }
       }
@@ -60,45 +68,49 @@ export async function POST(request: NextRequest) {
       console.log('GraphQL响应:', JSON.stringify(graphqlResponse, null, 2))
 
       const issueData = (graphqlResponse as any).node
-      if (!issueData || !issueData.repository) {
-        console.log('Issue数据无效:', issueData)
+      if (!issueData) {
+        console.log('Issue不存在:', issueId)
         return NextResponse.json<LikeResponse>({
           success: false,
           message: 'Issue不存在或无权访问',
         }, { status: 404 })
       }
 
-      const owner = issueData.repository.owner.login
-      const repo = issueData.repository.name
-      const issueNumber = issueData.number
+      console.log('Issue验证成功:', issueId)
 
-      console.log('解析的issue信息:', { owner, repo, issueNumber })
+      // 使用GraphQL Mutation添加reaction
+      const addReactionMutation = `
+        mutation AddReaction($input: AddReactionInput!) {
+          addReaction(input: $input) {
+            reaction {
+              id
+              content
+            }
+            subject {
+              id
+            }
+          }
+        }
+      `
 
-      if (!owner || !repo || !issueNumber) {
-        console.log('缺少必要的issue信息')
-        return NextResponse.json<LikeResponse>({
-          success: false,
-          message: '无法获取issue信息',
-        }, { status: 400 })
-      }
-
-      // 添加reaction到GitHub issue
-      const response = await octokit.request('POST /repos/{owner}/{repo}/issues/{issue_number}/reactions', {
-        owner,
-        repo,
-        issue_number: issueNumber,
-        content: reaction,
-        headers: {
-          accept: 'application/vnd.github.squirrel-girl-preview+json',
+      const mutationResponse = await octokit.graphql(addReactionMutation, {
+        input: {
+          subjectId: issueId,
+          content: reaction,
         },
       })
 
-      console.log('Reaction添加成功:', response.data)
+      console.log('GraphQL Mutation响应:', JSON.stringify(mutationResponse, null, 2))
+
+      const reactionData = (mutationResponse as any).addReaction?.reaction
+      if (!reactionData) {
+        throw new Error('添加reaction失败：GraphQL响应无效')
+      }
 
       return NextResponse.json<LikeResponse>({
         success: true,
         message: '点赞成功',
-        reactionId: response.data.id?.toString(),
+        reactionId: reactionData.id,
       })
 
     } catch (graphqlError: any) {
@@ -142,17 +154,32 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     // 获取用户session
-    const session = await getServerSession(authOptions) as ServerSession | null
+    const session = await getServerSession(authOptions)
 
-    if (!session?.accessToken) {
+    if (!session?.user?.username) {
       return NextResponse.json<LikeResponse>({
         success: false,
         message: '请先登录GitHub',
       }, { status: 401 })
     }
 
+    // 从JWT token中获取access token（仅在服务器端）
+    const secret = process.env.NEXTAUTH_SECRET
+    const token = await getToken({ req: request, secret })
+    const accessToken = token?.accessToken
+
+    if (!accessToken) {
+      return NextResponse.json<LikeResponse>({
+        success: false,
+        message: '认证信息无效，请重新登录',
+      }, { status: 401 })
+    }
+
     const body: LikeRequest = await request.json()
     const { issueId, reaction } = body
+
+
+
 
     console.log('收到取消点赞请求:', { issueId, reaction })
 
@@ -165,21 +192,14 @@ export async function DELETE(request: NextRequest) {
 
     // 创建Octokit实例，使用用户的access token
     const octokit = new Octokit({
-      auth: session.accessToken,
+      auth: accessToken,
     })
 
-    // 首先获取issue的reactions信息，找到用户要删除的reaction
+    // 获取issue的reactions信息，找到用户要删除的reaction
     const reactionsQuery = `
       query GetIssueReactions($id: ID!) {
         node(id: $id) {
           ... on Issue {
-            repository {
-              owner {
-                login
-              }
-              name
-            }
-            number
             reactions(first: 100) {
               nodes {
                 id
@@ -200,17 +220,18 @@ export async function DELETE(request: NextRequest) {
       })
 
       const issueData = (graphqlResponse as any).node
-      if (!issueData || !issueData.repository) {
+      if (!issueData) {
         return NextResponse.json<LikeResponse>({
           success: false,
           message: 'Issue不存在或无权访问',
         }, { status: 404 })
       }
 
-      const owner = issueData.repository.owner.login
-      const repo = issueData.repository.name
-      const issueNumber = issueData.number
       const reactions = issueData.reactions.nodes || []
+
+      console.log('session.user.username', session.user.username)
+      console.log('r.content', reaction)
+      console.log('reactions', reactions)
 
       // 找到当前用户要删除的reaction
       const userReaction = reactions.find((r: any) =>
@@ -224,18 +245,32 @@ export async function DELETE(request: NextRequest) {
         }, { status: 404 })
       }
 
-      // 删除reaction
-      const response = await octokit.request('DELETE /repos/{owner}/{repo}/issues/{issue_number}/reactions/{reaction_id}', {
-        owner,
-        repo,
-        issue_number: issueNumber,
-        reaction_id: userReaction.id,
-        headers: {
-          accept: 'application/vnd.github.squirrel-girl-preview+json',
+      // 使用GraphQL Mutation删除reaction
+      const removeReactionMutation = `
+        mutation RemoveReaction($input: RemoveReactionInput!) {
+          removeReaction(input: $input) {
+            subject {
+              id
+            }
+          }
+        }
+      `
+
+      const mutationResponse = await octokit.graphql(removeReactionMutation, {
+        input: {
+          subjectId: issueId,
+          content: reaction,
         },
       })
 
-      console.log('Reaction删除成功')
+      console.log('GraphQL Mutation响应:', JSON.stringify(mutationResponse, null, 2))
+
+      const mutationData = (mutationResponse as any).removeReaction
+      if (!mutationData) {
+        throw new Error('删除reaction失败：GraphQL响应无效')
+      }
+
+      console.log('删除reaction成功:', mutationData)
 
       return NextResponse.json<LikeResponse>({
         success: true,

@@ -22,7 +22,7 @@ declare module "next-auth/jwt" {
     id: number
     username: string
     nickname?: string | null
-    image?: string | null
+    picture?: string | null
     accessToken?: string
   }
 }

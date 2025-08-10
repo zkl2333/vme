@@ -52,7 +52,7 @@ export interface IssueStats {
 }
 
 // GitHub支持的reaction类型
-export type GitHubReaction = '+1' | '-1' | 'laugh' | 'confused' | 'heart' | 'hooray' | 'rocket' | 'eyes'
+export type GitHubReaction = 'THUMBS_UP' | 'THUMBS_DOWN' | 'LAUGH' | 'CONFUSED' | 'HEART' | 'HOORAY' | 'ROCKET' | 'EYES'
 
 // 点赞操作相关类型
 export interface LikeRequest {

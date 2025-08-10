@@ -4,6 +4,7 @@ import JokesPagination from '../client/JokesPagination'
 import { getKfcItemsWithPagination, getOctokitInstance } from '@/lib/server-utils'
 import { getBatchIssueStats } from '@/app/lib/github-stats'
 import InteractiveReactions from '../client/InteractiveReactions'
+import CopyButton from '../client/CopyButton'
 
 interface JokesServerProps {
   currentPage: number
@@ -60,9 +61,14 @@ export default async function JokesServer({ currentPage }: JokesServerProps) {
               )}
 
               {/* 段子内容 */}
-              <p className="mb-4 overflow-auto whitespace-pre-wrap leading-5">
-                {item.body}
-              </p>
+              <div className="mb-4">
+                <p className="overflow-auto whitespace-pre-wrap leading-5">
+                  {item.body}
+                </p>
+                <div className="mt-2 flex justify-end">
+                  <CopyButton text={item.body} />
+                </div>
+              </div>
 
               {/* 作者信息和互动数据 */}
               <div className="flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-4">
@@ -78,13 +84,13 @@ export default async function JokesServer({ currentPage }: JokesServerProps) {
                     @{item.author.username}
                   </span>
                 </div>
-                
+
                 <div className="flex items-center gap-4 text-sm text-gray-500">
                   <span className="flex items-center gap-1">
                     <i className="fa fa-calendar"></i>
                     <FormattedDate date={item.createdAt} />
                   </span>
-                  
+
                   <InteractiveReactions
                     issueId={item.id}
                     reactionDetails={reactionDetails}

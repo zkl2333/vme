@@ -9,7 +9,6 @@ declare module 'next-auth' {
       email?: string | null
       image?: string | null
     }
-    accessToken?: string
   }
 }
 
@@ -22,5 +21,4 @@ export interface ServerSession extends DefaultSession {
     email?: string | null
     image?: string | null
   }
-  accessToken?: string
 }

@@ -17,27 +17,15 @@ interface InteractiveReactionsProps {
   className?: string
 }
 
-// 可用的反应类型
+// 可用的反应类型 - 直接使用GitHub的原始类型
 const availableReactions = [
-  { key: '+1', emoji: '👍', label: '点赞' },
-  { key: 'heart', emoji: '❤️', label: '爱心' },
-  { key: 'laugh', emoji: '😄', label: '大笑' },
-  { key: 'hooray', emoji: '🎉', label: '庆祝' },
-  { key: 'rocket', emoji: '🚀', label: '火箭' },
-  { key: 'eyes', emoji: '👀', label: '眼睛' },
+  { key: 'THUMBS_UP', emoji: '👍', label: '点赞' },
+  { key: 'HEART', emoji: '❤️', label: '爱心' },
+  { key: 'LAUGH', emoji: '😄', label: '大笑' },
+  { key: 'HOORAY', emoji: '🎉', label: '庆祝' },
+  { key: 'ROCKET', emoji: '🚀', label: '火箭' },
+  { key: 'EYES', emoji: '👀', label: '眼睛' },
 ]
-
-// GitHub API返回的content到我们使用的key的映射
-const contentToKeyMap: Record<string, string> = {
-  'THUMBS_UP': '+1',
-  'THUMBS_DOWN': '-1',
-  'LAUGH': 'laugh',
-  'HOORAY': 'hooray',
-  'CONFUSED': 'confused',
-  'HEART': 'heart',
-  'ROCKET': 'rocket',
-  'EYES': 'eyes',
-}
 
 export default function InteractiveReactions({
   issueId,
@@ -61,39 +49,30 @@ export default function InteractiveReactions({
 
     // 从reactionDetails获取计数
     data.reactionDetails.forEach(reaction => {
-      const key = contentToKeyMap[reaction.content]
-      if (key) {
-        counts.set(key, reaction.users.totalCount)
-      }
+      counts.set(reaction.content, reaction.users.totalCount)
     })
 
     // 从reactionNodes获取用户状态和用户列表
     if (session?.user?.username) {
       data.reactionNodes.forEach(reaction => {
-        const key = contentToKeyMap[reaction.content]
-        if (key) {
-          // 记录用户reaction
-          if (reaction.user.login === session.user.username) {
-            userReactionMap.set(key, reaction.id)
-          }
-          
-          // 记录所有用户
-          if (!users.has(key)) {
-            users.set(key, [])
-          }
-          users.get(key)!.push(reaction.user.login)
+        // 记录用户reaction
+        if (reaction.user.login === session.user.username) {
+          userReactionMap.set(reaction.content, reaction.id)
         }
+        
+        // 记录所有用户
+        if (!users.has(reaction.content)) {
+          users.set(reaction.content, [])
+        }
+        users.get(reaction.content)!.push(reaction.user.login)
       })
     } else {
       // 未登录用户，只记录所有用户
       data.reactionNodes.forEach(reaction => {
-        const key = contentToKeyMap[reaction.content]
-        if (key) {
-          if (!users.has(key)) {
-            users.set(key, [])
-          }
-          users.get(key)!.push(reaction.user.login)
+        if (!users.has(reaction.content)) {
+          users.set(reaction.content, [])
         }
+        users.get(reaction.content)!.push(reaction.user.login)
       })
     }
 

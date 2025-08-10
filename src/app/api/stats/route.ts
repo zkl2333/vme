@@ -2,10 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getIssueStats } from '@/app/lib/github-stats'
 import { getOctokitInstance } from '@/lib/server-utils'
 
-// 缓存结果，避免频繁请求GitHub API
-const cache = new Map<string, { data: any; timestamp: number }>()
-const CACHE_DURATION = 5 * 60 * 1000 // 5分钟缓存
-
 interface IssueStats {
   id: string
   reactions: number
@@ -35,28 +31,14 @@ export async function POST(request: NextRequest) {
     }
 
     // 优先使用用户权限
-    const octokit = await getOctokitInstance()
+    const octokit = await getOctokitInstance(request)
 
     const results: IssueStats[] = []
 
     for (const issueId of issueIds) {
-      // 检查缓存
-      const cached = cache.get(issueId)
-      if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-        results.push(cached.data)
-        continue
-      }
-
       try {
         // 使用封装的函数获取Issue统计数据
         const stats = await getIssueStats(octokit, issueId)
-
-        // 缓存结果
-        cache.set(issueId, {
-          data: stats,
-          timestamp: Date.now(),
-        })
-
         results.push(stats)
       } catch (error) {
         console.error(`Failed to fetch stats for issue ${issueId}:`, error)
@@ -79,13 +61,3 @@ export async function POST(request: NextRequest) {
     )
   }
 }
-
-// 清理过期缓存的函数
-setInterval(() => {
-  const now = Date.now()
-  for (const [key, value] of cache.entries()) {
-    if (now - value.timestamp > CACHE_DURATION) {
-      cache.delete(key)
-    }
-  }
-}, CACHE_DURATION)

@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 获取详细的reactions信息 - 优先使用用户权限
-    const octokit = await getOctokitInstance()
+    const octokit = await getOctokitInstance(request)
     const stats = await getIssueStats(octokit, randomItem.id)
 
     // 合并数据
@@ -33,6 +33,7 @@ export async function GET(request: NextRequest) {
       reactions: {
         totalCount: stats.reactions,
         details: stats.reactionDetails || [],
+        nodes: stats.reactionNodes || [],
       },
     }
 

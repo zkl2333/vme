@@ -15,23 +15,23 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user, profile }) {
-      if (user && profile) {
+    async jwt({ token, user, account, profile }) {
+      if (user && account) {
         token.id = Number(user.id)
         token.username = (profile as any).login  // GitHub 登录名
-        token.image = user.image
+        token.picture = user.image
       }
       // 保存access token到JWT中（只在服务器端可用）
-      if (profile) {
-        token.accessToken = (profile as any).access_token
+      if (account) {
+        token.accessToken = (account as any).access_token
       }
       return token
     },
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as number
-        session.user.username = token.username as string
-        session.user.image = token.image as string | null
+        session.user.username = token.username
+        session.user.image = token.picture
       }
       return session
     },

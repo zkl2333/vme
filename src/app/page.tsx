@@ -1,89 +1,82 @@
-import { Suspense } from 'react'
 import Image from 'next/image'
-import LeaderboardServer from '@/components/server/Leaderboard'
 import RandomJoke from '@/components/client/RandomJoke'
-import JokesServer from '@/components/server/Jokes'
 
-// 获取URL参数的类型定义
-interface PageProps {
-  searchParams: {
-    sortBy?: string
-    page?: string
-  }
-}
-
-// 启用ISR - 每30分钟重新生成页面，包含排行榜数据
-export const revalidate = 1800 // 30分钟重新验证，用于排行榜数据
-
-export default async function Page({ searchParams }: PageProps) {
-  // 从URL参数获取页码和排序方式
-  const page = parseInt(searchParams.page || '1')
-  const sortBy = searchParams.sortBy || 'score'
-
+export default function Page() {
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* 顶部Banner（强化梗氛围） */}
-      <div className="relative mb-10 overflow-hidden rounded-2xl shadow-kfc">
-        <div className="bg-gradient-to-r from-kfc-red to-kfc-darkRed p-6 text-white md:p-8">
-          <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
-            <div className="max-w-lg animate-slide-up">
-              <h2 className="mb-3 text-2xl font-bold md:text-3xl">
-                今天，你v50了吗？
-              </h2>
-              <p className="mb-4 text-white/90">
-                肯德基疯狂星期四的精髓，不止于炸鸡，更在于每一个让你笑出腹肌的段子
-              </p>
-              <div className="flex gap-3">
-                <a
-                  href="#jokes-list"
-                  className="flex items-center gap-1 rounded-full bg-white px-4 py-2 font-bold text-kfc-red transition-colors duration-300 hover:bg-kfc-cream"
-                >
-                  <i className="fa fa-list"></i> 看段子
-                </a>
-                <a
-                  href="https://github.com/zkl2333/vme/issues/new?assignees=&labels=%E6%96%87%E6%A1%88&projects=&template=data_provided.md&title="
-                  target="_blank"
-                  className="flex items-center gap-1 rounded-full bg-kfc-yellow px-4 py-2 font-bold text-kfc-red transition-colors duration-300 hover:brightness-110"
-                >
-                  <i className="fa fa-pencil"></i> 写段子
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
+      {/* 随机段子主题区域 */}
+      <div className="mb-10">
+                 {/* 页面标题 */}
+         <div className="mb-6 text-center">
+           <div className="mb-3 flex items-center justify-center gap-2">
+             <span className="text-3xl">🎲</span>
+             <h1 className="text-3xl font-bold text-gray-800 md:text-4xl">
+               今日份快乐
+             </h1>
+             <span className="text-3xl">🍗</span>
+           </div>
+           <p className="text-lg text-gray-600">
+             来点不一样的？这个段子专治不开心
+           </p>
+         </div>
+
+                 {/* 随机段子展示 */}
+         <div className="mb-6">
+           <RandomJoke />
+         </div>
       </div>
 
-      {/* 随机段子展示 */}
-      <RandomJoke />
+             {/* 功能导航卡片 */}
+       <div className="grid gap-6 md:grid-cols-2">
+         {/* 段子列表卡片 */}
+         <div className="group relative overflow-hidden rounded-2xl bg-white p-6 shadow-kfc transition-all duration-300 hover:shadow-kfc-hover">
+           <div className="absolute right-0 top-0 -mr-16 -mt-16 h-32 w-32 rounded-full bg-kfc-red/10 transition-all duration-300 group-hover:bg-kfc-red/20"></div>
+           <div className="relative z-10">
+             <div className="mb-4 flex items-center gap-3">
+               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-kfc-red text-white">
+                 <i className="fa fa-list text-xl"></i>
+               </div>
+               <h3 className="text-xl font-bold text-gray-800">段子列表</h3>
+             </div>
+             <p className="mb-4 text-gray-600">
+               浏览所有精选的疯狂星期四段子，按时间排序，找到让你笑出声的梗
+             </p>
+             <a
+               href="/jokes"
+               className="inline-flex items-center gap-2 rounded-xl bg-kfc-red px-4 py-2 font-bold text-white transition-all duration-300 hover:bg-kfc-darkRed"
+             >
+               开始浏览
+               <i className="fa fa-arrow-right"></i>
+             </a>
+           </div>
+         </div>
 
-      {/* 段子列表 */}
-      <Suspense
-        fallback={
-          <div className="flex items-center justify-center py-12">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-kfc-red border-t-transparent"></div>
-            <span className="ml-2 text-gray-600">加载段子中...</span>
-          </div>
-        }
-      >
-        <JokesServer currentPage={page} />
-      </Suspense>
-
-      {/* 梗王排行榜 - 服务端渲染 */}
-      <section className="mb-12">
-        <Suspense
-          fallback={
-            <div className="flex items-center justify-center py-12">
-              <div className="h-8 w-8 animate-spin rounded-full border-2 border-kfc-red border-t-transparent"></div>
-              <span className="ml-2 text-gray-600">加载排行榜中...</span>
-            </div>
-          }
-        >
-          <LeaderboardServer sortBy={sortBy} />
-        </Suspense>
-      </section>
+         {/* 排行榜卡片 */}
+         <div className="group relative overflow-hidden rounded-2xl bg-white p-6 shadow-kfc transition-all duration-300 hover:shadow-kfc-hover">
+           <div className="absolute right-0 top-0 -mr-16 -mt-16 h-32 w-32 rounded-full bg-kfc-red/10 transition-all duration-300 group-hover:bg-kfc-red/20"></div>
+           <div className="relative z-10">
+             <div className="mb-4 flex items-center gap-3">
+               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-kfc-red text-white">
+                 <i className="fa fa-trophy text-xl"></i>
+               </div>
+               <h3 className="text-xl font-bold text-gray-800">梗王排行榜</h3>
+             </div>
+             <p className="mb-4 text-gray-600">
+               看看谁是真正的梗王，谁的段子最受欢迎，谁最会v50
+             </p>
+             <a
+               href="/leaderboard"
+               className="inline-flex items-center gap-2 rounded-xl bg-kfc-red px-4 py-2 font-bold text-white transition-all duration-300 hover:bg-kfc-darkRed"
+             >
+               查看排行
+               <i className="fa fa-crown"></i>
+             </a>
+           </div>
+         </div>
+       </div>
 
       {/* 提交段子区（强化参与引导） */}
-      <section id="submit-joke" className="mb-12">
+      <section id="submit-joke" className="mt-12">
         <div className="relative overflow-hidden rounded-2xl shadow-kfc">
           <div className="absolute right-0 top-0 h-full w-1/3 opacity-10">
             <Image
@@ -106,7 +99,7 @@ export default async function Page({ searchParams }: PageProps) {
               <a
                 href="https://github.com/zkl2333/vme/issues/new?assignees=&labels=%E6%96%87%E6%A1%88&projects=&template=data_provided.md&title="
                 target="_blank"
-                className="shine-effect flex items-center gap-2 rounded-full bg-white px-6 py-3 text-lg font-bold text-kfc-red shadow-lg transition-all duration-300 hover:shadow-xl"
+                className="shine-effect flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-lg font-bold text-kfc-red shadow-lg transition-all duration-300 hover:shadow-xl"
               >
                 <i className="fa fa-paper-plane"></i> 提交我的段子
               </a>

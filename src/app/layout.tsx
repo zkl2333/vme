@@ -58,19 +58,39 @@ export default function RootLayout({
           <header className="sticky top-0 z-50 bg-kfc-red text-white shadow-md transition-all duration-300">
             <div className="container mx-auto flex flex-col items-center justify-between px-4 py-3 md:flex-row">
               <div className="mb-2 flex items-center gap-3 md:mb-0">
-                <Image
-                  src="https://picsum.photos/seed/kfcicon/50/50"
-                  alt="KFC"
-                  width={50}
-                  height={50}
-                  className="h-10 w-10 animate-chicken-rotate rounded-full object-cover"
-                />
-                <h1 className="text-shadow-kfc text-xl font-bold md:text-2xl">
-                  肯德基疯狂星期四
-                  <span className="text-kfc-yellow">段子库</span>
-                </h1>
+                <a href="/" className="flex items-center gap-3">
+                  <Image
+                    src="https://picsum.photos/seed/kfcicon/50/50"
+                    alt="KFC"
+                    width={50}
+                    height={50}
+                    className="h-10 w-10 animate-chicken-rotate rounded-full object-cover"
+                  />
+                  <h1 className="text-shadow-kfc text-xl font-bold md:text-2xl">
+                    肯德基疯狂星期四
+                    <span className="text-kfc-yellow">段子库</span>
+                  </h1>
+                </a>
               </div>
               <div className="flex items-center gap-4">
+                {/* 页面导航 */}
+                <nav className="hidden md:flex items-center gap-4">
+                  <a
+                    href="/jokes"
+                    className="flex items-center gap-1 rounded-xl bg-white/10 px-3 py-2 text-sm font-medium text-white transition-all duration-300 hover:bg-white/20"
+                  >
+                    <i className="fa fa-list"></i>
+                    段子列表
+                  </a>
+                  <a
+                    href="/leaderboard"
+                    className="flex items-center gap-1 rounded-xl bg-white/10 px-3 py-2 text-sm font-medium text-white transition-all duration-300 hover:bg-white/20"
+                  >
+                    <i className="fa fa-trophy"></i>
+                    排行榜
+                  </a>
+                </nav>
+                
                 <div className="hidden items-center gap-1 rounded-full bg-white/10 px-3 py-1 text-sm md:flex">
                   <i className="fa fa-users text-kfc-yellow"></i>
                   <span>
