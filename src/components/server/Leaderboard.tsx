@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import LeaderboardSortTabs from '../LeaderboardSortTabs'
+import LeaderboardSortTabs from '../client/LeaderboardSortTabs'
 import { getOctokitInstance } from '@/lib/server-utils'
 
 interface AuthorStats {

@@ -6,7 +6,7 @@ import clsx from 'clsx'
 import { Analytics } from '@vercel/analytics/next'
 
 import { Providers } from '@/app/providers'
-import LoginButton from '@/components/LoginButton'
+import LoginButton from '@/components/client/LoginButton'
 
 import '@/styles/tailwind.css'
 
@@ -52,7 +52,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="bg-kfc-pattern min-h-screen bg-kfc-cream font-kfc text-gray-800">
+      <body className="bg-kfc-pattern flex min-h-screen flex-col bg-kfc-cream font-kfc text-gray-800">
         <Providers>
           {/* 顶部导航栏 */}
           <header className="sticky top-0 z-50 bg-kfc-red text-white shadow-md transition-all duration-300">
@@ -83,7 +83,7 @@ export default function RootLayout({
           </header>
 
           {/* 主内容 */}
-          <main>{children}</main>
+          <main className="flex flex-1 flex-col">{children}</main>
 
           {/* 页脚 */}
           <footer className="bg-gray-800 py-8 text-white">

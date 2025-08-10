@@ -1,9 +1,9 @@
 import { FormattedDate } from '@/components/FormattedDate'
 import Image from 'next/image'
-import JokesPagination from '../JokesPagination'
+import JokesPagination from '../client/JokesPagination'
 import { getKfcItemsWithPagination, getOctokitInstance } from '@/lib/server-utils'
 import { getBatchIssueStats } from '@/app/lib/github-stats'
-import InteractiveReactions from '../InteractiveReactions'
+import InteractiveReactions from '../client/InteractiveReactions'
 
 interface JokesServerProps {
   currentPage: number

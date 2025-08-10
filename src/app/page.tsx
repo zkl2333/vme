@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
 import Image from 'next/image'
 import LeaderboardServer from '@/components/server/Leaderboard'
-import RandomJoke from '@/components/RandomJoke'
+import RandomJoke from '@/components/client/RandomJoke'
 import JokesServer from '@/components/server/Jokes'
 
 // 获取URL参数的类型定义
