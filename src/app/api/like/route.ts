@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { getToken } from 'next-auth/jwt'
-import { authOptions } from '../auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth'
 import { Octokit } from '@octokit/core'
 import { LikeRequest, LikeResponse } from '@/types'
 

@@ -5,7 +5,7 @@ import { IKfcItem } from '@/types'
 import { Octokit } from '@octokit/core'
 import { getServerSession } from 'next-auth/next'
 import { getToken } from 'next-auth/jwt'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth'
 
 const cache: {
   kfcItems: Record<string, IKfcItem[]>

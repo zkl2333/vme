@@ -12,7 +12,7 @@ interface PageProps {
 export default async function JokesPage({ searchParams }: PageProps) {
   // 从URL参数获取页码
   const page = parseInt(searchParams.page || '1')
-  
+
   // 获取headers以构建request对象
   const headersList = await headers()
   const request = new Request('http://localhost', {
@@ -40,7 +40,7 @@ export default async function JokesPage({ searchParams }: PageProps) {
           </div>
         }
       >
-        <JokesServer currentPage={page} request={request} />
+        <JokesServer currentPage={page} />
       </Suspense>
 
       {/* 返回首页 */}

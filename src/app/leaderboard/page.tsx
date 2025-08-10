@@ -15,7 +15,7 @@ export const revalidate = 1800 // 30分钟重新验证，用于排行榜数据
 export default async function LeaderboardPage({ searchParams }: PageProps) {
   // 从URL参数获取排序方式
   const sortBy = searchParams.sortBy || 'score'
-  
+
   // 获取headers以构建request对象
   const headersList = await headers()
   const request = new Request('http://localhost', {
@@ -43,7 +43,7 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
           </div>
         }
       >
-        <LeaderboardServer sortBy={sortBy} request={request} />
+        <LeaderboardServer sortBy={sortBy} />
       </Suspense>
 
       {/* 返回首页 */}
