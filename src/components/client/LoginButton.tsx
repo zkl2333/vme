@@ -27,7 +27,7 @@ export default function LoginButton() {
             className="h-6 w-6 rounded-full border border-kfc-yellow"
           />
           <span className="text-sm font-medium text-white">
-            {session.user?.name}
+            {session.user?.username}
           </span>
         </div>
         <button
