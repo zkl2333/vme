@@ -12,6 +12,15 @@ jest.mock('@octokit/core', () => ({
   }))
 }))
 
+// Mock GitHub 模块 - 返回函数来避免初始化顺序问题
+jest.mock('../src/lib/github', () => ({
+  createOctokitInstance: jest.fn((token: string) => ({
+    graphql: (...args: any[]) => mockGraphql(...args)
+  })),
+  queryRepoIssues: jest.fn((octokit: any, options: any) => octokit.graphql(options)),
+  queryRepoIssuesSince: jest.fn((octokit: any, options: any) => octokit.graphql(options)),
+}))
+
 // Mock 数据
 const mockRepos: Repository[] = [
   { owner: 'test-owner', name: 'test-repo', label: '文案', state: 'ALL' }

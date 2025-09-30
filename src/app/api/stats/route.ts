@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getIssueStats } from '@/app/lib/github-stats'
+import { queryIssueStats } from '@/lib/github'
 import { getOctokitInstance } from '@/lib/server-utils'
 
 interface IssueStats {
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     for (const issueId of issueIds) {
       try {
         // 使用封装的函数获取Issue统计数据
-        const stats = await getIssueStats(octokit, issueId)
+        const stats = await queryIssueStats(octokit, issueId)
         results.push(stats)
       } catch (error) {
         console.error(`Failed to fetch stats for issue ${issueId}:`, error)

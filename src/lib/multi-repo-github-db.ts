@@ -1,27 +1,7 @@
 import { Octokit } from '@octokit/core'
 import { IKfcItem, Repository, MultiRepoResult, CacheState } from '@/types'
-
-// GraphQL 响应类型定义
-interface GraphQLRepoResult {
-  repository: {
-    issues: {
-      totalCount: number
-      pageInfo: {
-        hasNextPage: boolean
-        endCursor: string
-      }
-      nodes: any[]
-    }
-  }
-}
-
-interface GraphQLSinceResult {
-  repository: {
-    issues: {
-      nodes: any[]
-    }
-  }
-}
+import { createOctokitInstance, queryRepoIssues, queryRepoIssuesSince } from '@/lib/github'
+import type { GraphQLRepoResult, GraphQLSinceResult, GraphQLQueryOptions } from '@/lib/github'
 
 // 全局内存缓存
 let memoryCache: CacheState = {
@@ -48,7 +28,7 @@ export class MultiRepoGitHubDatabase {
   private repos: Repository[]
 
   constructor(token: string, repos: Repository[]) {
-    this.octokit = new Octokit({ auth: token })
+    this.octokit = createOctokitInstance(token)
     this.repos = repos
   }
 
@@ -75,51 +55,6 @@ export class MultiRepoGitHubDatabase {
   }
 
   private async getRepoIssues(repo: Repository): Promise<IKfcItem[]> {
-    const labelName = repo.label || '文案'
-    // 根据配置决定查询哪种状态的 issues
-    // 默认查询所有状态（OPEN 和 CLOSED）
-    const issueState = repo.state || 'ALL'
-    const statesFilter = issueState === 'ALL' 
-      ? 'states: [OPEN, CLOSED]'
-      : `states: [${issueState}]`
-    
-    const query = `
-      query GetRepoIssues($owner: String!, $name: String!, $cursor: String, $pageSize: Int!) {
-        repository(owner: $owner, name: $name) {
-          issues(
-            first: $pageSize
-            after: $cursor
-            labels: ["${labelName}"]
-            ${statesFilter}
-            orderBy: {field: CREATED_AT, direction: DESC}
-          ) {
-            totalCount
-            pageInfo {
-              hasNextPage
-              endCursor
-            }
-            nodes {
-              id
-              number
-              title
-              body
-              createdAt
-              updatedAt
-              author {
-                login
-                avatarUrl
-                url
-              }
-              url
-              reactions {
-                totalCount
-              }
-            }
-          }
-        }
-      }
-    `
-
     let allIssues: any[] = []
     let cursor: string | null = null
 
@@ -127,13 +62,17 @@ export class MultiRepoGitHubDatabase {
 
     while (true) {
       try {
-        const result: GraphQLRepoResult = await this.octokit.graphql<GraphQLRepoResult>(query, {
+        // 使用统一的查询函数
+        const queryOptions: GraphQLQueryOptions = {
           owner: repo.owner,
           name: repo.name,
+          label: repo.label || '文案',
+          state: repo.state || 'ALL',
           cursor,
           pageSize: 100
-        })
+        }
 
+        const result = await queryRepoIssues(this.octokit, queryOptions)
         const issues = result.repository.issues
 
         // 给每个 issue 添加仓库信息
@@ -322,48 +261,16 @@ export class MultiRepoGitHubDatabase {
   }
 
   private async getRepoIssuesSince(repo: Repository, since: string): Promise<IKfcItem[]> {
-    // GitHub GraphQL API 不支持 filterBy.since，所以我们获取最新的 Issues 然后在客户端过滤
-    const labelName = repo.label || '文案'
-    const issueState = repo.state || 'ALL'
-    const statesFilter = issueState === 'ALL' 
-      ? 'states: [OPEN, CLOSED]'
-      : `states: [${issueState}]`
-    
-    const query = `
-      query GetRepoIssuesSince($owner: String!, $name: String!) {
-        repository(owner: $owner, name: $name) {
-          issues(
-            first: 20
-            labels: ["${labelName}"]
-            ${statesFilter}
-            orderBy: {field: CREATED_AT, direction: DESC}
-          ) {
-            nodes {
-              id
-              title
-              body
-              createdAt
-              updatedAt
-              author {
-                login
-                avatarUrl
-                url
-              }
-              url
-              reactions {
-                totalCount
-              }
-            }
-          }
-        }
-      }
-    `
-
     try {
-      const result: GraphQLSinceResult = await this.octokit.graphql<GraphQLSinceResult>(query, {
+      // 使用统一的增量查询函数
+      const queryOptions: GraphQLQueryOptions = {
         owner: repo.owner,
-        name: repo.name
-      })
+        name: repo.name,
+        label: repo.label || '文案',
+        state: repo.state || 'ALL'
+      }
+
+      const result = await queryRepoIssuesSince(this.octokit, queryOptions)
 
       // 客户端过滤：只保留创建时间晚于 since 的 issues
       const sinceDate = new Date(since).getTime()

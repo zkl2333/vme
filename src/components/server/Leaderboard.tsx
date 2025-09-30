@@ -71,13 +71,15 @@ async function getLeaderboardData(sortBy: string = 'score') {
     }
 
     // 动态导入GitHub统计工具函数
-    const { getBatchIssueStats: serverGetBatchIssueStats } = await import(
-      '@/app/lib/github-stats'
-    )
+    const { queryBatchIssueStats } = await import('@/lib/github')
 
     // 获取GitHub统计数据
     const allIssueIds = allItems.map((item) => item.id)
-    const statsMap = await serverGetBatchIssueStats(octokit, allIssueIds)
+    const statsMap = await queryBatchIssueStats(octokit, {
+      issueIds: allIssueIds,
+      batchSize: 50,
+      delayMs: 100
+    })
 
     // 更新作者统计数据
     for (const [username, author] of authorMap) {

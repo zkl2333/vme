@@ -2,7 +2,7 @@ import { FormattedDate } from '@/components/FormattedDate'
 import Image from 'next/image'
 import JokesPagination from '../client/JokesPagination'
 import { getKfcItemsWithPagination, getOctokitInstance } from '@/lib/server-utils'
-import { getBatchIssueStats } from '@/app/lib/github-stats'
+import { queryBatchIssueStats } from '@/lib/github'
 import InteractiveReactions from '../client/InteractiveReactions'
 import CopyButton from '../client/CopyButton'
 
@@ -18,9 +18,13 @@ export default async function JokesServer({ currentPage }: JokesServerProps) {
 
   // 获取统计数据 - 优先使用用户权限
   const octokit = await getOctokitInstance()
-  const stats = await getBatchIssueStats(
+  const stats = await queryBatchIssueStats(
     octokit,
-    items.map((item) => item.id),
+    {
+      issueIds: items.map((item) => item.id),
+      batchSize: 50,
+      delayMs: 100
+    }
   )
 
   return (

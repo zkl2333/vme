@@ -1,10 +1,7 @@
 // 新的服务端工具函数 - 完全基于 GitHub Issues，无需 data 目录
 import { MultiRepoGitHubDatabase } from './multi-repo-github-db'
 import { IKfcItem, Repository, MultiRepoResult } from '@/types'
-import { Octokit } from '@octokit/core'
-import { getServerSession } from 'next-auth/next'
-import { getToken } from 'next-auth/jwt'
-import { authOptions } from '@/lib/auth'
+import { getOctokitInstance } from '@/lib/github'
 
 // 仓库配置 - 可以通过环境变量配置
 const REPOS_CONFIG: Repository[] = [
@@ -92,47 +89,14 @@ export async function syncLatestIssues(): Promise<void> {
   await db.syncLatest()
 }
 
-/**
- * 获取Octokit实例，优先使用用户token，如果没有则使用环境变量token
- */
-export async function getOctokitInstance(request?: Request): Promise<Octokit> {
-  try {
-    // 尝试获取用户session
-    const session = await getServerSession(authOptions)
-
-    if (session?.user?.username) {
-      if (request) {
-        // 用户已登录且有request对象，尝试从JWT获取access token
-        const secret = process.env.NEXTAUTH_SECRET
-        const token = await getToken({ req: request as any, secret })
-        const accessToken = token?.accessToken as string
-
-        if (accessToken) {
-          console.log('使用用户access token')
-          return new Octokit({
-            auth: accessToken,
-          })
-        }
-      }
-      // 用户已登录但没有request对象（如服务器组件），使用环境变量token
-      console.log('用户已登录，但无法获取access token，使用环境变量token')
-    }
-  } catch (error) {
-    console.warn('获取用户session失败，使用环境变量token:', error)
-  }
-
-  // 使用环境变量token
-  console.log('使用环境变量token')
-  return new Octokit({
-    auth: process.env.GITHUB_TOKEN,
-  })
-}
-
 // Webhook 处理函数（新功能）
 export async function handleIssueWebhook(payload: any): Promise<void> {
   const db = getMultiRepoGitHub()
   await db.handleWebhook(payload)
 }
+
+// 导出统一的 getOctokitInstance（避免重复导入）
+export { getOctokitInstance } from '@/lib/github'
 
 // 获取仓库配置（新功能）
 export function getReposConfig(): Repository[] {

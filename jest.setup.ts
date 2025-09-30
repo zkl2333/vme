@@ -43,13 +43,24 @@ jest.mock('./src/lib/auth', () => ({
   },
 }))
 
-// Mock GitHub stats
-jest.mock('./src/app/lib/github-stats', () => ({
-  getIssueStats: jest.fn(() => Promise.resolve({
+// Mock GitHub API 模块
+jest.mock('./src/lib/github', () => ({
+  getOctokitInstance: jest.fn(),
+  createOctokitInstance: jest.fn(),
+  getSystemOctokitInstance: jest.fn(),
+  queryRepoIssues: jest.fn(),
+  queryRepoIssuesSince: jest.fn(),
+  queryIssueStats: jest.fn(() => Promise.resolve({
+    id: 'test-id',
     reactions: 0,
     reactionDetails: [],
     reactionNodes: [],
   })),
+  queryBatchIssueStats: jest.fn(() => Promise.resolve(new Map())),
+  queryUserReaction: jest.fn(() => Promise.resolve(null)),
+  addReaction: jest.fn(() => Promise.resolve('test-reaction-id')),
+  removeReaction: jest.fn(() => Promise.resolve('test-reaction-id')),
+  toggleReaction: jest.fn(() => Promise.resolve({ action: 'added', reactionId: 'test-reaction-id' })),
 }))
 
 // Reset modules between tests to prevent state leakage
