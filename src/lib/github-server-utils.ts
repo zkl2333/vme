@@ -22,8 +22,24 @@ const REPOS_CONFIG: Repository[] = [
 // 全局数据库实例
 let multiRepoGitHub: MultiRepoGitHubDatabase | null = null
 
+// 导出获取数据库实例的函数（供 sync API 使用）
+export function getMultiRepoGitHub(): MultiRepoGitHubDatabase {
+  if (!multiRepoGitHub) {
+    if (!process.env.GITHUB_TOKEN) {
+      throw new Error('GITHUB_TOKEN 环境变量未设置')
+    }
+    multiRepoGitHub = new MultiRepoGitHubDatabase(process.env.GITHUB_TOKEN, REPOS_CONFIG)
+  }
+  return multiRepoGitHub
+}
+
+// 导出仓库配置（供 sync API 使用）
+export function getReposConfig(): Repository[] {
+  return REPOS_CONFIG
+}
+
 // 初始化数据库实例
-function getMultiRepoGitHub(): MultiRepoGitHubDatabase {
+function getMultiRepoGitHubInternal(): MultiRepoGitHubDatabase {
   if (!multiRepoGitHub) {
     if (!process.env.GITHUB_TOKEN) {
       throw new Error('GITHUB_TOKEN 环境变量未设置')
@@ -35,7 +51,7 @@ function getMultiRepoGitHub(): MultiRepoGitHubDatabase {
 
 // 获取所有 KFC 项目（不分页）
 export async function getAllKfcItems(): Promise<IKfcItem[]> {
-  const db = getMultiRepoGitHub()
+  const db = getMultiRepoGitHubInternal()
 
   if (!db.isCacheValid()) {
     await db.warmupCache()
@@ -51,13 +67,13 @@ export async function getKfcItemsWithPagination(
   page = 1,
   pageSize = 20,
 ): Promise<MultiRepoResult<IKfcItem>> {
-  const db = getMultiRepoGitHub()
+  const db = getMultiRepoGitHubInternal()
   return await db.getPage(page, pageSize)
 }
 
 // 获取随机项目
 export async function getRandomKfcItem(): Promise<IKfcItem> {
-  const db = getMultiRepoGitHub()
+  const db = getMultiRepoGitHubInternal()
   return await db.getRandomItem()
 }
 
@@ -67,47 +83,42 @@ export async function getItemsByRepo(
   page = 1,
   pageSize = 20
 ): Promise<MultiRepoResult<IKfcItem>> {
-  const db = getMultiRepoGitHub()
+  const db = getMultiRepoGitHubInternal()
   return await db.getPageByRepo(repoKey, page, pageSize)
 }
 
 // 获取缓存统计信息（新功能）
 export async function getCacheStats() {
-  const db = getMultiRepoGitHub()
+  const db = getMultiRepoGitHubInternal()
   return db.getCacheStats()
 }
 
 // 手动刷新缓存（新功能）
 export async function refreshCache(): Promise<void> {
-  const db = getMultiRepoGitHub()
+  const db = getMultiRepoGitHubInternal()
   await db.warmupCache()
 }
 
 // 增量同步（新功能）
 export async function syncLatestIssues(): Promise<void> {
-  const db = getMultiRepoGitHub()
+  const db = getMultiRepoGitHubInternal()
   await db.syncLatest()
 }
 
 // Webhook 处理函数（新功能）
 export async function handleIssueWebhook(payload: any): Promise<void> {
-  const db = getMultiRepoGitHub()
+  const db = getMultiRepoGitHubInternal()
   await db.handleWebhook(payload)
 }
 
 // 导出统一的 getOctokitInstance（避免重复导入）
 export { getOctokitInstance } from '@/lib/github'
 
-// 获取仓库配置（新功能）
-export function getReposConfig(): Repository[] {
-  return REPOS_CONFIG
-}
-
 // 热启动函数 - 在应用启动时调用
 export async function warmupGitHubDatabase(): Promise<void> {
   console.log('🚀 启动时预热 GitHub 数据库...')
   try {
-    const db = getMultiRepoGitHub()
+    const db = getMultiRepoGitHubInternal()
     await db.warmupCache()
     console.log('✅ GitHub 数据库预热完成')
   } catch (error) {
@@ -126,7 +137,7 @@ export async function healthCheck(): Promise<{
   const errors: string[] = []
 
   try {
-    const db = getMultiRepoGitHub()
+    const db = getMultiRepoGitHubInternal()
     const cacheStats = db.getCacheStats()
 
     if (!cacheStats.isValid) {

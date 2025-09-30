@@ -232,7 +232,7 @@ export async function queryBatchIssueStats(
   options: BatchQueryOptions
 ): Promise<Map<string, IssueStats>> {
   const { issueIds, batchSize = 50, delayMs = 100 } = options
-  const statsMap = new Map<IssueStats>()
+  const statsMap = new Map<string, IssueStats>()
 
   // 分批处理
   const batches: string[][] = []
