@@ -7,6 +7,15 @@
 这是一个基于 Next.js 14 的"肯德基疯狂星期四段子库"应用 - 一个社区驱动的平台，用于收集和分享肯德基星期四段子。
 项目使用 GitHub Issues 作为内容管理系统，并集成 GitHub OAuth 用户认证。
 
+### 🚀 最新架构升级
+
+项目现已支持**直接从 GitHub Issues 获取数据**，不再强依赖 data 目录：
+- ✅ **MultiRepoGitHubDatabase** - 多仓库聚合数据库系统
+- ✅ **内存缓存机制** - 5分钟 TTL 缓存提升性能
+- ✅ **增量同步** - 智能增量更新减少 API 调用
+- ✅ **可配置状态** - 支持查询 OPEN/CLOSED/ALL 状态的 issues
+- ✅ **Webhook 支持** - 实时响应 GitHub 事件
+
 ## 常用命令
 
 ### Next.js 应用开发
@@ -29,20 +38,60 @@ npm test            # 运行脚本测试
 cp env.local.example .env.local    # 设置环境变量
 ```
 
-## 双层架构设计
+## 架构设计
 
-本项目采用**双层架构**设计，分为**脚本自动化层**和**Next.js 应用层**：
+### 新架构：MultiRepoGitHubDatabase（推荐）
 
-### 1. 脚本自动化层 (`actions_scripts/`)
+从 **2025-09-30** 起，项目支持直接从 GitHub Issues 获取数据的新架构：
+
+#### 核心组件
+- **MultiRepoGitHubDatabase** (`src/lib/multi-repo-github-db.ts`)
+  - 多仓库聚合查询
+  - 内存缓存（5分钟 TTL）
+  - 增量同步机制
+  - 可配置 issue 状态（OPEN/CLOSED/ALL）
+  - Webhook 实时更新支持
+
+#### 数据源配置
+```typescript
+// src/lib/github-server-utils.ts
+const REPOS_CONFIG: Repository[] = [
+  {
+    owner: 'zkl2333',
+    name: 'vme',
+    label: '收录',
+    state: 'ALL'  // 查询所有状态
+  },
+  {
+    owner: 'whitescent',
+    name: 'KFC-Crazy-Thursday',
+    label: '文案提供',
+    state: 'ALL'
+  }
+]
+```
+
+#### 优势
+- ✅ 无需 data 目录，数据实时从 GitHub 获取
+- ✅ 自动聚合多个仓库的数据
+- ✅ 内存缓存提升性能，减少 API 调用
+- ✅ 支持增量同步，只获取新数据
+- ✅ 灵活配置每个仓库的查询条件
+
+### 传统架构：双层架构（向后兼容）
+
+原有的**双层架构**仍然可用，作为备选方案：
+
+#### 1. 脚本自动化层 (`actions_scripts/`)
 - **职责**: GitHub Issues 内容管理和数据处理
 - **技术栈**: TypeScript + GitHub Actions + Rollup
 - **触发方式**: GitHub Issues 事件驱动
 - **输出**: 结构化 JSON 数据文件
 
-### 2. Next.js 应用层 (`src/`)
+#### 2. Next.js 应用层 (`src/`)
 - **职责**: Web 应用界面和用户交互
 - **技术栈**: Next.js 14 + TypeScript + Tailwind CSS
-- **数据源**: 本地缓存文件 + GitHub API
+- **数据源**: MultiRepoGitHubDatabase（新）或本地缓存文件（旧）
 - **用户界面**: 响应式 Web 应用
 
 ## 核心技术栈
@@ -57,9 +106,56 @@ cp env.local.example .env.local    # 设置环境变量
 
 ## 数据流与自动化
 
-### 双数据源架构
+### 新数据流：MultiRepoGitHubDatabase
 
-本项目采用**双数据源架构**，实现静态缓存与实时数据的完美结合：
+使用新架构时的数据流程：
+
+```mermaid
+flowchart TD
+    A[用户访问应用] --> B{缓存有效?}
+    B -->|是| C[返回缓存数据]
+    B -->|否| D[并行查询多个仓库]
+    D --> E[zkl2333/vme 查询 '收录' label]
+    D --> F[whitescent/KFC-Crazy-Thursday 查询 '文案提供' label]
+    E --> G[合并数据]
+    F --> G
+    G --> H[按时间排序]
+    H --> I[更新内存缓存]
+    I --> J[返回聚合数据]
+    K[GitHub Webhook] --> L[实时更新缓存]
+    L --> I
+```
+
+#### 核心特性
+
+1. **智能缓存机制**
+   - 5分钟 TTL 内存缓存
+   - 自动失效重新获取
+   - 预热缓存功能
+
+2. **多仓库聚合**
+   - 并行查询提升性能
+   - 自动去重和排序
+   - 统计各仓库数据量
+
+3. **增量同步**
+   - 只获取最新的 issues
+   - 客户端时间过滤
+   - 减少 API 调用次数
+
+4. **灵活配置**
+   ```typescript
+   {
+     owner: 'zkl2333',
+     name: 'vme',
+     label: '收录',
+     state: 'ALL'  // 'OPEN' | 'CLOSED' | 'ALL'
+   }
+   ```
+
+### 传统数据流：双数据源架构（向后兼容）
+
+原有架构仍可使用，实现静态缓存与实时数据的结合：
 
 #### 📁 **data/ 目录** - 静态缓存层
 - **数据来源**: GitHub Actions 脚本自动生成
@@ -282,7 +378,9 @@ src/
 │   │   │   └── page/     # 分页接口
 │   │   ├── random/       # 随机段子 API
 │   │   ├── stats/        # GitHub 统计 API
-│   │   └── like/         # 点赞操作 API
+│   │   ├── like/         # 点赞操作 API
+│   │   ├── repos/        # 🆕 仓库配置 API
+│   │   └── health/       # 🆕 健康检查 API
 │   ├── auth/signin/      # 登录页面
 │   ├── jokes/           # 段子列表页面
 │   ├── leaderboard/     # 用户排行榜页面
@@ -301,11 +399,13 @@ src/
 │       ├── Jokes.tsx           # 段子列表
 │       └── Leaderboard.tsx     # 排行榜
 ├── lib/                 # 工具库和配置
-│   ├── auth.ts         # NextAuth 配置
-│   ├── env.ts          # 环境变量验证
-│   └── server-utils.ts # 服务端工具函数
+│   ├── auth.ts                    # NextAuth 配置
+│   ├── env.ts                     # 环境变量验证
+│   ├── server-utils.ts            # 服务端工具函数（传统）
+│   ├── 🆕 multi-repo-github-db.ts # 多仓库数据库核心类
+│   └── 🆕 github-server-utils.ts  # GitHub 数据库工具函数（新架构）
 ├── types/              # TypeScript 类型定义
-│   ├── index.ts        # 通用类型
+│   ├── index.ts        # 通用类型（包含新架构类型）
 │   ├── next-auth.d.ts  # NextAuth 类型扩展
 │   └── server-auth.d.ts # 服务端认证类型
 ├── styles/             # 样式文件
@@ -317,6 +417,30 @@ src/
 └── hooks/              # React Hooks
     └── useReactionData.ts  # 反应数据钩子
 ```
+
+### 🆕 新增核心模块说明
+
+#### MultiRepoGitHubDatabase (`src/lib/multi-repo-github-db.ts`)
+多仓库数据库核心类，提供：
+- `getAllIssues()` - 并行获取所有仓库数据
+- `warmupCache()` - 预热缓存
+- `getPage()` - 分页查询
+- `getRandomItem()` - 随机获取
+- `getPageByRepo()` - 按仓库分页
+- `syncLatest()` - 增量同步
+- `handleWebhook()` - Webhook 处理
+
+#### GitHub Server Utils (`src/lib/github-server-utils.ts`)
+基于 MultiRepoGitHubDatabase 的高级工具函数：
+- `getAllKfcItems()` - 获取所有段子
+- `getKfcItemsWithPagination()` - 分页获取
+- `getRandomKfcItem()` - 随机段子
+- `getItemsByRepo()` - 按仓库获取
+- `getCacheStats()` - 缓存统计
+- `refreshCache()` - 手动刷新
+- `syncLatestIssues()` - 增量同步
+- `warmupGitHubDatabase()` - 启动预热
+- `healthCheck()` - 健康检查
 
 ### 关键组件说明
 
@@ -350,11 +474,21 @@ NEXTAUTH_URL=http://localhost:3000       # OAuth 回调的基础 URL（生产环
 
 ### 获取 GitHub 凭据
 1. **Personal Access Token**: GitHub Settings > Developer settings > Personal access tokens
-   - 需要权限：`repo`, `read:user`
+   - 🆕 必需权限：`repo` (完整仓库访问)
+   - 可选权限：`read:user`, `read:org`
+   - 用于 MultiRepoGitHubDatabase 查询多仓库数据
 2. **OAuth 应用**: GitHub Settings > Developer settings > OAuth Apps
    - 创建新应用获取 Client ID 和 Secret
+   - 用于用户登录和点赞功能
 
 完整配置模板参见 `env.local.example`。
+
+### 🆕 新架构环境变量重要说明
+
+使用 MultiRepoGitHubDatabase 时：
+- **GITHUB_TOKEN 必须配置**：没有 token 无法查询数据
+- 建议使用有 `repo` 完整权限的 token
+- 生产环境建议配置更长的缓存时间（修改 `CACHE_TTL`）
 
 ## 开发指南
 
@@ -400,10 +534,19 @@ NEXTAUTH_URL=http://localhost:3000       # OAuth 回调的基础 URL（生产环
 - `GET /api/random` - 获取随机段子
   - 支持 `format=text` 参数返回纯文本
   - 支持 `format=json` 返回完整数据对象
+  - 🆕 从 MultiRepoGitHubDatabase 获取
 - `GET /api/items` - 获取所有段子列表
-  - 支持分页参数 `page` 和 `limit`
+  - 🆕 从 MultiRepoGitHubDatabase 聚合多仓库
+  - 包含仓库统计信息
 - `GET /api/items/page` - 分页段子数据
+  - 支持分页参数 `page` 和 `pageSize`
+  - 🆕 基于内存缓存的高性能分页
 - `GET /api/stats` - GitHub 仓库统计信息
+- 🆕 `GET /api/repos` - 获取按仓库分类的数据
+  - 参数：`repo` (仓库key), `page`, `pageSize`
+- 🆕 `POST /api/repos` - 获取所有配置的仓库列表
+- 🆕 `GET /api/health` - 系统健康检查
+  - 返回缓存状态、仓库配置、错误信息
 
 #### 认证接口  
 - `POST /api/like` - 点赞/取消点赞操作
@@ -434,10 +577,147 @@ NEXTAUTH_URL=http://localhost:3000       # OAuth 回调的基础 URL（生产环
 
 ### Vercel 部署（推荐）
 1. 连接 GitHub 仓库到 Vercel
-2. 配置环境变量
+2. 🆕 配置环境变量（必须包含 GITHUB_TOKEN）
 3. 自动部署 main 分支更新
+4. 🆕 首次部署后访问 `/api/health` 验证配置
+
+### 🆕 MultiRepoGitHubDatabase 部署注意事项
+
+#### 环境变量配置
+```bash
+# Vercel 环境变量配置
+GITHUB_TOKEN=ghp_xxxxxxxxxxxx  # 必需！
+GITHUB_CLIENT_ID=xxx
+GITHUB_CLIENT_SECRET=xxx
+NEXTAUTH_SECRET=xxx
+NEXTAUTH_URL=https://your-domain.vercel.app
+```
+
+#### 性能优化建议
+1. **缓存预热**：在 `layout.tsx` 中调用 `warmupGitHubDatabase()`
+2. **监控缓存**：定期检查 `/api/health` 端点
+3. **API 限制**：注意 GitHub API 频率限制（5000次/小时）
+4. **增量同步**：启用定时任务调用 `syncLatestIssues()`
+
+#### 健康检查
+- 端点：`GET /api/health`
+- 返回：缓存状态、仓库配置、错误信息
+- 用途：监控系统运行状态
 
 ### GitHub Actions 工作流
-- **自动化脚本**: 在 Issues 变更时触发数据更新
+- **自动化脚本**: 在 Issues 变更时触发数据更新（传统架构）
 - **构建测试**: PR 时自动运行测试用例
 - **部署流程**: 通过脚本确保数据一致性
+- 🆕 **Webhook 触发**: 可配置 Webhook 实时更新缓存
+
+## 测试
+
+### 🆕 单元测试
+
+项目包含完整的单元测试套件：
+
+```bash
+# 运行所有测试
+npm test
+
+# 运行 MultiRepoGitHubDatabase 测试
+npm test -- __tests__/multi-repo-github-db.test.ts
+
+# 运行覆盖率报告
+npm test -- --coverage
+```
+
+#### 测试覆盖范围
+- ✅ MultiRepoGitHubDatabase 核心功能（20个测试用例）
+- ✅ 缓存机制测试
+- ✅ 多仓库聚合测试
+- ✅ 增量同步测试
+- ✅ Webhook 处理测试
+- ✅ 错误处理测试
+
+## 故障排查
+
+### 🆕 MultiRepoGitHubDatabase 常见问题
+
+#### 问题 1：获取不到数据（返回 0 条）
+**症状**：API 返回空数组或 0 条数据
+
+**排查步骤**：
+1. 检查 `.env.local` 是否配置了 `GITHUB_TOKEN`
+2. 验证 token 权限（需要 `repo` 权限）
+3. 确认仓库配置的 label 是否正确（区分大小写）
+4. 检查 issue 状态配置（`state: 'OPEN' | 'CLOSED' | 'ALL'`）
+5. 访问 `/api/health` 查看详细错误信息
+
+**调试脚本**：
+```bash
+# 使用调试脚本测试 GitHub API 连接
+node debug-github-query.mjs
+```
+
+#### 问题 2：GitHub API 限制
+**症状**：403 错误，提示 API rate limit exceeded
+
+**解决方案**：
+- 使用认证的 token（限制提升到 5000次/小时）
+- 增加缓存 TTL 减少 API 调用
+- 使用增量同步而非全量刷新
+
+#### 问题 3：缓存不刷新
+**症状**：数据更新后前端不变
+
+**解决方案**：
+- 等待缓存过期（默认 5 分钟）
+- 调用 `refreshCache()` 手动刷新
+- 配置 Webhook 自动更新
+
+## 迁移指南
+
+### 🆕 从 data 目录迁移到 MultiRepoGitHubDatabase
+
+#### 优势对比
+
+| 特性 | data 目录（旧） | MultiRepoGitHubDatabase（新） |
+|------|---------------|------------------------------|
+| 数据来源 | JSON 文件 | GitHub Issues 直接查询 |
+| 更新方式 | GitHub Actions | 实时 API + 缓存 |
+| 多仓库支持 | 需要脚本合并 | ✅ 原生支持 |
+| 实时性 | 延迟（等待 Actions） | ✅ 5分钟缓存 |
+| 部署依赖 | 需要 data 文件 | ✅ 无需文件 |
+| API 调用 | 少 | 适中（有缓存） |
+
+#### 迁移步骤
+
+1. **配置环境变量**
+   ```bash
+   # .env.local
+   GITHUB_TOKEN=your_token_here
+   ```
+
+2. **更新仓库配置**
+   ```typescript
+   // src/lib/github-server-utils.ts
+   const REPOS_CONFIG: Repository[] = [
+     {
+       owner: 'zkl2333',
+       name: 'vme',
+       label: '收录',
+       state: 'ALL'
+     }
+   ]
+   ```
+
+3. **测试新 API**
+   - 访问 `/api/health` 检查状态
+   - 访问 `/api/items` 验证数据
+   - 访问 `/api/random` 测试随机功能
+
+4. **（可选）删除 data 目录**
+   - 确认新架构工作正常后
+   - 可以删除 `data/` 目录
+   - 禁用相关 GitHub Actions
+
+#### 兼容性说明
+- ✅ 新旧架构可以共存
+- ✅ API 接口保持兼容
+- ✅ 逐步迁移，无需一次性切换

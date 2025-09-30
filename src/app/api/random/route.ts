@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getRandomKfcItem, getOctokitInstance } from '@/lib/server-utils'
+import { getRandomKfcItem, getOctokitInstance } from '@/lib/github-server-utils'
 import { getIssueStats } from '@/app/lib/github-stats'
 
 export async function GET(request: NextRequest) {
@@ -13,6 +13,8 @@ export async function GET(request: NextRequest) {
   const format = searchParams.get('format')
 
   try {
+    console.log('🎲 API: 获取随机段子...')
+
     // 获取随机文案
     const randomItem = await getRandomKfcItem()
 
@@ -22,6 +24,8 @@ export async function GET(request: NextRequest) {
         { status: 404, headers },
       )
     }
+
+    console.log(`🎯 API: 随机选中段子 ${randomItem.title}`)
 
     // 获取详细的reactions信息 - 优先使用用户权限
     const octokit = await getOctokitInstance(request)
@@ -41,12 +45,21 @@ export async function GET(request: NextRequest) {
       return new NextResponse(randomItem.body || '暂无数据', { headers })
     } else {
       // 默认返回 JSON 格式
-      return NextResponse.json(enrichedItem, { headers })
+      console.log(`✅ API: 返回随机段子，来自 ${randomItem.repository?.owner}/${randomItem.repository?.name}`)
+      return NextResponse.json({
+        ...enrichedItem,
+        source: 'github-issues',
+        repository: randomItem.repository
+      }, { headers })
     }
   } catch (error) {
-    console.error(error)
+    console.error('❌ API: 获取随机段子失败:', error)
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      {
+        error: 'Internal Server Error',
+        message: error instanceof Error ? error.message : '未知错误',
+        source: 'github-issues'
+      },
       { status: 500, headers },
     )
   }

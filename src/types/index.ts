@@ -32,6 +32,42 @@ export interface IKfcItem {
   reactions?: {
     totalCount: number
   }
+  repository?: {
+    owner: string
+    name: string
+    url: string
+  }
+}
+
+// GitHub Issue 状态类型
+export type IssueState = 'OPEN' | 'CLOSED' | 'ALL'
+
+// 跨仓库配置
+export interface Repository {
+  owner: string
+  name: string
+  label?: string
+  state?: IssueState  // 可选：查询哪种状态的 issues，默认为 'ALL'
+}
+
+// 跨仓库聚合结果
+export interface MultiRepoResult<T> {
+  items: T[]
+  total: number
+  page: number
+  pageSize: number
+  totalPages: number
+  hasNextPage: boolean
+  hasPreviousPage: boolean
+  repoStats?: Record<string, number>
+}
+
+// 缓存状态
+export interface CacheState {
+  allIssues: IKfcItem[] | null
+  repoStats: Map<string, { count: number; lastUpdated: Date }>
+  totalCount: number
+  lastFullUpdate: number
 }
 
 export interface JokeDisplayItem {
