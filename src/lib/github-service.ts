@@ -198,7 +198,7 @@ export class GitHubService {
    */
   static createWithSystemToken(): GitHubService {
     if (!process.env.GITHUB_TOKEN) {
-      throw new GitHubServiceError('GitHub token not configured', 'MISSING_TOKEN')
+      throw new GitHubServiceError('GitHub token not configured', 'MISSING_TOKEN', 503)
     }
     return new GitHubService(new Octokit({
       auth: process.env.GITHUB_TOKEN,
@@ -226,6 +226,18 @@ export class GitHubService {
     return new GitHubService(new Octokit({
       auth: accessToken,
     }), 'user')
+  }
+
+  /**
+   * 安全创建服务实例：在token无效时返回null而不抛出异常
+   */
+  static async createSafely(request?: Request): Promise<GitHubService | null> {
+    try {
+      return await GitHubService.createSmart(request)
+    } catch (error) {
+      console.warn('Failed to create GitHub service:', error instanceof Error ? error.message : error)
+      return null
+    }
   }
 
   /**
