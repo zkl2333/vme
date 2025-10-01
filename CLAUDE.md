@@ -318,10 +318,10 @@ flowchart TD
   - **合并**: data 目录基础信息 + GitHub 实时数据
   - **返回**: 包含最新点赞数的完整段子信息
 
-- `POST /api/stats` - 实时统计数据
-  - **GitHub API**: GraphQL 批量查询 Issue reactions
-  - **功能**: 为段子列表提供最新点赞统计
-  - **特点**: 支持批量查询，100ms 批次延迟
+- `GET /api/reactions/[issueId]` - 单个段子的实时reactions数据
+  - **GitHub API**: 获取实时 reactions 详情
+  - **功能**: 为RandomJoke组件和交互式reactions提供最新数据
+  - **特点**: 支持单个Issue实时查询，60秒缓存
 
 - `POST /api/like` - 点赞操作
   - **GitHub API**: GraphQL Mutation 添加/删除 reactions

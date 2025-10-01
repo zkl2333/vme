@@ -65,8 +65,8 @@ npm start
 #### 获取分页文案
 - `GET /api/items/page?page=1&pageSize=10` - 分页获取文案数据
 
-#### 获取实时统计数据
-- `POST /api/stats` - 获取GitHub Issues的实时点赞和评论数据
+#### 获取实时reactions数据
+- `GET /api/reactions/[issueId]` - 获取指定Issue的实时reactions数据
 
 ### 开发工具
 
