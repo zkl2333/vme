@@ -7,6 +7,187 @@
 这是一个基于 Next.js 14 的"肯德基疯狂星期四段子库"应用 - 一个社区驱动的平台，用于收集和分享肯德基星期四段子。
 项目使用 GitHub Issues 作为内容管理系统，并集成 GitHub OAuth 用户认证。
 
+# context7
+Always use context7 when I need code generation, setup or configuration steps, or
+library/API documentation. This means you should automatically use the Context7 MCP
+tools to resolve library id and get library docs without me having to explicitly ask.
+
+## Issues 标签轮转流程
+
+### 标签体系
+项目使用以下标签对Issue进行状态管理：
+
+#### 主要标签
+- **`文案`** - 标识有效的文案提交内容
+- **`收录`** - 内容审核通过，已加入段子库
+- **`重复`** - 检测到重复内容，自动关闭
+- **`违规`** - 检测到违规内容，自动关闭
+- **`待审`** - 内容可能违规，需要人工审核
+
+### 自动审核流程
+
+#### 1. 触发机制
+```yaml
+# .github/workflows/issue_moderation.yml
+on:
+  issues:
+    types: [labeled]
+```
+当Issue被添加 `文案` 标签时，自动触发审核流程。
+
+#### 2. 审核逻辑 (`actions_scripts/src/moderationLogic.ts`)
+
+**步骤一：重复检测**
+- 使用编辑距离算法检测与现有文案的相似度
+- 相似度阈值：`distance / maxLength < 0.2`
+- 从本地 `data/` 目录读取所有现有文案进行对比
+- 如发现重复：
+  - 添加 `重复` 标签
+  - 添加评论指向相似文案
+  - 自动关闭Issue
+
+**步骤二：AI内容审核**
+- 调用AI审核API检查违规内容
+- 检测类别：仇恨、色情、暴力、自残等
+- 审核结果处理：
+  - **违规内容**：添加 `违规` 标签，添加评论说明违规类别，关闭Issue
+  - **可能违规**：添加 `待审` 标签，等待人工审核
+  - **审核通过**：添加 `收录` 标签，关闭Issue，触发数据更新
+
+**步骤三：数据更新**
+- 如果审核通过，自动触发 `create_data.yml` 工作流
+- 重新生成 `data/` 目录下的月份数据文件
+
+#### 3. 核心函数
+
+**重复检测**
+```typescript
+// 编辑距离算法
+function minDistance(word1: string, word2: string): number
+function isSimilar(str1: string, str2: string): boolean
+function findSimilarIssue(newIssue: string, currentIssueId?: string): Promise<IssueNode | null>
+```
+
+**标签管理**
+```typescript
+function addLabelsToIssue(issueNumber: number, labels: string[])
+function removeLabelFromIssue(issueNumber: number, label: string)
+function getIssueLabels(issueNumber: number): Promise<string[]>
+```
+
+**Issue操作**
+```typescript
+function addCommentToIssue(issueNumber: number, comment: string)
+function closeIssue(issueNumber: number)
+function dispatchWorkflow(workflow_id: string, ref: string)
+```
+
+### 手动审核功能
+
+#### 批量审核 (`actions_scripts/src/manualModeration.ts`)
+- **触发方式**：手动运行 `manual_moderation.yml` 工作流
+- **功能**：批量处理所有带有 `文案` 标签的开放Issue
+- **支持试运行**：`DRY_RUN=true` 模式预览操作结果
+- **统计报告**：输出审核统计信息
+
+#### 审核统计
+```
+=== 审核统计 ===
+总处理数: X
+重复文案: X
+违规内容: X  
+审核通过: X
+待审内容: X
+```
+
+### 工作流配置
+
+#### 自动审核工作流
+```yaml
+# .github/workflows/issue_moderation.yml
+name: 文案审核
+on:
+  issues:
+    types: [labeled]
+jobs:
+  moderate-issue:
+    if: github.event.label.name == '文案'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      actions: write
+```
+
+#### 手动审核工作流  
+```yaml
+# .github/workflows/manual_moderation.yml
+name: 手动文案审核
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: '是否为试运行模式'
+        default: 'false'
+```
+
+#### 数据更新工作流
+```yaml
+# .github/workflows/create_data.yml  
+name: 创建数据
+on:
+  workflow_dispatch:
+```
+
+### 环境变量
+- **`GITHUB_TOKEN`** - GitHub API访问令牌
+- **`AI_API_KEY`** - AI内容审核API密钥
+- **`DRY_RUN`** - 试运行模式开关（可选）
+
+### 标签轮转时序图
+
+```mermaid
+sequenceDiagram
+    participant U as 用户
+    participant I as GitHub Issue  
+    participant A as GitHub Actions
+    participant S as 审核脚本
+    participant D as Data文件
+    
+    U->>I: 创建Issue并添加"文案"标签
+    I->>A: 触发issue.labeled事件
+    A->>S: 运行moderateIssue.js
+    S->>S: 检查重复内容
+    alt 发现重复
+        S->>I: 添加"重复"标签+评论+关闭
+    else 内容审核
+        S->>S: AI内容审核
+        alt 违规内容
+            S->>I: 添加"违规"标签+评论+关闭
+        else 可能违规
+            S->>I: 添加"待审"标签+评论
+        else 审核通过
+            S->>I: 添加"收录"标签+评论+关闭
+            S->>A: 触发create_data.yml工作流
+            A->>D: 更新data/目录文件
+        end
+    end
+```
+
+### 最佳实践
+
+1. **标签管理**：确保Issue只被添加一次审核相关标签，避免重复处理
+2. **错误处理**：所有API调用都有完整的错误处理和日志记录
+3. **幂等性**：重复运行审核脚本不会产生副作用
+4. **透明度**：所有自动操作都会添加评论说明原因
+5. **可追溯**：完整的操作日志便于问题排查
+
+### 调试和监控
+
+- 查看GitHub Actions运行日志
+- 检查Issue评论了解自动操作原因
+- 使用试运行模式测试审核逻辑
+- 监控审核统计了解内容质量趋势
+
 ## 常用命令
 
 ### Next.js 应用开发
@@ -147,6 +328,13 @@ flowchart TD
   - **功能**: 直接操作 GitHub Issue reactions
   - **认证**: 需要用户 GitHub access token
 
+- `POST /api/submit` - 文案提交操作
+  - **GitHub API**: REST API 创建 Issues
+  - **功能**: 用户直接在前端提交文案，自动创建 GitHub Issue
+  - **认证**: 需要用户 GitHub access token
+  - **验证**: 标题≤100字符，内容≤2000字符
+  - **流程**: 创建Issue → 自动触发审核流程
+
 - `/api/auth/[...nextauth]` - 用户认证
   - **GitHub API**: OAuth 认证流程
   - **功能**: 获取用户信息和 access token
@@ -282,10 +470,12 @@ src/
 │   │   │   └── page/     # 分页接口
 │   │   ├── random/       # 随机段子 API
 │   │   ├── stats/        # GitHub 统计 API
-│   │   └── like/         # 点赞操作 API
+│   │   ├── like/         # 点赞操作 API
+│   │   └── submit/       # 文案提交 API
 │   ├── auth/signin/      # 登录页面
 │   ├── jokes/           # 段子列表页面
 │   ├── leaderboard/     # 用户排行榜页面
+│   ├── submit/          # 文案提交页面
 │   ├── layout.tsx       # 根布局文件
 │   └── page.tsx         # 首页
 ├── components/
@@ -296,7 +486,8 @@ src/
 │   │   ├── LikeButton.tsx        # 点赞按钮
 │   │   ├── LoginButton.tsx       # 登录按钮
 │   │   ├── RandomJoke.tsx        # 随机段子
-│   │   └── StarField.tsx         # 星空背景
+│   │   ├── StarField.tsx         # 星空背景
+│   │   └── SubmitJoke.tsx        # 文案提交表单
 │   └── server/          # 服务端渲染组件
 │       ├── Jokes.tsx           # 段子列表
 │       └── Leaderboard.tsx     # 排行榜
@@ -410,6 +601,11 @@ NEXTAUTH_URL=http://localhost:3000       # OAuth 回调的基础 URL（生产环
   - 需要 GitHub OAuth 认证
   - 直接操作 GitHub Issue Reactions
 
+- `POST /api/submit` - 文案提交操作
+  - 需要 GitHub OAuth 认证
+  - 创建新的 GitHub Issue
+  - 自动触发审核流程
+
 ### 开发最佳实践
 
 #### TypeScript 配置
@@ -441,3 +637,89 @@ NEXTAUTH_URL=http://localhost:3000       # OAuth 回调的基础 URL（生产环
 - **自动化脚本**: 在 Issues 变更时触发数据更新
 - **构建测试**: PR 时自动运行测试用例
 - **部署流程**: 通过脚本确保数据一致性
+
+## 前端文案贡献功能
+
+### 功能概述
+用户可以直接在网站前端提交文案，无需手动创建 GitHub Issue。系统会自动创建 Issue 并触发审核流程。
+
+### 技术实现
+
+#### 1. 前端组件 (`src/components/client/SubmitJoke.tsx`)
+- **用户认证检查**: 需要 GitHub 登录才能提交
+- **表单验证**: 
+  - 标题：≤100字符
+  - 内容：≤2000字符
+- **提交状态管理**: 加载状态、成功/失败反馈
+- **用户体验**: 字符计数、实时验证、友好提示
+
+#### 2. API 接口 (`src/app/api/submit/route.ts`)
+- **认证验证**: 检查用户 GitHub OAuth 状态
+- **参数验证**: 后端二次验证表单数据
+- **GitHub API 调用**: 使用用户 access token 创建 Issue
+- **错误处理**: 详细的错误分类和用户友好的错误信息
+
+#### 3. 页面路由 (`src/app/submit/page.tsx`)
+- **响应式设计**: 适配移动端和桌面端
+- **品牌风格**: 符合肯德基主题的视觉设计
+- **引导说明**: 提交须知和功能介绍
+
+### 用户流程
+
+1. **访问提交页面**: 点击导航栏"贡献文案"按钮
+2. **登录验证**: 未登录用户显示登录提示
+3. **填写表单**: 输入文案标题和内容
+4. **提交验证**: 前端实时验证字符限制
+5. **API 提交**: 后端创建 GitHub Issue
+6. **自动审核**: 触发现有的标签轮转流程
+7. **结果反馈**: 显示提交成功或错误信息
+
+### 与现有系统集成
+
+#### 无缝对接审核流程
+- 创建的 Issue 自动触发现有的审核机制
+- 重复检测、AI 内容审核、标签管理全部复用
+- 审核通过后自动更新 data/ 目录数据
+
+#### 权限与安全
+- 使用用户自己的 GitHub access token
+- 遵循 GitHub API 权限模型
+- 前后端双重验证确保数据安全
+
+#### 用户体验优化
+- 提交成功后清空表单
+- 详细的错误信息指导用户修正
+- 与现有登录系统无缝集成
+
+### 导航集成
+在主布局文件中新增"贡献文案"导航项：
+```tsx
+<a href="/submit"
+   className="flex items-center gap-1 rounded-xl bg-kfc-yellow/20 px-3 py-2 text-sm font-medium text-white transition-all duration-300 hover:bg-kfc-yellow/30 border border-kfc-yellow/50">
+  <i className="fa fa-plus"></i>
+  贡献文案
+</a>
+```
+
+### 类型定义
+新增提交相关的 TypeScript 类型：
+```typescript
+interface SubmitJokeRequest {
+  title: string
+  content: string
+}
+
+interface SubmitJokeResponse {
+  success: boolean
+  message: string
+  issueUrl?: string
+  issueNumber?: number
+}
+```
+
+### 特性亮点
+- **零门槛贡献**: 用户无需了解 GitHub 操作
+- **实时反馈**: 即时的表单验证和提交状态
+- **自动集成**: 完全融入现有的审核和数据管理流程
+- **移动友好**: 响应式设计适配各种设备
+- **错误恢复**: 详细的错误处理和用户指导
