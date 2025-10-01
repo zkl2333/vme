@@ -89,6 +89,13 @@ export default function RootLayout({
                     <i className="fa fa-trophy"></i>
                     排行榜
                   </a>
+                  <a
+                    href="/submit"
+                    className="flex items-center gap-1 rounded-xl bg-kfc-yellow/20 px-3 py-2 text-sm font-medium text-white transition-all duration-300 hover:bg-kfc-yellow/30 border border-kfc-yellow/50"
+                  >
+                    <i className="fa fa-plus"></i>
+                    提交我的段子
+                  </a>
                 </nav>
                 
                 <div className="hidden items-center gap-1 rounded-full bg-white/10 px-3 py-1 text-sm md:flex">
