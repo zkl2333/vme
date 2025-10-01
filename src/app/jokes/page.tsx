@@ -1,5 +1,4 @@
 import { Suspense } from 'react'
-import { headers } from 'next/headers'
 import JokesServer from '@/components/server/Jokes'
 
 // 获取URL参数的类型定义
@@ -12,12 +11,6 @@ interface PageProps {
 export default async function JokesPage({ searchParams }: PageProps) {
   // 从URL参数获取页码
   const page = parseInt(searchParams.page || '1')
-
-  // 获取headers以构建request对象
-  const headersList = await headers()
-  const request = new Request('http://localhost', {
-    headers: headersList,
-  })
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -40,7 +33,7 @@ export default async function JokesPage({ searchParams }: PageProps) {
           </div>
         }
       >
-        <JokesServer currentPage={page} request={request} />
+        <JokesServer currentPage={page} />
       </Suspense>
 
       {/* 返回首页 */}

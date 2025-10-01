@@ -62,36 +62,22 @@ async function getLeaderboardData(sortBy: string = 'score') {
 
       const author = authorMap.get(username)!
       author.totalPosts++
+      // 使用静态reactions数据
       author.posts.push({
         id: item.id,
         title: item.title,
-        interactions: 0,
+        interactions: item.reactions?.totalCount || 0,
         createdAt: item.createdAt,
       })
     }
 
-    // 获取GitHub统计数据
-    const allIssueIds = allItems.map((item) => item.id)
-    const statsMap = await githubService.getBatchIssueStats(allIssueIds)
-
-    // 更新作者统计数据
+    // 计算作者总互动数据
     for (const [username, author] of authorMap) {
       let totalInteractions = 0
 
-      // 更新每个段子的统计数据
-      author.posts = author.posts.map((post) => {
-        const stats = statsMap.get(post.id) || {
-          id: post.id,
-          reactions: 0,
-          reactionDetails: [],
-          reactionNodes: [],
-        }
-        totalInteractions += stats.reactions
-
-        return {
-          ...post,
-          interactions: stats.reactions,
-        }
+      // 计算总互动数
+      author.posts.forEach((post) => {
+        totalInteractions += post.interactions
       })
 
       author.totalInteractions = totalInteractions
