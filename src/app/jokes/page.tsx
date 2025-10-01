@@ -40,7 +40,7 @@ export default async function JokesPage({ searchParams }: PageProps) {
           </div>
         }
       >
-        <JokesServer currentPage={page} />
+        <JokesServer currentPage={page} request={request} />
       </Suspense>
 
       {/* 返回首页 */}

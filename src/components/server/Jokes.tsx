@@ -3,24 +3,53 @@ import Image from 'next/image'
 import JokesPagination from '../client/JokesPagination'
 import { getKfcItemsWithPagination } from '@/lib/server-utils'
 import { GitHubService } from '@/lib/github-service'
-import InteractiveReactions from '../client/InteractiveReactions'
+import InteractiveReactionsSimple from '../client/InteractiveReactionsSimple'
 import CopyButton from '../client/CopyButton'
 
 interface JokesServerProps {
   currentPage: number
+  request?: Request // 添加可选的request参数
 }
 
-export default async function JokesServer({ currentPage }: JokesServerProps) {
+export default async function JokesServer({ currentPage, request }: JokesServerProps) {
   const { items, totalPages, total } = await getKfcItemsWithPagination(
     currentPage,
     10,
   )
 
-  // 获取统计数据 - 使用智能服务创建
-  const githubService = await GitHubService.createSmart()
-  const stats = await githubService.getBatchIssueStats(
-    items.map((item) => item.id),
-  )
+  // 尝试获取统计数据，如果失败则使用默认值
+  let stats: { [id: string]: any } = {}
+  
+  // 安全创建GitHub服务，传入request以使用用户token
+  const githubService = await GitHubService.createSafely(request)
+  
+  if (githubService) {
+    try {
+      stats = await githubService.getBatchIssueStats(
+        items.map((item) => item.id),
+      )
+    } catch (error) {
+      console.warn('Failed to fetch GitHub stats for jokes list:', error instanceof Error ? error.message : error)
+      // 设置默认统计数据
+      items.forEach(item => {
+        stats[item.id] = {
+          reactions: 0,
+          reactionDetails: [],
+          reactionNodes: [],
+        }
+      })
+    }
+  } else {
+    console.info('GitHub service not available, using default reaction data')
+    // GitHub服务不可用时设置默认统计数据
+    items.forEach(item => {
+      stats[item.id] = {
+        reactions: 0,
+        reactionDetails: [],
+        reactionNodes: [],
+      }
+    })
+  }
 
   return (
     <section id="jokes-list" className="mb-12">
@@ -40,7 +69,7 @@ export default async function JokesServer({ currentPage }: JokesServerProps) {
       {/* 段子列表 */}
       <div className="space-y-6">
         {items.map((item) => {
-          const itemStats = stats.get(item.id)
+          const itemStats = stats[item.id]
           const interactions =
             itemStats?.reactions || item.reactions?.totalCount || 0
           const reactionDetails = itemStats?.reactionDetails || []
@@ -90,10 +119,10 @@ export default async function JokesServer({ currentPage }: JokesServerProps) {
                     <FormattedDate date={item.createdAt} />
                   </span>
 
-                  <InteractiveReactions
+                  <InteractiveReactionsSimple
                     issueId={item.id}
-                    reactionDetails={reactionDetails}
-                    reactionNodes={reactionNodes}
+                    initialReactionDetails={reactionDetails}
+                    initialReactionNodes={reactionNodes}
                   />
                 </div>
               </div>
