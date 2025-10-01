@@ -1,84 +1,111 @@
-# vme
+# 🍗 vme - 肯德基疯狂星期四文案库
 
 ![Social preview](https://repository-images.githubusercontent.com/784130959/c8f54bbe-3f0e-4588-8928-e02702b946e5)
 
-## 介绍
+> 一个社区驱动的肯德基疯狂星期四段子分享平台，让每个星期四都充满欢乐！
 
-这是一个肯德基疯狂星期四文案库，用于收集、展示、分享各种疯狂星期四文案。
-创建的原因之一是朋友给我了有一个 vme.im 域名，我想用它整个活。
+## ✨ 项目特色
 
-## 特性
+- 🎯 **社区驱动** - 通过 GitHub Issues 收集和管理段子内容
+- 🎲 **随机推荐** - 每次访问都有新的段子惊喜
+- 👑 **梗王排行** - 展示最受欢迎的段子创作者
+- 📊 **实时互动** - 支持点赞、评论等社交功能
+- 📱 **完美适配** - 响应式设计，手机电脑都能畅享
+- 🎨 **KFC主题** - 经典红黄配色，满满的疯狂星期四氛围
+- ⚡ **极速体验** - 智能缓存，秒开页面
 
-- 🍗 **精美的KFC主题设计** - 红黄配色，炸鸡元素，满满的疯狂星期四氛围
-- 📱 **响应式设计** - 完美适配手机和桌面端
-- 🎲 **随机段子推荐** - 每次刷新都有新的惊喜
-- 👑 **梗王排行榜** - 展示最受欢迎的段子贡献者
-- 📊 **实时统计数据** - 显示GitHub Issues的真实点赞和评论数量
-- 📄 **智能分页** - 支持翻页浏览，省略号智能显示
-- ⚡ **API缓存** - 5分钟缓存机制，避免频繁请求GitHub API
-- 🎨 **炫酷动画** - 炸鸡旋转、按钮脉冲等趣味动效
+## 🚀 快速开始
 
-## 致敬
+### 在线体验
+直接访问 [vme.im](https://vme.im) 即可开始使用！
 
-项目创意来自 [whitescent/KFC-Crazy-Thursday](https://github.com/whitescent/KFC-Crazy-Thursday)
-
-## 配置
-
-### 环境变量
-
-为了启用实时GitHub统计功能（显示真实的点赞数和评论数），可选配置GitHub Token：
-
-1. 复制 `env.local.example` 到 `.env`
-2. 添加你的GitHub Personal Access Token
-
-详细配置说明请查看：[ENVIRONMENT.md](./ENVIRONMENT.md)
-
-### 开发环境
+### 本地部署
+如果你想在本地运行这个项目：
 
 ```bash
-# 安装依赖
+# 1. 克隆项目
+git clone https://github.com/zkl2333/vme.git
+cd vme
+
+# 2. 安装依赖
 npm install
 
-# 配置环境变量（可选，启用实时统计功能）
-cp env.local.example .env
-# 编辑 .env 添加你的 GITHUB_TOKEN
+# 3. 配置环境变量（可选，用于完整功能）
+cp env.local.example .env.local
+# 编辑 .env.local 添加你的 GitHub Token
 
-# 启动开发服务器
+# 4. 启动开发服务器
 npm run dev
 
-# 构建生产版本
-npm run build
-npm start
+# 5. 打开浏览器访问 http://localhost:3000
 ```
 
-## 使用
+## 🎯 如何使用
 
-### API 服务
+### 浏览段子
+- **首页** - 查看随机推荐的段子
+- **段子列表** - 浏览所有段子，支持分页
+- **排行榜** - 查看最受欢迎的创作者
 
-#### 获取随机文案
-- `GET /api/random` - 随机获取一条文案（JSON格式）
-- `GET /api/random?format=text` - 随机获取一条文案（纯文本格式）
+### 互动功能
+- **点赞** - 为喜欢的段子点赞（需要 GitHub 登录）
+- **分享** - 复制段子内容分享给朋友
+- **贡献** - 提交你自己的段子创意
 
-#### 获取所有文案
-- `GET /api/items` - 获取所有文案数据（JSON格式）
+### 贡献段子
+1. 点击"贡献文案"按钮
+2. 使用 GitHub 账号登录
+3. 填写段子标题和内容
+4. 提交后会自动进入审核流程
+5. 审核通过后就会出现在段子库中
 
-#### 获取分页文案
-- `GET /api/items/page?page=1&pageSize=10` - 分页获取文案数据
+## 🔧 开发者信息
 
-#### 获取实时reactions数据
-- `GET /api/reactions/[issueId]` - 获取指定Issue的实时reactions数据
-
-### 开发工具
+### API 接口
+如果你需要集成我们的 API：
 
 ```bash
-# 代码格式检查
-npm run lint
+# 获取随机段子
+GET /api/random
+GET /api/random?format=text  # 纯文本格式
+
+# 获取段子列表
+GET /api/items
+GET /api/items/page?page=1&pageSize=10  # 分页数据
+
+# 获取统计数据
+GET /api/stats
 ```
 
-### 获取所有数据（旧版，不推荐）
+### 技术栈
+- **前端**: Next.js 14 + TypeScript + Tailwind CSS
+- **认证**: NextAuth.js + GitHub OAuth
+- **数据**: GitHub Issues + GitHub API
+- **部署**: Vercel
 
-https://fastly.jsdelivr.net/gh/zkl2333/vme/data.json
+## 🤝 贡献指南
 
-## 如何贡献文案？
+### 贡献段子内容
+1. **在线提交** - 访问网站点击"贡献文案"按钮
+2. **GitHub Issues** - 直接创建 [Issue](https://github.com/zkl2333/vme/issues/new?assignees=&labels=%E6%96%87%E6%A1%88&projects=&template=data_provided.md&title=) 提交段子
 
-新建一个新的 [issue](https://github.com/zkl2333/vme/issues/new?assignees=&labels=%E6%96%87%E6%A1%88&projects=&template=data_provided.md&title=) 填写标题（随意）和文本即可。
+### 贡献代码
+1. Fork 本仓库
+2. 创建你的特性分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交你的修改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 打开一个 Pull Request
+
+## 📄 开源协议
+
+本项目基于 MIT 协议开源 - 查看 [LICENSE](LICENSE) 文件了解详情。
+
+## 🙏 致谢
+
+- 项目创意来自 [whitescent/KFC-Crazy-Thursday](https://github.com/whitescent/KFC-Crazy-Thursday)
+- 感谢所有贡献段子的朋友们！
+- 感谢 GitHub 提供的免费服务支持
+
+---
+
+**让每个星期四都充满欢乐！** 🍗✨
