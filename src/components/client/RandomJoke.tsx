@@ -264,10 +264,9 @@ export default function RandomJoke() {
               <div className="relative">
                 <InteractiveReactions
                   issueId={joke.id}
-                  reactionDetails={reactionsData?.details || []}
-                  reactionNodes={reactionsData?.nodes || []}
+                  initialReactionDetails={reactionsData?.details || []}
+                  initialReactionNodes={reactionsData?.nodes || []}
                   className="flex-wrap"
-                  onDataRefresh={mutateReactions}
                 />
               </div>
             </div>
