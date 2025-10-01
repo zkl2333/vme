@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getIssueStats } from '@/app/lib/github-stats'
-import { getOctokitInstance } from '@/lib/server-utils'
+import { GitHubService } from '@/lib/github-service'
 
 interface IssueStats {
   id: string
@@ -30,15 +29,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 优先使用用户权限
-    const octokit = await getOctokitInstance(request)
+    // 使用智能服务创建，优先用户 token，降级到系统 token
+    const githubService = await GitHubService.createSmart(request)
 
     const results: IssueStats[] = []
 
     for (const issueId of issueIds) {
       try {
         // 使用封装的函数获取Issue统计数据
-        const stats = await getIssueStats(octokit, issueId)
+        const stats = await githubService.getIssueStats(issueId)
         results.push(stats)
       } catch (error) {
         console.error(`Failed to fetch stats for issue ${issueId}:`, error)

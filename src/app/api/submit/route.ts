@@ -1,33 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth/next'
-import { getToken } from 'next-auth/jwt'
-import { authOptions } from '@/lib/auth'
-import { Octokit } from '@octokit/core'
+import { GitHubService, GitHubServiceError, getCurrentUser, requireUserAuth } from '@/lib/github-service'
 import { SubmitJokeRequest, SubmitJokeResponse } from '@/types'
 
 export async function POST(request: NextRequest) {
   try {
-    // 获取用户session
-    const session = await getServerSession(authOptions)
-
-    if (!session?.user?.username) {
-      return NextResponse.json<SubmitJokeResponse>({
-        success: false,
-        message: '请先登录GitHub账号',
-      }, { status: 401 })
-    }
-
-    // 从JWT token中获取access token
-    const secret = process.env.NEXTAUTH_SECRET
-    const token = await getToken({ req: request, secret })
-    const accessToken = token?.accessToken
-
-    if (!accessToken) {
-      return NextResponse.json<SubmitJokeResponse>({
-        success: false,
-        message: '认证信息无效，请重新登录',
-      }, { status: 401 })
-    }
+    // 获取用户认证状态
+    const user = await getCurrentUser(request)
+    requireUserAuth(user)
 
     const body: SubmitJokeRequest = await request.json()
     const { title, content } = body
@@ -54,34 +33,17 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // 创建Octokit实例
-    const octokit = new Octokit({
-      auth: accessToken,
-    })
-
-    // 获取仓库信息
-    const repoOwner = 'zkl2333'  // 根据 CLAUDE.md 中的信息
-    const repoName = 'vme'       // 根据项目结构推断
+    // 创建 GitHub 服务实例（使用用户token）
+    const githubService = await GitHubService.createWithUserToken(request)
 
     try {
-      // 创建GitHub Issue
-      const response = await octokit.request('POST /repos/{owner}/{repo}/issues', {
-        owner: repoOwner,
-        repo: repoName,
-        title: title.trim(),
-        body: content.trim(),
-        labels: ['文案'],  // 自动添加"文案"标签
-        headers: {
-          'X-GitHub-Api-Version': '2022-11-28'
-        }
-      })
-
-      const issueData = response.data
+      // 创建 GitHub Issue
+      const issueData = await githubService.createJokeIssue(title, content)
 
       console.log('Issue创建成功:', {
         number: issueData.number,
         url: issueData.html_url,
-        user: session.user.username
+        user: user.username
       })
 
       return NextResponse.json<SubmitJokeResponse>({
@@ -92,39 +54,51 @@ export async function POST(request: NextRequest) {
       })
 
     } catch (githubError: any) {
-      console.error('GitHub API错误:', {
-        error: githubError.message,
-        status: githubError.status,
-        data: githubError.response?.data,
-        user: session.user.username
-      })
+      if (githubError instanceof GitHubServiceError) {
+        console.error('GitHub API错误:', {
+          code: githubError.code,
+          message: githubError.message,
+          status: githubError.status,
+          user: user.username
+        })
 
-      // 处理常见的GitHub API错误
-      if (githubError.status === 403) {
+        // 处理限流错误
+        if (githubError.code === 'RATE_LIMIT_FORCE_LOGIN') {
+          return NextResponse.json<SubmitJokeResponse>({
+            success: false,
+            message: 'API调用频率过高，请稍后重试或联系管理员',
+          }, { status: 429 })
+        }
+
+        // 处理常见的GitHub API错误
+        if (githubError.code === 'FORBIDDEN') {
+          return NextResponse.json<SubmitJokeResponse>({
+            success: false,
+            message: '权限不足，请确保已授权访问仓库',
+          }, { status: 403 })
+        }
+
+        if (githubError.code === 'NOT_FOUND') {
+          return NextResponse.json<SubmitJokeResponse>({
+            success: false,
+            message: '仓库不存在或无权访问',
+          }, { status: 404 })
+        }
+
+        if (githubError.code === 'INVALID_DATA') {
+          return NextResponse.json<SubmitJokeResponse>({
+            success: false,
+            message: '提交数据格式错误，请检查内容后重试',
+          }, { status: 422 })
+        }
+
         return NextResponse.json<SubmitJokeResponse>({
           success: false,
-          message: '权限不足，请确保已授权访问仓库',
-        }, { status: 403 })
+          message: `GitHub API错误: ${githubError.message}`,
+        }, { status: githubError.status || 500 })
       }
 
-      if (githubError.status === 404) {
-        return NextResponse.json<SubmitJokeResponse>({
-          success: false,
-          message: '仓库不存在或无权访问',
-        }, { status: 404 })
-      }
-
-      if (githubError.status === 422) {
-        return NextResponse.json<SubmitJokeResponse>({
-          success: false,
-          message: '提交数据格式错误，请检查内容后重试',
-        }, { status: 422 })
-      }
-
-      return NextResponse.json<SubmitJokeResponse>({
-        success: false,
-        message: `GitHub API错误: ${githubError.message}`,
-      }, { status: githubError.status || 500 })
+      throw githubError
     }
 
   } catch (error: any) {
@@ -132,6 +106,28 @@ export async function POST(request: NextRequest) {
       error: error.message,
       stack: error.stack
     })
+
+    // 处理认证错误
+    if (error instanceof GitHubServiceError && error.code === 'AUTHENTICATION_REQUIRED') {
+      return NextResponse.json<SubmitJokeResponse>({
+        success: false,
+        message: '请先登录GitHub账号',
+      }, { status: 401 })
+    }
+
+    if (error instanceof GitHubServiceError && error.code === 'NOT_AUTHENTICATED') {
+      return NextResponse.json<SubmitJokeResponse>({
+        success: false,
+        message: '请先登录GitHub账号',
+      }, { status: 401 })
+    }
+
+    if (error instanceof GitHubServiceError && error.code === 'INVALID_TOKEN') {
+      return NextResponse.json<SubmitJokeResponse>({
+        success: false,
+        message: '认证信息无效，请重新登录',
+      }, { status: 401 })
+    }
 
     return NextResponse.json<SubmitJokeResponse>({
       success: false,

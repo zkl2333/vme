@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import LeaderboardSortTabs from '../client/LeaderboardSortTabs'
-import { getOctokitInstance } from '@/lib/server-utils'
+import { GitHubService } from '@/lib/github-service'
 
 interface AuthorStats {
   username: string
@@ -32,8 +32,8 @@ async function getLeaderboardData(sortBy: string = 'score') {
   }
 
   try {
-    // 优先使用用户权限
-    const octokit = await getOctokitInstance()
+    // 使用智能服务创建
+    const githubService = await GitHubService.createSmart()
 
     // 动态导入服务端工具函数，避免客户端bundle包含fs模块
     const { getAllKfcItems } = await import('@/lib/server-utils')
@@ -70,14 +70,9 @@ async function getLeaderboardData(sortBy: string = 'score') {
       })
     }
 
-    // 动态导入GitHub统计工具函数
-    const { getBatchIssueStats: serverGetBatchIssueStats } = await import(
-      '@/app/lib/github-stats'
-    )
-
     // 获取GitHub统计数据
     const allIssueIds = allItems.map((item) => item.id)
-    const statsMap = await serverGetBatchIssueStats(octokit, allIssueIds)
+    const statsMap = await githubService.getBatchIssueStats(allIssueIds)
 
     // 更新作者统计数据
     for (const [username, author] of authorMap) {
@@ -88,6 +83,8 @@ async function getLeaderboardData(sortBy: string = 'score') {
         const stats = statsMap.get(post.id) || {
           id: post.id,
           reactions: 0,
+          reactionDetails: [],
+          reactionNodes: [],
         }
         totalInteractions += stats.reactions
 
