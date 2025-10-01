@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useCallback } from 'react'
 import { FormattedDate } from '@/components/FormattedDate'
 import Image from 'next/image'
 import { IKfcItem } from '@/types'
 import CopyButton from './CopyButton'
 import InteractiveReactions from './InteractiveReactions'
+import useSWR from 'swr'
 
 interface ReactionsData {
   totalCount: number
@@ -13,107 +14,109 @@ interface ReactionsData {
   nodes: any[]
 }
 
+// SWR fetcher 函数
+const fetcher = async (url: string) => {
+  const res = await fetch(url)
+  if (!res.ok) {
+    throw new Error('获取数据失败')
+  }
+  return res.json()
+}
+
+// 获取 reactions 数据的 fetcher
+const reactionsFetcher = async (url: string) => {
+  const res = await fetch(url)
+  
+  if (res.ok) {
+    const data = await res.json()
+    return {
+      totalCount: data.totalCount,
+      details: data.details || [],
+      nodes: data.nodes || [],
+      warning: null,
+    }
+  } else {
+    // 处理各种错误情况
+    const errorData = await res.json().catch(() => ({}))
+    
+    let warning = null
+    if (res.status === 429) {
+      warning = 'API 调用频率限制，显示缓存数据'
+    } else if (res.status === 503) {
+      warning = 'GitHub 未配置，显示基础数据'
+    }
+    
+    return {
+      totalCount: 0,
+      details: [],
+      nodes: [],
+      warning,
+      ...(errorData.fallback || {}),
+    }
+  }
+}
+
 export default function RandomJoke() {
-  const [joke, setJoke] = useState<IKfcItem | null>(null)
-  const [reactions, setReactions] = useState<ReactionsData>({
-    totalCount: 0,
-    details: [],
-    nodes: [],
-  })
-  const [loading, setLoading] = useState(true)
-  const [reactionsLoading, setReactionsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [rateLimitWarning, setRateLimitWarning] = useState<string | null>(null)
-
-  // 获取 reactions 数据的函数
-  const fetchReactions = async (issueId: string) => {
-    setReactionsLoading(true)
-    setRateLimitWarning(null)
-    
-    try {
-      const response = await fetch(`/api/reactions/${issueId}`)
-      
-      if (response.ok) {
-        const data = await response.json()
-        setReactions({
-          totalCount: data.totalCount,
-          details: data.details || [],
-          nodes: data.nodes || [],
-        })
-      } else {
-        // 处理各种错误情况
-        const errorData = await response.json().catch(() => ({}))
-        
-        if (response.status === 429) {
-          setRateLimitWarning('API 调用频率限制，显示缓存数据')
-          console.warn('Rate limit hit, using fallback data')
-        } else if (response.status === 503) {
-          console.warn('GitHub token not configured, using basic data')
-        } else {
-          console.warn('Failed to fetch reactions:', errorData)
-        }
-        
-        // 使用降级数据
-        if (errorData.fallback) {
-          setReactions(errorData.fallback)
-        }
-      }
-    } catch (err) {
-      console.error('Error fetching reactions:', err)
-      // 保持默认的空状态
-    } finally {
-      setReactionsLoading(false)
+  const [refreshKey, setRefreshKey] = useState(0)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  
+  // 使用 SWR 获取随机段子
+  const { 
+    data: joke, 
+    error: jokeError, 
+    isLoading: jokeLoading,
+    mutate: mutateJoke 
+  } = useSWR<IKfcItem>(
+    `/api/random?_=${refreshKey}`, 
+    fetcher,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      dedupingInterval: 1000, // 1秒去重间隔，避免过度请求
+      keepPreviousData: true, // 保持之前的数据，避免闪烁
     }
-  }
+  )
 
-  // 获取随机段子的函数
-  const fetchRandomJoke = async () => {
-    setLoading(true)
-    setError(null)
-    setRateLimitWarning(null)
-    
-    try {
-      // 首先获取基础段子数据（快速响应）
-      const response = await fetch('/api/random')
-      
-      if (!response.ok) {
-        throw new Error('获取随机段子失败')
-      }
-      
-      const jokeData = await response.json()
-      setJoke(jokeData)
-      
-      // 使用基础数据的 reactions 作为初始值
-      setReactions({
-        totalCount: jokeData.reactions?.totalCount || 0,
-        details: [],
-        nodes: [],
-      })
-      
-      // 异步获取增强的 reactions 数据
-      if (jokeData.id) {
-        fetchReactions(jokeData.id)
-      }
-      
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '获取段子失败')
-    } finally {
-      setLoading(false)
+  // 使用 SWR 获取 reactions 数据
+  const { 
+    data: reactionsData, 
+    isLoading: reactionsLoading,
+    mutate: mutateReactions 
+  } = useSWR<ReactionsData & { warning?: string }>(
+    joke?.id ? `/api/reactions/${joke.id}` : null,
+    reactionsFetcher,
+    {
+      refreshInterval: 30000, // 30秒自动刷新 reactions
+      revalidateOnFocus: true,
+      errorRetryCount: 2,
+      errorRetryInterval: 5000,
+      keepPreviousData: true, // 保持之前的数据，避免闪烁
     }
-  }
+  )
 
-  // 组件挂载时获取第一个段子
-  useEffect(() => {
-    fetchRandomJoke()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  // 获取新段子
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true)
+    try {
+      // 增加 refresh key 强制获取新数据
+      const newKey = refreshKey + 1
+      setRefreshKey(newKey)
+      
+      // 重新获取段子数据，不清除当前数据
+      await mutateJoke()
+    } catch (error) {
+      console.error('Failed to refresh joke:', error)
+    } finally {
+      setIsRefreshing(false)
+    }
+  }, [refreshKey, mutateJoke])
 
-  // 处理换段子按钮点击
-  const handleRefresh = () => {
-    fetchRandomJoke()
-  }
+  // 初次加载状态
+  const isInitialLoading = jokeLoading && !joke
+  const isButtonLoading = isRefreshing || jokeLoading
 
   // 错误状态
-  if (error && !joke) {
+  if (jokeError && !joke) {
     return (
       <section className="mb-12">
         <div className="relative overflow-hidden rounded-2xl bg-white p-6 shadow-kfc md:p-8">
@@ -129,14 +132,15 @@ export default function RandomJoke() {
               </h2>
             </div>
             <div className="text-center text-gray-500">
-              <i className="fa fa-exclamation-circle mb-4 text-4xl"></i>
-              <p>{error}</p>
+              <div className="mb-4 text-4xl">😵‍💫</div>
+              <p className="mb-4 text-lg">哎呀，段子加载失败了</p>
+              <p className="mb-6 text-sm opacity-75">{jokeError.message}</p>
               <button
                 onClick={handleRefresh}
-                className="mt-4 flex items-center gap-2 rounded-full bg-kfc-yellow px-6 py-2 font-bold text-kfc-red shadow-md transition-all duration-300 hover:bg-kfc-lightYellow hover:shadow-lg"
+                className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-kfc-red to-orange-500 px-6 py-3 font-bold text-white shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105"
               >
                 <i className="fa fa-refresh"></i>
-                重试
+                重新获取段子
               </button>
             </div>
           </div>
@@ -146,7 +150,7 @@ export default function RandomJoke() {
   }
 
   // 加载状态
-  if (loading && !joke) {
+  if (isInitialLoading) {
     return (
       <section className="mb-12">
         <div className="relative overflow-hidden rounded-2xl bg-white p-6 shadow-kfc md:p-8">
@@ -154,16 +158,29 @@ export default function RandomJoke() {
           <div className="absolute bottom-0 left-0 -mb-12 -ml-12 h-24 w-24 rounded-full bg-kfc-red/10"></div>
           <div className="relative z-10">
             <div className="mb-6 flex items-center gap-2">
-              <span className="rounded bg-kfc-red px-2 py-1 text-xs text-white">
+              <span className="animate-pulse rounded bg-kfc-red px-2 py-1 text-xs text-white">
                 今日推荐
               </span>
               <h2 className="text-xl font-bold text-gray-800 md:text-2xl">
                 让你笑到拍桌的段子
               </h2>
             </div>
-            <div className="flex items-center justify-center py-12">
-              <div className="h-8 w-8 animate-spin rounded-full border-2 border-kfc-red border-t-transparent"></div>
-              <span className="ml-2 text-gray-600">加载段子中...</span>
+            
+            {/* 骨架屏 */}
+            <div className="space-y-4">
+              <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+              <div className="h-4 bg-gray-200 rounded animate-pulse w-5/6"></div>
+              <div className="h-4 bg-gray-200 rounded animate-pulse w-4/6"></div>
+              <div className="h-4 bg-gray-200 rounded animate-pulse w-3/6"></div>
+            </div>
+            
+            <div className="mt-8 flex items-center justify-center">
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 animate-spin rounded-full border-3 border-kfc-yellow border-t-transparent"></div>
+                <span className="text-lg font-medium text-gray-600">
+                  正在为您精选段子...
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -178,88 +195,105 @@ export default function RandomJoke() {
 
   return (
     <section className="mb-12">
-      <div className="relative overflow-hidden rounded-2xl bg-white p-6 shadow-kfc md:p-8">
+      <div className="relative overflow-hidden rounded-2xl bg-white p-6 shadow-kfc md:p-8 transition-all duration-300 hover:shadow-xl">
         <div className="absolute right-0 top-0 -mr-16 -mt-16 h-32 w-32 rounded-full bg-kfc-yellow/10"></div>
         <div className="absolute bottom-0 left-0 -mb-12 -ml-12 h-24 w-24 rounded-full bg-kfc-red/10"></div>
         <div className="relative z-10">
-          <div className="mb-6 flex items-center gap-2">
-            <span className="rounded bg-kfc-red px-2 py-1 text-xs text-white">
-              今日推荐
-            </span>
-            <h2 className="text-xl font-bold text-gray-800 md:text-2xl">
-              让你笑到拍桌的段子
-            </h2>
-            
-            {/* 限流警告提示 */}
-            {rateLimitWarning && (
-              <span className="rounded bg-orange-100 px-2 py-1 text-xs text-orange-600">
-                {rateLimitWarning}
+          <div className="mb-6 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="rounded bg-gradient-to-r from-kfc-red to-orange-500 px-3 py-1 text-xs font-medium text-white shadow-sm">
+                今日推荐
               </span>
-            )}
+              <h2 className="text-xl font-bold text-gray-800 md:text-2xl">
+                让你笑到拍桌的段子
+              </h2>
+            </div>
+            
+            {/* 状态指示器 */}
+            <div className="flex items-center gap-2">
+              {reactionsData?.warning && (
+                <span className="rounded-full bg-amber-100 px-2 py-1 text-xs text-amber-700 border border-amber-200">
+                  {reactionsData.warning}
+                </span>
+              )}
+              {reactionsLoading && (
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-kfc-yellow border-t-transparent"></div>
+              )}
+            </div>
           </div>
 
-          <div className="mb-6 min-h-[120px] whitespace-pre-wrap border-l-4 border-kfc-yellow px-1 text-lg leading-relaxed md:text-xl">
-            {joke.body}
+          {/* 段子内容 */}
+          <div className="mb-6 group">
+            <div className="min-h-[120px] whitespace-pre-wrap border-l-4 border-kfc-yellow px-4 py-2 text-lg leading-relaxed md:text-xl bg-gray-50/50 rounded-r-lg transition-colors duration-300 group-hover:bg-gray-50">
+              {joke.body}
+            </div>
             <div className="mt-3 flex justify-end">
               <CopyButton text={joke.body} />
             </div>
           </div>
 
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+          {/* 作者信息和互动数据 */}
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-t border-gray-100 pt-4">
             <div className="flex items-center gap-3">
-              <Image
-                src={joke.author.avatarUrl}
-                alt="用户头像"
-                width={40}
-                height={40}
-                className="h-10 w-10 rounded-full border-2 border-kfc-yellow"
-              />
+              <div className="relative">
+                <Image
+                  src={joke.author.avatarUrl}
+                  alt="用户头像"
+                  width={48}
+                  height={48}
+                  className="h-12 w-12 rounded-full border-3 border-kfc-yellow shadow-sm transition-transform duration-300 hover:scale-110"
+                />
+                <div className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-green-500 border-2 border-white"></div>
+              </div>
               <div>
-                <div className="font-medium">
+                <div className="font-semibold text-gray-900">
                   贡献者:{' '}
-                  <span className="text-kfc-red">@{joke.author.username}</span>
+                  <span className="text-kfc-red hover:text-orange-500 transition-colors duration-300">
+                    @{joke.author.username}
+                  </span>
                 </div>
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-gray-500 flex items-center gap-1">
+                  <i className="fa fa-calendar text-xs"></i>
                   <FormattedDate date={joke.createdAt} />
                 </div>
               </div>
             </div>
 
+            {/* Reactions 区域 */}
             <div className="flex items-center gap-4">
-              {/* Reactions 区域 */}
               <div className="relative">
-                {reactionsLoading && (
-                  <div className="absolute right-0 top-0 -mt-1 -mr-1">
-                    <div className="h-3 w-3 animate-spin rounded-full border border-kfc-red border-t-transparent"></div>
-                  </div>
-                )}
                 <InteractiveReactions
                   issueId={joke.id}
-                  reactionDetails={reactions.details}
-                  reactionNodes={reactions.nodes}
+                  reactionDetails={reactionsData?.details || []}
+                  reactionNodes={reactionsData?.nodes || []}
                   className="flex-wrap"
+                  onDataRefresh={mutateReactions}
                 />
               </div>
             </div>
           </div>
 
-          <button
-            onClick={handleRefresh}
-            disabled={loading}
-            className="flex items-center gap-2 rounded-full bg-kfc-yellow px-6 py-2 font-bold text-kfc-red shadow-md transition-all duration-300 hover:bg-kfc-lightYellow hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {loading ? (
-              <>
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-kfc-red border-t-transparent"></div>
-                加载中...
-              </>
-            ) : (
-              <>
-                <i className="fa fa-refresh"></i>
-                换个段子乐一乐
-              </>
-            )}
-          </button>
+          {/* 操作按钮 */}
+          <div className="flex items-center justify-center">
+            <button
+              onClick={handleRefresh}
+              disabled={isButtonLoading}
+              className="group inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-kfc-yellow to-yellow-400 px-8 py-3 font-bold text-kfc-red shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105 disabled:cursor-not-allowed disabled:opacity-50 disabled:scale-100"
+            >
+              {isButtonLoading ? (
+                <>
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-kfc-red border-t-transparent"></div>
+                  <span>正在获取...</span>
+                </>
+              ) : (
+                <>
+                  <i className="fa fa-refresh text-lg transition-transform duration-300 group-hover:rotate-180"></i>
+                  <span>换个段子乐一乐</span>
+                  <span className="text-sm opacity-75">(≧∇≦)</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </section>

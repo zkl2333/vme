@@ -3,21 +3,21 @@
 import { useMemo } from 'react'
 import { useSession } from 'next-auth/react'
 import LikeButton from './LikeButton'
+import useSWR from 'swr'
 
-interface InteractiveReactionsProps {
+interface InteractiveReactionsSimpleProps {
   issueId: string
-  reactionDetails: Array<{
+  initialReactionDetails: Array<{
     content: string
     users: {
       totalCount: number
     }
   }>
-  reactionNodes?: any[]
+  initialReactionNodes?: any[]
   className?: string
-  onDataRefresh?: () => void // 可选的刷新回调
 }
 
-// 可用的反应类型 - 直接使用GitHub的原始类型
+// 可用的反应类型
 const availableReactions = [
   { key: 'THUMBS_UP', emoji: '👍', label: '点赞' },
   { key: 'HEART', emoji: '❤️', label: '爱心' },
@@ -27,43 +27,65 @@ const availableReactions = [
   { key: 'EYES', emoji: '👀', label: '眼睛' },
 ]
 
-export default function InteractiveReactions({
+// SWR fetcher - 只在需要时调用
+const reactionsFetcher = async (url: string) => {
+  const res = await fetch(url)
+  if (!res.ok) throw new Error('Failed to fetch')
+  return res.json()
+}
+
+export default function InteractiveReactionsSimple({
   issueId,
-  reactionDetails,
-  reactionNodes = [],
+  initialReactionDetails,
+  initialReactionNodes = [],
   className = '',
-  onDataRefresh,
-}: InteractiveReactionsProps) {
+}: InteractiveReactionsSimpleProps) {
   const { data: session } = useSession()
 
-  // 使用useMemo优化数据处理，避免重复计算
+  // 只有在用户交互后才会实际调用API (懒加载)
+  const { data: liveData, mutate } = useSWR(
+    null, // 默认不加载，只有在mutate时才会真正请求
+    () => reactionsFetcher(`/api/reactions/${issueId}`),
+    {
+      revalidateOnFocus: false,
+      revalidateOnMount: false, // 不自动加载
+    }
+  )
+
+  // 手动刷新函数 - 只在用户交互后调用
+  const refreshData = async () => {
+    await mutate(reactionsFetcher(`/api/reactions/${issueId}`))
+  }
+
+  // 使用实时数据（如果有）或初始数据
+  const reactionDetails = liveData?.details || initialReactionDetails
+  const reactionNodes = liveData?.nodes || initialReactionNodes
+
+  // 数据处理逻辑
   const { reactionCounts, userReactionMap, reactionUsers } = useMemo(() => {
     const counts = new Map<string, number>()
     const userReactionMap = new Map<string, string>()
-    const users = new Map<string, string[]>() // reactionKey -> [usernames]
+    const users = new Map<string, string[]>()
 
     // 从reactionDetails获取计数
-    reactionDetails.forEach(reaction => {
+    reactionDetails.forEach((reaction: any) => {
       counts.set(reaction.content, reaction.users.totalCount)
     })
 
-    // 从reactionNodes获取用户状态和用户列表
+    // 从reactionNodes获取用户状态
     if (session?.user?.username) {
-      reactionNodes.forEach(reaction => {
-        // 记录用户reaction
+      reactionNodes.forEach((reaction: any) => {
         if (reaction.user.login === session.user.username) {
           userReactionMap.set(reaction.content, reaction.id)
         }
         
-        // 记录所有用户
         if (!users.has(reaction.content)) {
           users.set(reaction.content, [])
         }
         users.get(reaction.content)!.push(reaction.user.login)
       })
     } else {
-      // 未登录用户，只记录所有用户
-      reactionNodes.forEach(reaction => {
+      reactionNodes.forEach((reaction: any) => {
         if (!users.has(reaction.content)) {
           users.set(reaction.content, [])
         }
@@ -91,23 +113,13 @@ export default function InteractiveReactions({
               emoji={emoji}
               count={count}
               isUserReacted={isUserReacted}
-              onDataRefresh={onDataRefresh}
-              className={`hover:scale-105 ${isUserReacted ? 'ring-1 ring-kfc-red/30' : ''
-                }`}
+              onDataRefresh={refreshData} // 只在用户点击后才刷新
+              className={`hover:scale-105 ${isUserReacted ? 'ring-1 ring-kfc-red/30' : ''}`}
               users={users}
             />
           )
         })}
       </div>
-      {onDataRefresh && (
-        <button
-          onClick={onDataRefresh}
-          className="ml-2 text-xs text-gray-400 hover:text-gray-600 transition-colors"
-          title="刷新数据"
-        >
-          <i className="fa fa-refresh"></i>
-        </button>
-      )}
     </div>
   )
 }
