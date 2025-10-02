@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 interface JokeDetailClientProps {
@@ -8,22 +9,50 @@ interface JokeDetailClientProps {
 
 export default function JokeDetailClient({ currentJokeId }: JokeDetailClientProps) {
   const router = useRouter()
+  const [isLoading, setIsLoading] = useState(false)
 
-  const handleRefresh = () => {
-    // 清除 URL 参数，触发服务端重新获取随机段子
-    router.push('/')
-    router.refresh()
+  const handleRefresh = async () => {
+    setIsLoading(true)
+    try {
+      // 获取随机段子 ID
+      const res = await fetch('/api/random/id')
+      if (!res.ok) {
+        throw new Error('获取随机段子失败')
+      }
+      const { id } = await res.json()
+
+      // 如果获取到的是相同的段子，再试一次
+      if (id === currentJokeId) {
+        const retryRes = await fetch('/api/random/id')
+        if (retryRes.ok) {
+          const retryData = await retryRes.json()
+          router.push(`/?joke=${retryData.id}`)
+        } else {
+          router.push(`/?joke=${id}`)
+        }
+      } else {
+        router.push(`/?joke=${id}`)
+      }
+    } catch (error) {
+      console.error('获取随机段子失败:', error)
+      // 降级方案：直接刷新页面
+      router.push('/')
+      router.refresh()
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
     <div className="flex items-center justify-center">
       <button
         onClick={handleRefresh}
-        className="group inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-kfc-yellow to-yellow-400 px-8 py-3 font-bold text-kfc-red shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105"
+        disabled={isLoading}
+        className="group inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-kfc-yellow to-yellow-400 px-8 py-3 font-bold text-kfc-red shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100"
       >
-        <i className="fa fa-refresh text-lg transition-transform duration-300 group-hover:rotate-180"></i>
-        <span>换个段子乐一乐</span>
-        <span className="text-sm opacity-75">(≧∇≦)</span>
+        <i className={`fa fa-refresh text-lg transition-transform duration-300 ${isLoading ? 'animate-spin' : 'group-hover:rotate-180'}`}></i>
+        <span>{isLoading ? '正在获取...' : '换个段子乐一乐'}</span>
+        {!isLoading && <span className="text-sm opacity-75">(≧∇≦)</span>}
       </button>
     </div>
   )
