@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { signIn } from 'next-auth/react'
 import { LikeRequest } from '@/types'
+import { showLoginDialog } from '@/components/client/LoginConfirmDialogContent'
 
 interface LikeButtonProps {
   issueId: string
@@ -31,7 +32,11 @@ export default function LikeButton({
 
   const handleReactionToggle = async () => {
     if (!session?.user?.username) {
-      signIn('github')
+      // 显示登录确认弹窗
+      showLoginDialog({
+        title: '互动需要登录',
+        message: '登录后即可给段子添加表情反应，还能提交自己的创意文案！',
+      })
       return
     }
 
@@ -40,7 +45,7 @@ export default function LikeButton({
     setIsLoading(true)
     try {
       const method = isUserReacted ? 'DELETE' : 'POST'
-      
+
       const response = await fetch('/api/like', {
         method,
         headers: {
@@ -61,8 +66,16 @@ export default function LikeButton({
         }
       } else {
         // 如果是认证错误，重新登录
-        if (data.message === '请先登录GitHub') {
-          signIn('github')
+        if (response.status === 401) {
+          const errorMsg = data.message || ''
+          const isExpired = errorMsg.includes('无效') || errorMsg.includes('过期')
+
+          showLoginDialog({
+            title: isExpired ? '登录已过期' : '需要登录',
+            message: isExpired
+              ? '您的登录已过期，请重新登录以继续互动'
+              : '请登录后继续添加反应',
+          })
         } else {
           alert(data.message)
         }
