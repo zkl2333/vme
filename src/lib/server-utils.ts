@@ -108,6 +108,15 @@ export async function getAllKfcItems(): Promise<IKfcItem[]> {
   return allItems
 }
 
+// 获取所有唯一贡献者数量
+export async function getUniqueContributorsCount(): Promise<number> {
+  const allItems = await getAllKfcItems()
+  const uniqueContributors = new Set(
+    allItems.map((item) => item.author.username)
+  )
+  return uniqueContributors.size
+}
+
 // 获取分页数据（使用汇总信息优化totalPages计算）
 export async function getKfcItemsWithPagination(
   page = 1,

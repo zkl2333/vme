@@ -7,6 +7,7 @@ import { Analytics } from '@vercel/analytics/next'
 
 import { Providers } from '@/app/providers'
 import LoginButton from '@/components/client/LoginButton'
+import { getUniqueContributorsCount } from '@/lib/server-utils'
 
 import '@/styles/tailwind.css'
 
@@ -35,11 +36,13 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const contributorsCount = await getUniqueContributorsCount()
+
   return (
     <html
       lang="zh-CN"
@@ -108,7 +111,7 @@ export default function RootLayout({
                 <div className="hidden items-center gap-1 rounded-full bg-white/10 px-3 py-1 text-sm md:flex">
                   <i className="fa fa-users text-kfc-yellow"></i>
                   <span>
-                    贡献者: <span id="contributors-count">42</span>
+                    贡献者: <span>{contributorsCount}</span>
                   </span>
                 </div>
                 <LoginButton />
