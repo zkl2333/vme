@@ -75,9 +75,12 @@ export default function InteractiveReactions({
 }: InteractiveReactionsProps) {
   const { data: session, status } = useSession()
 
-  // 使用 SWR 获取实时 reactions 数据（可选）
+  // 使用 SWR 获取实时 reactions 数据（仅在已登录时）
   const { data: liveData, mutate: refreshReactions } = useSWR(
-    disableInternalFetch ? null : `/api/reactions/${issueId}`,
+    // 未登录或禁用内部获取时，key 为 null，不发起请求
+    disableInternalFetch || status === 'unauthenticated'
+      ? null
+      : `/api/reactions/${issueId}`,
     reactionsFetcher,
     {
       refreshInterval: 30000, // 30秒自动刷新
