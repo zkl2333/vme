@@ -1,5 +1,7 @@
 import Image from 'next/image'
 import JokeDetail from '@/components/server/JokeDetail'
+import { getAllKfcItems, getRandomKfcItem } from '@/lib/server-utils'
+import { redirect } from 'next/navigation'
 
 interface PageProps {
   searchParams: {
@@ -7,7 +9,23 @@ interface PageProps {
   }
 }
 
-export default function Page({ searchParams }: PageProps) {
+export default async function Page({ searchParams }: PageProps) {
+  // 如果没有提供 joke 参数，获取随机段子并重定向
+  if (!searchParams.joke) {
+    const randomJoke = await getRandomKfcItem()
+    redirect(`/?joke=${randomJoke.id}`)
+  }
+
+  // 验证 jokeId 是否存在
+  const allJokes = await getAllKfcItems()
+  const jokeExists = allJokes.some((item) => item.id === searchParams.joke)
+
+  // 如果 joke ID 不存在，获取随机段子并重定向
+  if (!jokeExists) {
+    const randomJoke = await getRandomKfcItem()
+    redirect(`/?joke=${randomJoke.id}`)
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
       {/* 随机段子主题区域 */}
