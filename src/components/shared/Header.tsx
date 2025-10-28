@@ -57,7 +57,7 @@ export default function Header({ contributorsCount }: HeaderProps) {
             >
               <div className="relative">
                 <Image
-                  src="https://picsum.photos/seed/kfcicon/50/50"
+                  src="/images/logo.jpg"
                   alt="KFC"
                   width={50}
                   height={50}
@@ -168,7 +168,8 @@ export default function Header({ contributorsCount }: HeaderProps) {
             <div className="mt-2 flex items-center justify-center gap-2 rounded-lg bg-white/10 px-4 py-3 text-sm backdrop-blur-sm">
               <i className="fa fa-users text-kfc-yellow"></i>
               <span>
-                <span className="font-semibold">{contributorsCount}</span> 位段子手
+                <span className="font-semibold">{contributorsCount}</span>{' '}
+                位段子手
               </span>
             </div>
           </nav>
@@ -177,4 +178,3 @@ export default function Header({ contributorsCount }: HeaderProps) {
     </header>
   )
 }
-

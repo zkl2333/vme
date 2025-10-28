@@ -68,7 +68,7 @@ export default async function RootLayout({
               <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
                 <div className="flex items-center gap-2">
                   <Image
-                    src="https://picsum.photos/seed/kfcfooter/50/50"
+                    src="/images/logo.jpg"
                     alt="KFC"
                     width={50}
                     height={50}
