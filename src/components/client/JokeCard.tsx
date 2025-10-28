@@ -2,6 +2,7 @@
 
 import { FormattedDate } from '@/components/FormattedDate'
 import Image from 'next/image'
+import Link from 'next/link'
 import CopyButton from './CopyButton'
 import InteractiveReactions from './InteractiveReactions'
 import { IKfcItem } from '@/types'
@@ -32,10 +33,17 @@ export default function JokeCard({
 
       {/* 段子内容 */}
       <div className="mb-4">
-        <p className="overflow-auto whitespace-pre-wrap leading-5">
+        <p className="overflow-auto whitespace-pre-wrap leading-5 line-clamp-6">
           {item.body}
         </p>
-        <div className="mt-2 flex justify-end">
+        <div className="mt-2 flex items-center justify-between gap-2">
+          <Link
+            href={`/jokes/${item.id}`}
+            className="inline-flex items-center gap-1 text-sm text-kfc-red transition-colors hover:text-kfc-darkRed hover:underline"
+          >
+            <span>查看详情</span>
+            <i className="fa fa-arrow-right text-xs"></i>
+          </Link>
           <CopyButton text={item.body} />
         </div>
       </div>
