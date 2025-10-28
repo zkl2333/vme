@@ -1,12 +1,9 @@
 import SubmitForm from '@/components/submit/Form'
-import StarField from '@/components/submit/StarField'
 
 export default function SubmitPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 via-yellow-50 to-orange-50 relative overflow-hidden">
-      <StarField />
-      
-      <div className="relative z-10 container mx-auto px-4 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-red-50 via-yellow-50 to-orange-50">
+      <div className="container mx-auto px-4 py-12">
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-red-500 to-yellow-500 bg-clip-text text-transparent mb-4">
             提交我的疯狂星期四段子

@@ -1,5 +1,4 @@
 import { IconLink } from '@/components/IconLink'
-import StarField from '@/components/submit/StarField'
 
 export default function NotFound() {
   return (
@@ -18,7 +17,6 @@ export default function NotFound() {
         </defs>
         <rect width="100%" height="100%" fill="url(#gradient)" />
       </svg>
-      <StarField className="sm:-mt-16" />
 
       {/* 404 错误内容 */}
       <div className="relative z-10 max-w-2xl px-6">
