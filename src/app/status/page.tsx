@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import StatusDashboard from '@/components/client/StatusDashboard'
+import StatusDashboard from '@/components/status/Dashboard'
 
 export default function StatusPage() {
   return (

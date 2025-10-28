@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 import { headers } from 'next/headers'
-import LeaderboardServer from '@/components/server/Leaderboard'
+import LeaderboardList from '@/components/leaderboard/List'
 
 // 获取URL参数的类型定义
 interface PageProps {
@@ -43,7 +43,7 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
           </div>
         }
       >
-        <LeaderboardServer sortBy={sortBy} />
+        <LeaderboardList sortBy={sortBy} />
       </Suspense>
 
       {/* 返回首页 */}

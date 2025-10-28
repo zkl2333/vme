@@ -1,12 +1,16 @@
-import JokesPagination from '../client/JokesPagination'
+import Pagination from '@/components/shared/Pagination'
 import { getKfcItemsWithPagination } from '@/lib/server-utils'
-import JokeCard from '../client/JokeCard'
+import ListWithReactions from './ListWithReactions'
 
-interface JokesServerProps {
+interface JokesListProps {
   currentPage: number
 }
 
-export default async function JokesServer({ currentPage }: JokesServerProps) {
+/**
+ * 段子列表容器（服务端组件）
+ * 职责：获取分页数据，渲染列表结构
+ */
+export default async function JokesList({ currentPage }: JokesListProps) {
   const { items, totalPages, total } = await getKfcItemsWithPagination(
     currentPage,
     10,
@@ -14,7 +18,7 @@ export default async function JokesServer({ currentPage }: JokesServerProps) {
 
   return (
     <section id="jokes-list" className="mb-12">
-      {/* 段子列表标题 */}
+      {/* 列表标题 */}
       <div className="mb-6 flex items-center justify-between">
         <h2 className="flex items-center gap-2 text-2xl font-bold text-gray-800">
           <i className="fa fa-book text-kfc-red"></i> 段子总库
@@ -27,21 +31,11 @@ export default async function JokesServer({ currentPage }: JokesServerProps) {
         </div>
       </div>
 
-      {/* 段子列表 */}
-      <div className="space-y-6">
-        {items.map((item) => (
-          <JokeCard 
-            key={item.id}
-            item={item}
-            // 将静态reactions数据作为初始值传递
-            initialReactionDetails={[]}
-            initialReactionNodes={[]}
-          />
-        ))}
-      </div>
+      {/* 段子列表（含批量反应数据注入） */}
+      <ListWithReactions items={items} />
 
-      {/* 分页组件 */}
-      <JokesPagination
+      {/* 分页 */}
+      <Pagination
         currentPage={currentPage}
         totalPages={totalPages}
         totalItems={total}

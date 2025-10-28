@@ -1,5 +1,5 @@
 import Image from 'next/image'
-import JokeDetail from '@/components/server/JokeDetail'
+import JokeDetail from '@/components/jokes/Detail'
 import { getAllKfcItems, getRandomKfcItem } from '@/lib/server-utils'
 import { redirect } from 'next/navigation'
 

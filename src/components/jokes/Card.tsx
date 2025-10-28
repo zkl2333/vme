@@ -1,22 +1,29 @@
 'use client'
 
-import { FormattedDate } from '@/components/FormattedDate'
+import { FormattedDate } from '@/components/shared/FormattedDate'
 import Image from 'next/image'
 import Link from 'next/link'
-import CopyButton from './CopyButton'
-import InteractiveReactions from './InteractiveReactions'
+import CopyButton from '@/components/shared/CopyButton'
+import InteractiveReactions from '@/components/reactions/Interactive'
+import ReactionsLoading from '@/components/reactions/Loading'
 import { IKfcItem } from '@/types'
 
 interface JokeCardProps {
   item: IKfcItem
   initialReactionDetails?: any[]
   initialReactionNodes?: any[]
+  waitForBatchData?: boolean // 是否等待批量数据
 }
 
+/**
+ * 段子卡片组件
+ * 职责：展示单个段子的内容、作者信息和互动数据
+ */
 export default function JokeCard({ 
   item, 
   initialReactionDetails = [], 
-  initialReactionNodes = [] 
+  initialReactionNodes = [],
+  waitForBatchData = false
 }: JokeCardProps) {
   // 计算热门状态
   const totalReactions = item.reactions?.totalCount || 0
@@ -69,11 +76,16 @@ export default function JokeCard({
             <FormattedDate date={item.createdAt} />
           </span>
 
-          <InteractiveReactions
-            issueId={item.id}
-            initialReactionDetails={initialReactionDetails}
-            initialReactionNodes={initialReactionNodes}
-          />
+          {/* 互动数据展示 */}
+          {waitForBatchData ? (
+            <ReactionsLoading />
+          ) : (
+            <InteractiveReactions
+              issueId={item.id}
+              initialReactionDetails={initialReactionDetails}
+              initialReactionNodes={initialReactionNodes}
+            />
+          )}
         </div>
       </div>
     </div>

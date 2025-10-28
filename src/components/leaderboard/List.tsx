@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import LeaderboardSortTabs from '../client/LeaderboardSortTabs'
+import SortTabs from './SortTabs'
 import { GitHubService } from '@/lib/github-service'
 
 interface AuthorStats {
@@ -151,7 +151,7 @@ export default async function LeaderboardServer({
         </h2>
 
         {/* 排序选择 */}
-        <LeaderboardSortTabs currentSort={data.sortBy} />
+        <SortTabs currentSort={data.sortBy} />
       </div>
 
       <div className="space-y-8 rounded-2xl bg-white p-6 shadow-kfc">

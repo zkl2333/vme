@@ -1,14 +1,18 @@
-import { FormattedDate } from '@/components/FormattedDate'
+import { FormattedDate } from '@/components/shared/FormattedDate'
 import Image from 'next/image'
-import CopyButton from '../client/CopyButton'
-import InteractiveReactions from '../client/InteractiveReactions'
-import JokeDetailClient from '../client/JokeDetailClient'
+import CopyButton from '@/components/shared/CopyButton'
+import InteractiveReactions from '@/components/reactions/Interactive'
+import RefreshJokeButton from './RefreshJokeButton'
 import { getAllKfcItems } from '@/lib/server-utils'
 
 interface JokeDetailProps {
   jokeId: string
 }
 
+/**
+ * 段子详情组件（服务端）
+ * 职责：展示单个段子的完整信息
+ */
 export default async function JokeDetail({ jokeId }: JokeDetailProps) {
   // 从所有段子中查找指定 ID 的段子
   const allJokes = await getAllKfcItems()
@@ -93,7 +97,7 @@ export default async function JokeDetail({ jokeId }: JokeDetailProps) {
           </div>
 
           {/* 客户端交互按钮 */}
-          <JokeDetailClient currentJokeId={joke.id} />
+          <RefreshJokeButton currentJokeId={joke.id} />
         </div>
       </div>
     </section>

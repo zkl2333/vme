@@ -1,5 +1,5 @@
-import { SubmitJoke } from '@/components/client/SubmitJoke'
-import { StarField } from '@/components/client/StarField'
+import SubmitForm from '@/components/submit/Form'
+import StarField from '@/components/submit/StarField'
 
 export default function SubmitPage() {
   return (
@@ -16,7 +16,7 @@ export default function SubmitPage() {
           </p>
         </div>
 
-        <SubmitJoke />
+        <SubmitForm />
 
         <div className="mt-12 text-center">
           <div className="max-w-4xl mx-auto grid md:grid-cols-3 gap-6">

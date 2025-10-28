@@ -9,13 +9,16 @@ const sortOptions = [
   { key: 'posts', label: '段子数', icon: '📝' },
 ]
 
-interface LeaderboardSortTabsProps {
+interface SortTabsProps {
   currentSort: string
 }
 
-export default function LeaderboardSortTabs({
+/**
+ * 排行榜排序标签组件
+ */
+export default function SortTabs({
   currentSort,
-}: LeaderboardSortTabsProps) {
+}: SortTabsProps) {
   const searchParams = useSearchParams()
 
   return (

@@ -188,7 +188,7 @@ function Constellation({
   )
 }
 
-export function StarField({ className }: { className?: string }) {
+export default function StarField({ className }: { className?: string }) {
   let blurId = useId()
 
   return (

@@ -5,6 +5,9 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
   timeZone: 'UTC',
 })
 
+/**
+ * 格式化日期组件
+ */
 export function FormattedDate({
   date,
   ...props
@@ -25,3 +28,4 @@ export function FormattedDate({
     </time>
   )
 }
+

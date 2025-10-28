@@ -1,5 +1,5 @@
 import { IconLink } from '@/components/IconLink'
-import { StarField } from '@/components/client/StarField'
+import StarField from '@/components/submit/StarField'
 
 export default function NotFound() {
   return (

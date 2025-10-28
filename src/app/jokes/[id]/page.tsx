@@ -1,10 +1,10 @@
 import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import { getAllKfcItems } from '@/lib/server-utils'
-import { FormattedDate } from '@/components/FormattedDate'
+import { FormattedDate } from '@/components/shared/FormattedDate'
 import Image from 'next/image'
-import CopyButton from '@/components/client/CopyButton'
-import InteractiveReactions from '@/components/client/InteractiveReactions'
+import CopyButton from '@/components/shared/CopyButton'
+import InteractiveReactions from '@/components/reactions/Interactive'
 import Link from 'next/link'
 
 interface PageProps {

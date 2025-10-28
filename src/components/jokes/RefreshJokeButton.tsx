@@ -3,11 +3,15 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
-interface JokeDetailClientProps {
+interface RefreshJokeButtonProps {
   currentJokeId: string
 }
 
-export default function JokeDetailClient({ currentJokeId }: JokeDetailClientProps) {
+/**
+ * 刷新段子按钮组件
+ * 职责：提供"换个段子"按钮功能，随机切换到新段子
+ */
+export default function RefreshJokeButton({ currentJokeId }: RefreshJokeButtonProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
 
@@ -57,3 +61,4 @@ export default function JokeDetailClient({ currentJokeId }: JokeDetailClientProp
     </div>
   )
 }
+

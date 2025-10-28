@@ -7,6 +7,9 @@ interface CopyButtonProps {
   className?: string
 }
 
+/**
+ * 复制按钮组件
+ */
 export default function CopyButton({ text, className = '' }: CopyButtonProps) {
   const [copied, setCopied] = useState(false)
 
@@ -14,7 +17,7 @@ export default function CopyButton({ text, className = '' }: CopyButtonProps) {
     try {
       await navigator.clipboard.writeText(text)
       setCopied(true)
-      setTimeout(() => setCopied(false), 2000) // 2秒后重置状态
+      setTimeout(() => setCopied(false), 2000)
     } catch (err) {
       console.error('复制失败:', err)
     }
@@ -40,3 +43,4 @@ export default function CopyButton({ text, className = '' }: CopyButtonProps) {
     </button>
   )
 }
+

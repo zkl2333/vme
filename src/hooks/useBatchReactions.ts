@@ -1,4 +1,5 @@
-import useSWR from 'swr'
+import useSWR, { mutate as globalMutate } from 'swr'
+import { useEffect } from 'react'
 
 interface BatchReactionsResponse {
   data: Record<string, {
@@ -40,11 +41,31 @@ export function useBatchReactions(issueIds: string[]) {
     {
       dedupingInterval: 30000, // 30秒去重，避免重复请求
       revalidateOnFocus: false,
-      revalidateOnMount: false, // 不自动加载，由组件决定何时加载
+      revalidateOnMount: true, // 自动加载数据
       errorRetryCount: 2,
       errorRetryInterval: 1000,
     }
   )
+
+  // 当批量数据加载完成后，填充到各个单独的 SWR 缓存中
+  // 这样 InteractiveReactions 就能直接从缓存读取，不会发起重复请求
+  useEffect(() => {
+    if (data?.data) {
+      Object.entries(data.data).forEach(([issueId, reactionData]) => {
+        // 填充单个 issue 的缓存
+        globalMutate(
+          `/api/reactions/${issueId}`,
+          {
+            totalCount: reactionData.reactions,
+            details: reactionData.details,
+            nodes: reactionData.nodes,
+            warning: null,
+          },
+          false // 不触发重新验证
+        )
+      })
+    }
+  }, [data])
 
   // 获取单个Issue的反应数据
   const getReactionData = (issueId: string) => {

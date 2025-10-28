@@ -2,11 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
-import { showLoginDialog } from '@/components/client/LoginConfirmDialogContent'
+import { showLoginDialog } from '@/components/shared/LoginDialog'
 
 const FORM_STORAGE_KEY = 'submit_joke_form_draft'
 
-export function SubmitJoke() {
+/**
+ * 提交段子表单组件
+ */
+export default function SubmitForm() {
   const { data: session, status } = useSession()
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')

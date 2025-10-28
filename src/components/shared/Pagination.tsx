@@ -3,19 +3,22 @@
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 
-interface JokesPaginationProps {
+interface PaginationProps {
   currentPage: number
   totalPages: number
   totalItems: number
   pageSize: number
 }
 
-export default function JokesPagination({
+/**
+ * 分页组件
+ */
+export default function Pagination({
   currentPage,
   totalPages,
   totalItems,
   pageSize,
-}: JokesPaginationProps) {
+}: PaginationProps) {
   const searchParams = useSearchParams()
 
   if (totalPages <= 1) return null
@@ -47,7 +50,6 @@ export default function JokesPagination({
 
   const pageNumbers = generatePageNumbers()
 
-  // 构建URL参数
   const buildUrl = (page: number) => {
     const params = new URLSearchParams(searchParams.toString())
     params.set('page', page.toString())
@@ -56,7 +58,6 @@ export default function JokesPagination({
 
   return (
     <div className="mt-8">
-      {/* 分页信息 */}
       <div className="mb-4 flex flex-col items-center justify-between gap-4 sm:flex-row">
         <div className="text-sm text-gray-600">
           显示第{' '}
@@ -77,10 +78,8 @@ export default function JokesPagination({
         </div>
       </div>
 
-      {/* 分页控件 */}
       <nav className="flex justify-center">
         <div className="flex items-center gap-1">
-          {/* 上一页 */}
           {currentPage > 1 ? (
             <Link
               scroll={false}
@@ -95,7 +94,6 @@ export default function JokesPagination({
             </div>
           )}
 
-          {/* 第一页 */}
           {pageNumbers[0] > 1 && (
             <>
               <Link
@@ -113,7 +111,6 @@ export default function JokesPagination({
             </>
           )}
 
-          {/* 页码 */}
           {pageNumbers.map((page) => (
             <Link
               scroll={false}
@@ -129,7 +126,6 @@ export default function JokesPagination({
             </Link>
           ))}
 
-          {/* 最后一页 */}
           {pageNumbers[pageNumbers.length - 1] < totalPages && (
             <>
               {pageNumbers[pageNumbers.length - 1] < totalPages - 1 && (
@@ -147,7 +143,6 @@ export default function JokesPagination({
             </>
           )}
 
-          {/* 下一页 */}
           {currentPage < totalPages ? (
             <Link
               scroll={false}
@@ -166,3 +161,4 @@ export default function JokesPagination({
     </div>
   )
 }
+

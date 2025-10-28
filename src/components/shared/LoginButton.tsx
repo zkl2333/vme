@@ -3,6 +3,9 @@
 import { signIn, signOut, useSession } from 'next-auth/react'
 import Image from 'next/image'
 
+/**
+ * 登录/登出按钮组件
+ */
 export default function LoginButton() {
   const { data: session, status } = useSession()
 
@@ -61,3 +64,4 @@ export default function LoginButton() {
     </button>
   )
 }
+

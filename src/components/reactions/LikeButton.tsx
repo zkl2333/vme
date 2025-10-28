@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { signIn } from 'next-auth/react'
 import { LikeRequest } from '@/types'
-import { showLoginDialog } from '@/components/client/LoginConfirmDialogContent'
+import { showLoginDialog } from '@/components/shared/LoginDialog'
 
 interface LikeButtonProps {
   issueId: string
@@ -17,6 +17,10 @@ interface LikeButtonProps {
   users?: string[]
 }
 
+/**
+ * 点赞按钮组件
+ * 职责：处理单个反应的点击、显示和状态管理
+ */
 export default function LikeButton({
   issueId,
   reaction,

@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import JokesServer from '@/components/server/Jokes'
+import JokesList from '@/components/jokes/List'
 
 // 获取URL参数的类型定义
 interface PageProps {
@@ -33,7 +33,7 @@ export default async function JokesPage({ searchParams }: PageProps) {
           </div>
         }
       >
-        <JokesServer currentPage={page} />
+        <JokesList currentPage={page} />
       </Suspense>
 
       {/* 返回首页 */}

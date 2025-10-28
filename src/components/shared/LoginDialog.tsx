@@ -10,6 +10,9 @@ interface LoginConfirmDialogProps {
   message?: string
 }
 
+/**
+ * 登录确认对话框内容
+ */
 function LoginConfirmDialogContent({
   onClose,
   title = '需要登录',
@@ -34,7 +37,6 @@ function LoginConfirmDialogContent({
       className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl animate-in zoom-in duration-200"
       onClick={(e) => e.stopPropagation()}
     >
-      {/* 关闭按钮 */}
       <button
         onClick={onClose}
         className="absolute right-4 top-4 text-gray-400 transition-colors hover:text-gray-600"
@@ -45,7 +47,6 @@ function LoginConfirmDialogContent({
         </svg>
       </button>
 
-      {/* 图标 */}
       <div className="mb-4 flex justify-center">
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-kfc-red to-orange-500">
           <svg className="h-8 w-8 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -58,13 +59,9 @@ function LoginConfirmDialogContent({
         </div>
       </div>
 
-      {/* 标题 */}
       <h3 className="mb-3 text-center text-2xl font-bold text-gray-900">{title}</h3>
-
-      {/* 消息 */}
       <p className="mb-6 text-center text-gray-600">{message}</p>
 
-      {/* 说明 */}
       <div className="mb-6 rounded-lg bg-blue-50 p-4">
         <div className="flex items-start gap-2">
           <svg className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
@@ -85,7 +82,6 @@ function LoginConfirmDialogContent({
         </div>
       </div>
 
-      {/* 按钮 */}
       <div className="flex gap-3">
         <button
           onClick={onClose}
@@ -113,7 +109,9 @@ function LoginConfirmDialogContent({
   )
 }
 
-// 导出命令式 API
+/**
+ * 命令式 API - 显示登录对话框
+ */
 interface ShowLoginDialogOptions {
   title?: string
   message?: string
@@ -138,3 +136,4 @@ export function showLoginDialog(options: ShowLoginDialogOptions = {}) {
 
   return instance
 }
+

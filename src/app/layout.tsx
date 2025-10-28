@@ -6,7 +6,7 @@ import clsx from 'clsx'
 import { Analytics } from '@vercel/analytics/next'
 
 import { Providers } from '@/app/providers'
-import LoginButton from '@/components/client/LoginButton'
+import LoginButton from '@/components/shared/LoginButton'
 import { getUniqueContributorsCount } from '@/lib/server-utils'
 
 import '@/styles/tailwind.css'
