@@ -1,6 +1,6 @@
 # 🍗 vme - 肯德基疯狂星期四文案库
 
-![Social preview](https://repository-images.githubusercontent.com/784130959/c8f54bbe-3f0e-4588-8928-e02702b946e5)
+![Social preview](https://repository-images.githubusercontent.com/784130959/484af8b9-64c2-4f54-a171-f855678c9bee)
 
 > 一个社区驱动的肯德基疯狂星期四段子分享平台，让每个星期四都充满欢乐！
 
