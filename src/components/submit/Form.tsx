@@ -123,8 +123,8 @@ export default function SubmitForm() {
 
   if (!session) {
     return (
-      <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-lg">
-        <h2 className="text-2xl font-bold text-center mb-4 text-gray-800">
+      <div className="max-w-2xl mx-auto p-4 bg-white rounded-lg shadow-lg md:p-6">
+        <h2 className="text-xl font-bold text-center mb-4 text-gray-800 md:text-2xl">
           提交我的疯狂星期四段子
         </h2>
         <p className="text-gray-600 text-center mb-6">
@@ -133,7 +133,7 @@ export default function SubmitForm() {
         <div className="flex justify-center">
           <button
             onClick={handleLoginClick}
-            className="flex items-center gap-2 rounded-full bg-kfc-yellow px-4 py-2 text-sm font-bold text-kfc-red transition-all duration-300 hover:bg-kfc-lightYellow hover:shadow-lg"
+            className="flex min-h-[44px] items-center gap-2 rounded-full bg-kfc-yellow px-4 py-2 text-sm font-bold text-kfc-red transition-all duration-300 hover:bg-kfc-lightYellow hover:shadow-lg"
           >
             <svg
               className="h-5 w-5"
@@ -155,35 +155,42 @@ export default function SubmitForm() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-lg">
-      <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">
+    <div className="max-w-2xl mx-auto p-4 bg-white rounded-lg shadow-lg md:p-6">
+      <h2 className="text-xl font-bold text-center mb-4 text-gray-800 md:mb-6 md:text-2xl">
         提交我的疯狂星期四段子
       </h2>
-      
-      <form onSubmit={handleSubmit} className="space-y-6">
+
+      <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
         <div>
-          <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
-            段子标题 *
-          </label>
+          <div className="flex items-center justify-between mb-2">
+            <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+              段子标题 *
+            </label>
+            <p className="text-xs text-gray-500">
+              {title.length}/100
+            </p>
+          </div>
           <input
             type="text"
             id="title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="给你的段子起个有趣的标题..."
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-colors"
+            className="w-full min-h-[44px] px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-colors"
             disabled={isSubmitting}
             maxLength={100}
           />
-          <p className="text-xs text-gray-500 mt-1">
-            {title.length}/100 字符
-          </p>
         </div>
 
         <div>
-          <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
-            段子内容 *
-          </label>
+          <div className="flex items-center justify-between mb-2">
+            <label htmlFor="content" className="block text-sm font-medium text-gray-700">
+              段子内容 *
+            </label>
+            <p className="text-xs text-gray-500">
+              {content.length}/2000
+            </p>
+          </div>
           <textarea
             id="content"
             value={content}
@@ -194,15 +201,12 @@ export default function SubmitForm() {
             disabled={isSubmitting}
             maxLength={2000}
           />
-          <p className="text-xs text-gray-500 mt-1">
-            {content.length}/2000 字符
-          </p>
         </div>
 
         {message && (
-          <div className={`p-4 rounded-lg ${
-            message.type === 'success' 
-              ? 'bg-green-50 text-green-700 border border-green-200' 
+          <div className={`p-3 rounded-lg text-sm md:p-4 ${
+            message.type === 'success'
+              ? 'bg-green-50 text-green-700 border border-green-200'
               : 'bg-red-50 text-red-700 border border-red-200'
           }`}>
             {message.text}
@@ -212,7 +216,7 @@ export default function SubmitForm() {
         <button
           type="submit"
           disabled={isSubmitting || !title.trim() || !content.trim()}
-          className="w-full bg-gradient-to-r from-red-500 to-yellow-500 hover:from-red-600 hover:to-yellow-600 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 disabled:scale-100 disabled:cursor-not-allowed"
+          className="w-full min-h-[48px] bg-gradient-to-r from-red-500 to-yellow-500 hover:from-red-600 hover:to-yellow-600 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-4 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 disabled:scale-100 disabled:cursor-not-allowed"
         >
           {isSubmitting ? (
             <span className="flex items-center justify-center">
@@ -228,7 +232,7 @@ export default function SubmitForm() {
         </button>
       </form>
 
-      <div className="mt-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+      <div className="mt-4 p-3 bg-yellow-50 rounded-lg border border-yellow-200 md:mt-6 md:p-4">
         <h3 className="text-sm font-medium text-yellow-800 mb-2">提交须知：</h3>
         <ul className="text-xs text-yellow-700 space-y-1">
           <li>• 请确保内容原创，避免重复提交</li>

@@ -142,14 +142,14 @@ export default async function LeaderboardServer({
         <SortTabs currentSort={data.sortBy} />
       </div>
 
-      <div className="space-y-8 rounded-2xl bg-white p-6 shadow-kfc">
+      <div className="space-y-6 rounded-2xl bg-white p-4 shadow-kfc md:space-y-8 md:p-6">
         {/* Top 3 特殊展示 */}
         {data.authors.length >= 3 && (
-          <div className="mb-8">
-            <h2 className="mb-6 text-center text-2xl font-bold text-gray-800">
+          <div className="mb-6 md:mb-8">
+            <h2 className="mb-4 text-center text-xl font-bold text-gray-800 md:mb-6 md:text-2xl">
               🥇 殿堂级梗王 🥇
             </h2>
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
               {data.authors.slice(0, 3).map((author, index) => {
                 const getRankStyle = (rank: number) => {
                   switch (rank) {
@@ -195,32 +195,32 @@ export default async function LeaderboardServer({
                 return (
                   <div
                     key={author.username}
-                    className={`relative rounded-xl border-2 ${style.border} ${style.bg} p-6 text-center shadow-lg transition-transform hover:scale-105`}
+                    className={`relative rounded-xl border-2 ${style.border} ${style.bg} p-4 pt-6 text-center shadow-lg transition-transform hover:scale-105 md:p-6`}
                   >
-                    {/* 排名徽章 */}
+                    {/* 排名徽章 - 优化位置避免被裁剪 */}
                     <div
-                      className={`absolute -top-3 left-1/2 flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full ${style.badgeBg} text-sm font-bold text-white shadow-md`}
+                      className={`absolute -top-2 left-1/2 flex h-7 w-7 -translate-x-1/2 items-center justify-center rounded-full ${style.badgeBg} text-xs font-bold text-white shadow-md md:-top-3 md:h-8 md:w-8 md:text-sm`}
                     >
                       {index + 1}
                     </div>
 
                     {/* 头像 */}
-                    <div className="mb-4 flex justify-center">
+                    <div className="mb-3 flex justify-center md:mb-4">
                       <Image
                         src={author.avatarUrl}
                         alt={`${author.username}的头像`}
                         width={80}
                         height={80}
-                        className={`h-20 w-20 rounded-full border-4 ${style.avatarBorder} shadow-md`}
+                        className={`h-16 w-16 rounded-full border-2 ${style.avatarBorder} shadow-md md:h-20 md:w-20 md:border-4`}
                       />
                     </div>
 
                     {/* 用户信息 */}
-                    <h3 className="mb-2 text-lg font-bold text-gray-900">
+                    <h3 className="mb-2 text-base font-bold text-gray-900 md:text-lg">
                       @{author.username}
                     </h3>
 
-                    <div className="mb-4 space-y-1 text-sm text-gray-600">
+                    <div className="mb-3 space-y-1 text-xs text-gray-600 md:mb-4 md:text-sm">
                       <div>发布 {author.totalPosts} 个段子</div>
                       <div>
                         获得 {author.totalInteractions.toLocaleString()} 次互动
@@ -229,7 +229,7 @@ export default async function LeaderboardServer({
 
                     {/* 综合评分 */}
                     <div
-                      className={`rounded-full px-4 py-2 text-sm font-bold ${style.textColor} bg-opacity-20`}
+                      className={`rounded-full px-3 py-1.5 text-xs font-bold ${style.textColor} bg-opacity-20 md:px-4 md:py-2 md:text-sm`}
                       style={{
                         backgroundColor:
                           style.textColor
@@ -245,7 +245,7 @@ export default async function LeaderboardServer({
                       href={author.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="mt-4 inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800"
+                      className="mt-3 inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 md:mt-4"
                     >
                       <span>GitHub</span>
                       <svg
@@ -267,21 +267,21 @@ export default async function LeaderboardServer({
           </div>
         )}
 
-        {/* 完整排行榜 */}
+        {/* 完整排行榜 - 优化移动端布局 */}
         {data.authors.length > 3 && (
           <div>
-            <h2 className="mb-6 text-center text-2xl font-bold text-gray-800">
+            <h2 className="mb-4 text-center text-xl font-bold text-gray-800 md:mb-6 md:text-2xl">
               📊 完整排行榜
             </h2>
-            <div className="space-y-4">
+            <div className="space-y-3 md:space-y-4">
               {data.authors.slice(3, 10).map((author, index) => (
                 <div
                   key={author.username}
-                  className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
+                  className="flex flex-col gap-3 rounded-lg border border-gray-200 bg-white p-3 shadow-sm transition-shadow hover:shadow-md md:flex-row md:items-center md:justify-between md:p-4"
                 >
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3 md:gap-4">
                     {/* 排名 */}
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-sm font-bold text-gray-700">
+                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gray-100 text-sm font-bold text-gray-700">
                       {index + 4}
                     </div>
 
@@ -291,15 +291,15 @@ export default async function LeaderboardServer({
                       alt={`${author.username}的头像`}
                       width={48}
                       height={48}
-                      className="h-12 w-12 rounded-full"
+                      className="h-10 w-10 flex-shrink-0 rounded-full md:h-12 md:w-12"
                     />
 
                     {/* 用户信息 */}
-                    <div>
-                      <h3 className="font-semibold text-gray-900">
+                    <div className="flex-1">
+                      <h3 className="text-sm font-semibold text-gray-900 md:text-base">
                         @{author.username}
                       </h3>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-xs text-gray-500 md:text-sm">
                         {author.totalPosts} 个段子 • 评分{' '}
                         {Math.round(author.score)}
                       </div>
@@ -307,8 +307,8 @@ export default async function LeaderboardServer({
                   </div>
 
                   {/* 统计数据 */}
-                  <div className="text-right">
-                    <div className="font-semibold text-kfc-red">
+                  <div className="text-left md:text-right">
+                    <div className="text-sm font-semibold text-kfc-red md:text-base">
                       {author.totalInteractions.toLocaleString()} 次互动
                     </div>
                   </div>

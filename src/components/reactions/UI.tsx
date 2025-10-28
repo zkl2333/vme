@@ -1,6 +1,7 @@
 'use client'
 
 import LikeButton from './LikeButton'
+import ReactionsContainer from './Container'
 
 // 可用的反应类型
 const availableReactions = [
@@ -36,14 +37,13 @@ export default function ReactionsUI({
   warning,
 }: ReactionsUIProps) {
   return (
-    <div className={`flex items-center gap-2 ${className}`}>
+    <>
       {warning && (
-        <span className="rounded-full border border-amber-200 bg-amber-100 px-2 py-1 text-xs text-amber-700">
+        <span className="mb-2 inline-block rounded-full border border-amber-200 bg-amber-100 px-2 py-1 text-xs text-amber-700">
           {warning}
         </span>
       )}
-      <span className="text-xs text-gray-400">互动:</span>
-      <div className="flex items-center gap-1">
+      <ReactionsContainer className={className}>
         {availableReactions.map(({ key, emoji, label }) => {
           const count = reactionCounts.get(key) || 0
           const isUserReacted = userReactionMap.has(key)
@@ -58,13 +58,13 @@ export default function ReactionsUI({
               count={count}
               isUserReacted={isUserReacted}
               onDataRefresh={onDataRefresh}
-              className={`hover:scale-105 ${isUserReacted ? 'ring-1 ring-kfc-red/30' : ''}`}
+              className={`shrink-0 hover:scale-105 ${isUserReacted ? 'ring-1 ring-kfc-red/30' : ''}`}
               users={users}
             />
           )
         })}
-      </div>
-    </div>
+      </ReactionsContainer>
+    </>
   )
 }
 

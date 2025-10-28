@@ -25,21 +25,25 @@ export default function Pagination({
 
   const generatePageNumbers = () => {
     const pages = []
-    const maxVisible = 5
+    // 使用较小的页码数量，适配移动端
+    const maxVisible = 3
 
     if (totalPages <= maxVisible) {
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i)
       }
     } else {
-      if (currentPage <= 3) {
-        pages.push(1, 2, 3, 4, 5)
-      } else if (currentPage >= totalPages - 2) {
-        for (let i = totalPages - 4; i <= totalPages; i++) {
+      const halfVisible = Math.floor(maxVisible / 2)
+      if (currentPage <= halfVisible + 1) {
+        for (let i = 1; i <= maxVisible; i++) {
+          pages.push(i)
+        }
+      } else if (currentPage >= totalPages - halfVisible) {
+        for (let i = totalPages - maxVisible + 1; i <= totalPages; i++) {
           pages.push(i)
         }
       } else {
-        for (let i = currentPage - 2; i <= currentPage + 2; i++) {
+        for (let i = currentPage - halfVisible; i <= currentPage + halfVisible; i++) {
           pages.push(i)
         }
       }
@@ -79,17 +83,17 @@ export default function Pagination({
       </div>
 
       <nav className="flex justify-center">
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
           {currentPage > 1 ? (
             <Link
               scroll={false}
               href={buildUrl(currentPage - 1)}
-              className="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition-colors hover:border-kfc-red hover:bg-kfc-red hover:text-white"
+              className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition-colors hover:border-kfc-red hover:bg-kfc-red hover:text-white"
             >
               <i className="fa fa-chevron-left text-sm"></i>
             </Link>
           ) : (
-            <div className="flex h-10 w-10 cursor-not-allowed items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-300">
+            <div className="flex min-h-[44px] min-w-[44px] cursor-not-allowed items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-300">
               <i className="fa fa-chevron-left text-sm"></i>
             </div>
           )}
@@ -99,12 +103,12 @@ export default function Pagination({
               <Link
                 scroll={false}
                 href={buildUrl(1)}
-                className="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition-colors hover:border-kfc-red hover:bg-kfc-red hover:text-white"
+                className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition-colors hover:border-kfc-red hover:bg-kfc-red hover:text-white"
               >
                 1
               </Link>
               {pageNumbers[0] > 2 && (
-                <span className="flex h-10 w-10 items-center justify-center text-gray-400">
+                <span className="flex min-h-[44px] min-w-[44px] items-center justify-center text-gray-400">
                   ...
                 </span>
               )}
@@ -116,7 +120,7 @@ export default function Pagination({
               scroll={false}
               key={page}
               href={buildUrl(page)}
-              className={`flex h-10 w-10 items-center justify-center rounded-lg border transition-colors ${
+              className={`flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg border transition-colors ${
                 currentPage === page
                   ? 'border-kfc-red bg-kfc-red text-white'
                   : 'border-gray-200 bg-white text-gray-600 hover:border-kfc-red hover:bg-kfc-red hover:text-white'
@@ -129,14 +133,14 @@ export default function Pagination({
           {pageNumbers[pageNumbers.length - 1] < totalPages && (
             <>
               {pageNumbers[pageNumbers.length - 1] < totalPages - 1 && (
-                <span className="flex h-10 w-10 items-center justify-center bg-white text-gray-400">
+                <span className="flex min-h-[44px] min-w-[44px] items-center justify-center bg-white text-gray-400">
                   ...
                 </span>
               )}
               <Link
                 scroll={false}
                 href={buildUrl(totalPages)}
-                className="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition-colors hover:border-kfc-red hover:bg-kfc-red hover:text-white"
+                className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition-colors hover:border-kfc-red hover:bg-kfc-red hover:text-white"
               >
                 {totalPages}
               </Link>
@@ -147,12 +151,12 @@ export default function Pagination({
             <Link
               scroll={false}
               href={buildUrl(currentPage + 1)}
-              className="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition-colors hover:border-kfc-red hover:bg-kfc-red hover:text-white"
+              className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition-colors hover:border-kfc-red hover:bg-kfc-red hover:text-white"
             >
               <i className="fa fa-chevron-right text-sm"></i>
             </Link>
           ) : (
-            <div className="flex h-10 w-10 cursor-not-allowed items-center justify-center rounded-lg border border-gray-200 text-gray-300">
+            <div className="flex min-h-[44px] min-w-[44px] cursor-not-allowed items-center justify-center rounded-lg border border-gray-200 text-gray-300">
               <i className="fa fa-chevron-right text-sm"></i>
             </div>
           )}

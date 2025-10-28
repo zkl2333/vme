@@ -20,7 +20,7 @@ export default function LoginButton() {
 
   if (session) {
     return (
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3">
         <div className="flex items-center gap-2 rounded-full bg-white/10 px-3 py-2">
           <Image
             src={session.user?.image || '/default-avatar.png'}
@@ -29,13 +29,13 @@ export default function LoginButton() {
             height={24}
             className="h-6 w-6 rounded-full border border-kfc-yellow"
           />
-          <span className="text-sm font-medium text-white">
+          <span className="max-w-[80px] truncate text-sm font-medium text-white sm:max-w-[120px]">
             {session.user?.username}
           </span>
         </div>
         <button
           onClick={() => signOut()}
-          className="rounded-full bg-white/10 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-white/20"
+          className="min-h-[36px] rounded-full bg-white/10 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-white/20"
         >
           退出登录
         </button>

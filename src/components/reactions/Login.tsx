@@ -1,6 +1,7 @@
 'use client'
 
 import { showLoginDialog } from '@/components/shared/LoginDialog'
+import ReactionsContainer from './Container'
 
 // 可用的反应类型
 const availableReactions = [
@@ -24,13 +25,12 @@ export default function ReactionsLogin({
   className = '',
 }: ReactionsLoginProps) {
   return (
-    <div className={`relative flex items-center gap-2 ${className}`}>
-      <span className="text-xs text-gray-400">互动:</span>
-      <div className="flex items-center gap-1">
+    <div className="relative">
+      <ReactionsContainer className={className}>
         {availableReactions.map(({ key, emoji }) => (
           <div
             key={key}
-            className="relative flex items-center gap-1 rounded-full bg-gray-100 px-2 py-1 transition-all duration-200"
+            className="relative flex shrink-0 items-center gap-1 rounded-full bg-gray-100 px-2 py-1 transition-all duration-200"
           >
             <span className="text-base">{emoji}</span>
             <span className="select-none text-xs font-medium text-gray-400 blur-sm">
@@ -38,7 +38,7 @@ export default function ReactionsLogin({
             </span>
           </div>
         ))}
-      </div>
+      </ReactionsContainer>
       <button
         onClick={() =>
           showLoginDialog({

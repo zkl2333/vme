@@ -23,12 +23,12 @@ export default function Header({ contributorsCount }: HeaderProps) {
     <header className="sticky top-0 z-50 bg-gradient-to-r from-kfc-red via-red-600 to-kfc-red text-white shadow-lg backdrop-blur-sm">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between py-3 md:py-4">
-          {/* 左侧：移动端汉堡菜单 / 桌面端 Logo */}
+          {/* 左侧：移动端汉堡菜单 + Logo / 桌面端完整 Logo */}
           <div className="flex items-center gap-3">
-            {/* 移动端汉堡菜单按钮 */}
+            {/* 移动端汉堡菜单按钮 - 优化触摸区域 */}
             <button
               type="button"
-              className="group flex flex-col items-center justify-center gap-1.5 rounded-lg bg-white/10 p-2.5 backdrop-blur-sm transition-all duration-300 hover:bg-white/20 lg:hidden"
+              className="group flex min-h-[44px] min-w-[44px] flex-col items-center justify-center gap-1.5 rounded-lg bg-white/10 p-3 backdrop-blur-sm transition-all duration-300 hover:bg-white/20 lg:hidden"
               onClick={toggleMobileMenu}
               aria-label="切换菜单"
               aria-expanded={isMobileMenuOpen}
@@ -50,10 +50,10 @@ export default function Header({ contributorsCount }: HeaderProps) {
               ></span>
             </button>
 
-            {/* 桌面端 Logo 和标题 */}
+            {/* Logo - 移动端简化版 / 桌面端完整版 */}
             <a
               href="/"
-              className="group hidden items-center gap-3 transition-transform duration-300 hover:scale-105 lg:flex"
+              className="group flex items-center gap-2 transition-transform duration-300 hover:scale-105 lg:gap-3"
             >
               <div className="relative">
                 <Image
@@ -61,11 +61,18 @@ export default function Header({ contributorsCount }: HeaderProps) {
                   alt="KFC"
                   width={50}
                   height={50}
-                  className="h-12 w-12 animate-chicken-rotate rounded-full object-cover ring-2 ring-white/50 transition-all duration-300 group-hover:ring-4 group-hover:ring-kfc-yellow"
+                  className="h-10 w-10 animate-chicken-rotate rounded-full object-cover ring-2 ring-white/50 transition-all duration-300 group-hover:ring-4 group-hover:ring-kfc-yellow lg:h-12 lg:w-12"
                 />
-                <div className="absolute -right-1 -top-1 h-3 w-3 animate-pulse rounded-full bg-kfc-yellow"></div>
+                <div className="absolute -right-1 -top-1 h-2.5 w-2.5 animate-pulse rounded-full bg-kfc-yellow lg:h-3 lg:w-3"></div>
               </div>
-              <div>
+              {/* 移动端简化标题 */}
+              <div className="lg:hidden">
+                <h1 className="text-shadow-kfc text-base font-black leading-tight">
+                  疯四
+                </h1>
+              </div>
+              {/* 桌面端完整标题 */}
+              <div className="hidden lg:block">
                 <h1 className="text-shadow-kfc text-2xl font-black leading-tight">
                   肯德基疯狂星期四
                 </h1>
@@ -115,7 +122,7 @@ export default function Header({ contributorsCount }: HeaderProps) {
           </div>
         </div>
 
-        {/* 移动端导航菜单 */}
+        {/* 移动端导航菜单 - 优化间距 */}
         <div
           className={`border-t border-white/20 lg:hidden ${
             isMobileMenuOpen ? 'block' : 'hidden'
@@ -124,7 +131,7 @@ export default function Header({ contributorsCount }: HeaderProps) {
             animation: isMobileMenuOpen ? 'slideDown 0.3s ease-out' : 'none',
           }}
         >
-          <nav className="flex flex-col gap-2 pb-4 pt-3">
+          <nav className="flex flex-col gap-3 pb-4 pt-3">
             <a
               href="/"
               onClick={closeMobileMenu}

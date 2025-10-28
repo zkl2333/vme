@@ -105,63 +105,63 @@ export default async function JokeDetailPage({ params }: PageProps) {
       {/* 段子详情卡片 */}
       <div className="mx-auto max-w-4xl">
         <article className="relative overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg">
-          {/* 装饰背景 */}
-          <div className="absolute right-0 top-0 -mr-16 -mt-16 h-32 w-32 rounded-full bg-kfc-yellow/10"></div>
-          <div className="absolute bottom-0 left-0 -mb-12 -ml-12 h-24 w-24 rounded-full bg-kfc-red/10"></div>
+          {/* 装饰背景 - 移动端隐藏避免溢出 */}
+          <div className="absolute right-0 top-0 -mr-16 -mt-16 hidden h-32 w-32 rounded-full bg-kfc-yellow/10 md:block"></div>
+          <div className="absolute bottom-0 left-0 -mb-12 -ml-12 hidden h-24 w-24 rounded-full bg-kfc-red/10 md:block"></div>
 
-          {/* 热门标签 */}
+          {/* 热门标签 - 优化移动端位置 */}
           {isHot && (
-            <div className="absolute right-4 top-4 z-10 flex items-center gap-2 rounded-full bg-gradient-to-r from-kfc-red to-orange-500 px-4 py-2 text-sm font-bold text-white shadow-lg">
+            <div className="absolute right-2 top-2 z-10 flex items-center gap-1.5 rounded-full bg-gradient-to-r from-kfc-red to-orange-500 px-3 py-1.5 text-xs font-bold text-white shadow-lg md:right-4 md:top-4 md:gap-2 md:px-4 md:py-2 md:text-sm">
               <i className="fa fa-fire"></i>
-              <span>热门段子</span>
+              <span>热门</span>
             </div>
           )}
 
-          <div className="relative z-10 p-8 md:p-12">
+          <div className="relative z-10 p-5 md:p-8 lg:p-12">
             {/* 段子内容 */}
-            <div className="mb-8">
-              <div className="mb-4 flex items-center gap-2">
-                <i className="fa fa-quote-left text-2xl text-kfc-yellow"></i>
-                <h1 className="text-2xl font-bold text-gray-800">段子内容</h1>
+            <div className="mb-6 md:mb-8">
+              <div className="mb-3 flex items-center gap-2 md:mb-4">
+                <i className="fa fa-quote-left text-xl text-kfc-yellow md:text-2xl"></i>
+                <h1 className="text-xl font-bold text-gray-800 md:text-2xl">段子内容</h1>
               </div>
-              
+
               <div className="group relative">
-                <div className="min-h-[120px] rounded-lg border-l-4 border-kfc-yellow bg-gray-50/50 px-6 py-4 text-lg leading-relaxed transition-colors duration-300 group-hover:bg-gray-50 md:text-xl">
+                <div className="min-h-[120px] rounded-lg border-l-4 border-kfc-yellow bg-gray-50/50 px-4 py-3 text-base leading-relaxed transition-colors duration-300 group-hover:bg-gray-50 md:px-6 md:py-4 md:text-lg lg:text-xl">
                   <p className="whitespace-pre-wrap">{joke.body}</p>
                 </div>
-                <div className="mt-4 flex justify-end">
+                <div className="mt-3 flex justify-end md:mt-4">
                   <CopyButton text={joke.body} />
                 </div>
               </div>
             </div>
 
             {/* 分隔线 */}
-            <div className="my-8 border-t border-gray-200"></div>
+            <div className="my-6 border-t border-gray-200 md:my-8"></div>
 
             {/* 作者信息 */}
             <div className="mb-6">
-              <div className="mb-4 flex items-center gap-2">
-                <i className="fa fa-user text-xl text-kfc-red"></i>
-                <h2 className="text-xl font-bold text-gray-800">段子贡献者</h2>
+              <div className="mb-3 flex items-center gap-2 md:mb-4">
+                <i className="fa fa-user text-lg text-kfc-red md:text-xl"></i>
+                <h2 className="text-lg font-bold text-gray-800 md:text-xl">段子贡献者</h2>
               </div>
 
-              <div className="flex items-center gap-4 rounded-lg bg-gray-50 p-4">
+              <div className="flex items-center gap-3 rounded-lg bg-gray-50 p-3 md:gap-4 md:p-4">
                 <div className="relative">
                   <Image
                     src={joke.author.avatarUrl}
                     alt={`${joke.author.username}的头像`}
                     width={64}
                     height={64}
-                    className="h-16 w-16 rounded-full border-4 border-kfc-yellow shadow-md transition-transform duration-300 hover:scale-110"
+                    className="h-12 w-12 rounded-full border-2 border-kfc-yellow shadow-md transition-transform duration-300 hover:scale-110 md:h-16 md:w-16 md:border-4"
                   />
-                  <div className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full border-2 border-white bg-green-500"></div>
+                  <div className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-white bg-green-500 md:h-5 md:w-5"></div>
                 </div>
-                
+
                 <div className="flex-1">
-                  <div className="mb-1 text-lg font-semibold text-gray-900">
+                  <div className="mb-1 text-base font-semibold text-gray-900 md:text-lg">
                     @{joke.author.username}
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                  <div className="flex items-center gap-2 text-xs text-gray-500 md:text-sm">
                     <i className="fa fa-calendar"></i>
                     <span>发布于</span>
                     <FormattedDate date={joke.createdAt} />
@@ -174,15 +174,15 @@ export default async function JokeDetailPage({ params }: PageProps) {
             {isAuthenticated && (
               <>
                 {/* 分隔线 */}
-                <div className="my-8 border-t border-gray-200"></div>
+                <div className="my-6 border-t border-gray-200 md:my-8"></div>
 
                 <div className="mb-6">
-                  <div className="mb-4 flex items-center gap-2">
-                    <i className="fa fa-heart text-xl text-kfc-red"></i>
-                    <h2 className="text-xl font-bold text-gray-800">互动反馈</h2>
+                  <div className="mb-3 flex items-center gap-2 md:mb-4">
+                    <i className="fa fa-heart text-lg text-kfc-red md:text-xl"></i>
+                    <h2 className="text-lg font-bold text-gray-800 md:text-xl">互动反馈</h2>
                   </div>
 
-                  <div className="rounded-lg bg-gray-50 p-4">
+                  <div className="rounded-lg bg-gray-50 p-3 md:p-4">
                     <Suspense
                       fallback={
                         <div className="flex items-center gap-2 text-gray-500">
@@ -203,19 +203,19 @@ export default async function JokeDetailPage({ params }: PageProps) {
           </div>
         </article>
 
-        {/* 底部操作按钮 */}
-        <div className="mt-8 flex flex-wrap justify-center gap-4">
+        {/* 底部操作按钮 - 优化移动端布局 */}
+        <div className="mt-6 flex flex-col gap-3 md:mt-8 md:flex-row md:justify-center md:gap-4">
           <Link
             href="/jokes"
-            className="inline-flex items-center gap-2 rounded-xl bg-kfc-red px-6 py-3 font-bold text-white transition-all duration-300 hover:bg-kfc-darkRed hover:shadow-lg"
+            className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-kfc-red px-6 py-3 font-bold text-white transition-all duration-300 hover:bg-kfc-darkRed hover:shadow-lg"
           >
             <i className="fa fa-list"></i>
             浏览更多段子
           </Link>
-          
+
           <Link
             href="/"
-            className="inline-flex items-center gap-2 rounded-xl border-2 border-kfc-red bg-white px-6 py-3 font-bold text-kfc-red transition-all duration-300 hover:bg-kfc-red hover:text-white hover:shadow-lg"
+            className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border-2 border-kfc-red bg-white px-6 py-3 font-bold text-kfc-red transition-all duration-300 hover:bg-kfc-red hover:text-white hover:shadow-lg"
           >
             <i className="fa fa-home"></i>
             返回首页
