@@ -1,16 +1,12 @@
 // 服务端专用工具函数 - 包含 Node.js 模块，仅在服务端使用
 import fs from 'fs'
 import path from 'path'
-import { IKfcItem } from '@/types'
+import { IKfcItem, Summary } from '@/types'
 
 const cache: {
   kfcItems: Record<string, IKfcItem[]>
   allMonths: string[]
-  summary: {
-    totalItems: number
-    months: { month: string; count: number }[]
-    updatedAt: string
-  } | null
+  summary: Summary | null
 } = {
   kfcItems: {},
   allMonths: [],
@@ -110,11 +106,20 @@ export async function getAllKfcItems(): Promise<IKfcItem[]> {
 
 // 获取所有唯一贡献者数量
 export async function getUniqueContributorsCount(): Promise<number> {
-  const allItems = await getAllKfcItems()
-  const uniqueContributors = new Set(
-    allItems.map((item) => item.author.username)
-  )
-  return uniqueContributors.size
+  const summary = await getSummary()
+  return summary.totalContributors
+}
+
+// 获取所有贡献者信息（不包含点赞等交互数据）
+export async function getAllContributors() {
+  const summary = await getSummary()
+  return summary.contributors
+}
+
+// 获取排行榜贡献者（Top 10，不包含点赞等交互数据）
+export async function getTopContributors() {
+  const summary = await getSummary()
+  return summary.topContributors
 }
 
 // 获取分页数据（使用汇总信息优化totalPages计算）

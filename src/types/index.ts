@@ -1,5 +1,26 @@
 // 共享类型定义文件 - 可以在客户端和服务端使用
 
+// 贡献者信息
+export interface Contributor {
+  username: string
+  count: number
+  avatarUrl: string
+  url: string
+}
+
+// Summary 数据结构
+export interface Summary {
+  totalItems: number
+  totalContributors: number
+  months: {
+    month: string
+    count: number
+  }[]
+  contributors: Contributor[]
+  topContributors: Contributor[]
+  updatedAt: string
+}
+
 // GitHub reaction统计信息（用于显示总数）
 export interface ReactionGroup {
   content: string
