@@ -47,15 +47,21 @@ describe('moderationLogic', () => {
     })
 
     test('检测到违规内容', async () => {
-      // 模拟AI审核API返回违规结果
+      // 模拟 gpt-5-nano API 返回违规结果
       ;(global.fetch as jest.Mock).mockResolvedValueOnce({
         json: jest.fn().mockResolvedValue({
-          results: [
+          choices: [
             {
-              flagged: true,
-              categories: {
-                hate: true,
-                violence: false,
+              message: {
+                content: JSON.stringify({
+                  flagged: true,
+                  categories: {
+                    hate: true,
+                    sexual: false,
+                    violence: false,
+                    'self-harm': false,
+                  },
+                }),
               },
             },
           ],
@@ -69,13 +75,22 @@ describe('moderationLogic', () => {
     })
 
     test('内容审核通过', async () => {
-      // 模拟AI审核API返回正常结果
+      // 模拟 gpt-5-nano API 返回正常结果
       ;(global.fetch as jest.Mock).mockResolvedValueOnce({
         json: jest.fn().mockResolvedValue({
-          results: [
+          choices: [
             {
-              flagged: false,
-              categories: {},
+              message: {
+                content: JSON.stringify({
+                  flagged: false,
+                  categories: {
+                    hate: false,
+                    sexual: false,
+                    violence: false,
+                    'self-harm': false,
+                  },
+                }),
+              },
             },
           ],
         }),
@@ -88,13 +103,22 @@ describe('moderationLogic', () => {
     })
 
     test('试运行模式', async () => {
-      // 模拟AI审核API返回正常结果
+      // 模拟 gpt-5-nano API 返回正常结果
       ;(global.fetch as jest.Mock).mockResolvedValueOnce({
         json: jest.fn().mockResolvedValue({
-          results: [
+          choices: [
             {
-              flagged: false,
-              categories: {},
+              message: {
+                content: JSON.stringify({
+                  flagged: false,
+                  categories: {
+                    hate: false,
+                    sexual: false,
+                    violence: false,
+                    'self-harm': false,
+                  },
+                }),
+              },
             },
           ],
         }),
@@ -126,11 +150,44 @@ describe('moderationLogic', () => {
       expect(findSimilarIssue).not.toHaveBeenCalled()
     })
 
-    test('处理API错误', async () => {
-      // 模拟API错误
-      ;(global.fetch as jest.Mock).mockRejectedValue(new Error('API错误'))
+    test('处理API错误并重试', async () => {
+      // 模拟API错误（3次都失败）
+      ;(global.fetch as jest.Mock)
+        .mockRejectedValueOnce(new Error('API错误'))
+        .mockRejectedValueOnce(new Error('API错误'))
+        .mockRejectedValueOnce(new Error('API错误'))
 
       await expect(moderateContent(1, '测试文案')).rejects.toThrow('API错误')
+
+      // 验证进行了3次重试
+      expect(global.fetch).toHaveBeenCalledTimes(3)
+    })
+
+    test('支持Markdown代码块格式的响应', async () => {
+      // 模拟返回包含 markdown 代码块的响应
+      ;(global.fetch as jest.Mock).mockResolvedValueOnce({
+        json: jest.fn().mockResolvedValue({
+          choices: [
+            {
+              message: {
+                content: '```json\n' + JSON.stringify({
+                  flagged: false,
+                  categories: {
+                    hate: false,
+                    sexual: false,
+                    violence: false,
+                    'self-harm': false,
+                  },
+                }) + '\n```',
+              },
+            },
+          ],
+        }),
+      })
+
+      const result = await moderateContent(1, '测试文案')
+
+      expect(result.type).toBe('approved')
     })
   })
 
