@@ -31,15 +31,42 @@ export async function generateMetadata({ params }: PageProps) {
   if (!joke) {
     return {
       title: '段子不存在 - 疯狂星期四段子库',
+      description: '抱歉，您访问的段子不存在或已被删除。',
     }
   }
 
-  // 截取前 100 个字符作为描述
-  const description = joke.body.slice(0, 100) + (joke.body.length > 100 ? '...' : '')
+  // 使用段子标题作为页面标题
+  const pageTitle = joke.title
+    ? `${joke.title} - 疯狂星期四段子库`
+    : '疯狂星期四段子 - KFC 段子库'
+
+  // 生成描述：使用段子内容前 150 字符
+  const description = joke.body.length > 150
+    ? joke.body.slice(0, 150) + '...'
+    : joke.body
+
+  // 生成关键词
+  const keywords = `疯狂星期四,KFC段子,${joke.author.username},搞笑段子,文案`
 
   return {
-    title: `${joke.author.username}的段子 - 疯狂星期四段子库`,
+    title: pageTitle,
     description,
+    keywords,
+    authors: [{ name: joke.author.username, url: joke.author.url }],
+    openGraph: {
+      title: joke.title || '疯狂星期四段子',
+      description,
+      type: 'article',
+      authors: [joke.author.username],
+      publishedTime: joke.createdAt,
+      modifiedTime: joke.updatedAt,
+    },
+    twitter: {
+      card: 'summary',
+      title: joke.title || '疯狂星期四段子',
+      description,
+      creator: `@${joke.author.username}`,
+    },
   }
 }
 
