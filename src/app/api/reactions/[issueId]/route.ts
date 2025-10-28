@@ -15,24 +15,8 @@ export async function GET(
   }
 
   try {
-    // 检查是否有 GitHub Token 配置
-    if (!process.env.GITHUB_TOKEN) {
-      return NextResponse.json(
-        {
-          error: 'GitHub token not configured',
-          hint: 'Set GITHUB_TOKEN environment variable for real-time reactions',
-          fallback: {
-            totalCount: 0,
-            details: [],
-            nodes: [],
-          }
-        },
-        { status: 503 }
-      )
-    }
-
-    // 使用智能服务创建，优先用户 token，降级到系统 token
-    const githubService = await GitHubService.createSmart(request)
+    // 使用用户 token 查询 reactions
+    const githubService = await GitHubService.createWithUserToken(request)
     
     // 获取实时 reactions 数据
     const stats = await githubService.getIssueStats(issueId)
@@ -55,42 +39,26 @@ export async function GET(
     console.error(`Error fetching reactions for issue ${issueId}:`, error)
 
     if (error instanceof GitHubServiceError) {
-      // 处理限流错误
-      if (error.code === 'RATE_LIMIT_FORCE_LOGIN') {
+      // 处理认证错误
+      if (error.code === 'NOT_AUTHENTICATED' || error.code === 'INVALID_TOKEN') {
         return NextResponse.json(
           {
-            error: 'Rate limit exceeded',
-            message: 'GitHub API rate limit reached. Please login to use your personal quota.',
-            code: 'RATE_LIMIT_EXCEEDED',
-            rateLimitInfo: error.rateLimitInfo,
-            fallback: {
-              totalCount: 0,
-              details: [],
-              nodes: [],
-            }
+            error: 'Authentication required',
+            message: 'Please login to view reactions',
+            code: error.code
           },
-          { 
-            status: 429,
-            headers: {
-              'X-Rate-Limit-Warning': 'GitHub API rate limit reached',
-              'Retry-After': '60',
-            }
-          }
+          { status: 401 }
         )
       }
 
+      // 处理限流错误
       if (error.code === 'RATE_LIMIT_EXCEEDED') {
         return NextResponse.json(
           {
             error: 'Rate limit exceeded',
             message: 'API calls per hour limit reached. Please try again later.',
             code: 'RATE_LIMIT_EXCEEDED',
-            rateLimitInfo: error.rateLimitInfo,
-            fallback: {
-              totalCount: 0,
-              details: [],
-              nodes: [],
-            }
+            rateLimitInfo: error.rateLimitInfo
           },
           { 
             status: 429,
@@ -107,12 +75,7 @@ export async function GET(
           {
             error: 'Issue not found',
             message: 'The specified issue does not exist or is not accessible.',
-            code: 'ISSUE_NOT_FOUND',
-            fallback: {
-              totalCount: 0,
-              details: [],
-              nodes: [],
-            }
+            code: 'ISSUE_NOT_FOUND'
           },
           { status: 404 }
         )
@@ -123,12 +86,7 @@ export async function GET(
         {
           error: 'GitHub API error',
           message: error.message,
-          code: error.code,
-          fallback: {
-            totalCount: 0,
-            details: [],
-            nodes: [],
-          }
+          code: error.code
         },
         { status: error.status || 500 }
       )
@@ -138,12 +96,7 @@ export async function GET(
     return NextResponse.json(
       {
         error: 'Internal server error',
-        message: 'Failed to fetch reactions data',
-        fallback: {
-          totalCount: 0,
-          details: [],
-          nodes: [],
-        }
+        message: 'Failed to fetch reactions data'
       },
       { status: 500 }
     )

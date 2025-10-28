@@ -1,7 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import SortTabs from './SortTabs'
-import { GitHubService } from '@/lib/github-service'
 
 interface AuthorStats {
   username: string
@@ -23,18 +22,7 @@ interface LeaderboardServerProps {
 }
 
 async function getLeaderboardData(sortBy: string = 'score') {
-  // 检查是否有GitHub Token
-  if (!process.env.GITHUB_TOKEN) {
-    console.warn(
-      'GitHub token not configured. Leaderboard will show basic data only.',
-    )
-    return null
-  }
-
   try {
-    // 使用智能服务创建
-    const githubService = await GitHubService.createSmart()
-
     // 动态导入服务端工具函数，避免客户端bundle包含fs模块
     const { getAllKfcItems } = await import('@/lib/server-utils')
 
@@ -138,7 +126,7 @@ export default async function LeaderboardServer({
         <h2 className="mt-4 text-2xl font-bold text-red-600">
           排行榜暂时无法加载
         </h2>
-        <p className="mt-2 text-red-500">请稍后再试或检查 GitHub Token 配置</p>
+        <p className="mt-2 text-red-500">请稍后再试</p>
       </div>
     )
   }

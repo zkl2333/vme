@@ -30,9 +30,9 @@ cd vme
 # 2. 安装依赖
 npm install
 
-# 3. 配置环境变量（可选，用于完整功能）
+# 3. 配置环境变量（用于GitHub OAuth登录功能）
 cp env.local.example .env.local
-# 编辑 .env.local 添加你的 GitHub Token
+# 编辑 .env.local 添加你的 GitHub OAuth 应用配置
 
 # 4. 启动开发服务器
 npm run dev

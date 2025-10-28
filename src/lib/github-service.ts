@@ -58,8 +58,6 @@ export interface RateLimitStatus {
   search: RateLimitInfo
   graphql: RateLimitInfo
   isNearLimit: boolean
-  shouldForceLogin: boolean
-  tokenType: 'system' | 'user'
 }
 
 // === 错误类型 ===
@@ -77,52 +75,37 @@ export class GitHubServiceError extends Error {
 }
 
 /**
- * 限流管理器 - 跟踪和预测 API 限流状态
+ * 限流管理器 - 跟踪用户token的 API 限流状态
  */
 class RateLimitManager {
-  private static cache = new Map<string, { data: RateLimitStatus; timestamp: number }>()
+  private static cache: { data: RateLimitStatus; timestamp: number } | null = null
   private static readonly CACHE_TTL = 60 * 1000 // 1分钟缓存
-  
-  // 限流阈值配置
-  private static readonly THRESHOLDS = {
-    // 系统token阈值更严格
-    SYSTEM_WARNING: 0.2,    // 剩余20%时警告
-    SYSTEM_FORCE_LOGIN: 0.1, // 剩余10%时强制登录
-    
-    // 用户token阈值相对宽松
-    USER_WARNING: 0.1,      // 剩余10%时警告
-    USER_FORCE_LOGIN: 0.05, // 剩余5%时强制登录
-  }
+  private static readonly WARNING_THRESHOLD = 0.1 // 剩余10%时警告
 
   /**
    * 检查缓存的限流状态
    */
-  static getCachedRateLimit(tokenType: 'system' | 'user'): RateLimitStatus | null {
-    const key = `rateLimit_${tokenType}`
-    const cached = this.cache.get(key)
-    
-    if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
-      return cached.data
+  static getCachedRateLimit(): RateLimitStatus | null {
+    if (this.cache && Date.now() - this.cache.timestamp < this.CACHE_TTL) {
+      return this.cache.data
     }
-    
     return null
   }
 
   /**
    * 缓存限流状态
    */
-  static setCachedRateLimit(tokenType: 'system' | 'user', status: RateLimitStatus): void {
-    const key = `rateLimit_${tokenType}`
-    this.cache.set(key, {
+  static setCachedRateLimit(status: RateLimitStatus): void {
+    this.cache = {
       data: status,
       timestamp: Date.now()
-    })
+    }
   }
 
   /**
-   * 分析限流状态并给出建议
+   * 分析限流状态
    */
-  static analyzeRateLimit(rateLimitData: any, tokenType: 'system' | 'user'): RateLimitStatus {
+  static analyzeRateLimit(rateLimitData: any): RateLimitStatus {
     const core = rateLimitData.core || rateLimitData.rate
     const search = rateLimitData.search
     const graphql = rateLimitData.graphql
@@ -132,13 +115,7 @@ class RateLimitManager {
     const graphqlRatio = graphql ? graphql.remaining / graphql.limit : 1
     const minRatio = Math.min(coreRatio, graphqlRatio)
     
-    // 根据token类型选择阈值
-    const thresholds = tokenType === 'system' 
-      ? { warning: this.THRESHOLDS.SYSTEM_WARNING, force: this.THRESHOLDS.SYSTEM_FORCE_LOGIN }
-      : { warning: this.THRESHOLDS.USER_WARNING, force: this.THRESHOLDS.USER_FORCE_LOGIN }
-    
-    const isNearLimit = minRatio <= thresholds.warning
-    const shouldForceLogin = tokenType === 'system' && minRatio <= thresholds.force
+    const isNearLimit = minRatio <= this.WARNING_THRESHOLD
     
     const status: RateLimitStatus = {
       core: core ? {
@@ -165,13 +142,11 @@ class RateLimitManager {
         resource: 'graphql'
       } : { limit: 0, remaining: 0, reset: 0, used: 0, resource: 'graphql' },
       
-      isNearLimit,
-      shouldForceLogin,
-      tokenType
+      isNearLimit
     }
     
     // 缓存状态
-    this.setCachedRateLimit(tokenType, status)
+    this.setCachedRateLimit(status)
     
     return status
   }
@@ -184,27 +159,13 @@ export class GitHubService {
   private octokit: Octokit
   private readonly repoOwner = 'zkl2333'
   private readonly repoName = 'vme'
-  private tokenType: 'system' | 'user'
 
-  constructor(octokit: Octokit, tokenType: 'system' | 'user') {
+  constructor(octokit: Octokit) {
     this.octokit = octokit
-    this.tokenType = tokenType
   }
 
   // === 静态工厂方法 ===
   
-  /**
-   * 创建使用环境变量 token 的服务实例
-   */
-  static createWithSystemToken(): GitHubService {
-    if (!process.env.GITHUB_TOKEN) {
-      throw new GitHubServiceError('GitHub token not configured', 'MISSING_TOKEN', 503)
-    }
-    return new GitHubService(new Octokit({
-      auth: process.env.GITHUB_TOKEN,
-    }), 'system')
-  }
-
   /**
    * 创建使用用户 token 的服务实例
    */
@@ -225,50 +186,7 @@ export class GitHubService {
 
     return new GitHubService(new Octokit({
       auth: accessToken,
-    }), 'user')
-  }
-
-  /**
-   * 安全创建服务实例：在token无效时返回null而不抛出异常
-   */
-  static async createSafely(request?: Request): Promise<GitHubService | null> {
-    try {
-      return await GitHubService.createSmart(request)
-    } catch (error) {
-      console.warn('Failed to create GitHub service:', error instanceof Error ? error.message : error)
-      return null
-    }
-  }
-
-  /**
-   * 智能创建服务实例：检查限流状态决定使用哪种 token
-   */
-  static async createSmart(request?: Request): Promise<GitHubService> {
-    // 检查系统token的限流状态
-    const cachedSystemRate = RateLimitManager.getCachedRateLimit('system')
-    
-    // 如果系统token接近限流，优先尝试用户token
-    if (cachedSystemRate?.shouldForceLogin && request) {
-      try {
-        const userService = await GitHubService.createWithUserToken(request)
-        console.log('Using user token due to system rate limit')
-        return userService
-      } catch (error) {
-        console.warn('Failed to create user token service, but system token is near limit')
-        // 即使系统token接近限流，也继续使用（但会在调用时抛出警告）
-      }
-    }
-    
-    // 尝试用户token（如果有request）
-    if (request) {
-      try {
-        return await GitHubService.createWithUserToken(request)
-      } catch (error) {
-        console.warn('Failed to create user token service, falling back to system token')
-      }
-    }
-    
-    return GitHubService.createWithSystemToken()
+    }))
   }
 
   // === 限流检查方法 ===
@@ -278,7 +196,7 @@ export class GitHubService {
    */
   async checkRateLimit(): Promise<RateLimitStatus> {
     // 优先返回缓存的状态
-    const cached = RateLimitManager.getCachedRateLimit(this.tokenType)
+    const cached = RateLimitManager.getCachedRateLimit()
     if (cached) {
       return cached
     }
@@ -286,7 +204,7 @@ export class GitHubService {
     try {
       // 获取实时限流信息
       const response = await this.octokit.request('GET /rate_limit')
-      return RateLimitManager.analyzeRateLimit(response.data.resources, this.tokenType)
+      return RateLimitManager.analyzeRateLimit(response.data.resources)
     } catch (error) {
       console.warn('Failed to fetch rate limit info:', error)
       // 返回保守的默认状态
@@ -294,9 +212,7 @@ export class GitHubService {
         core: { limit: 0, remaining: 0, reset: 0, used: 0, resource: 'core' },
         search: { limit: 0, remaining: 0, reset: 0, used: 0, resource: 'search' },
         graphql: { limit: 0, remaining: 0, reset: 0, used: 0, resource: 'graphql' },
-        isNearLimit: true,
-        shouldForceLogin: this.tokenType === 'system',
-        tokenType: this.tokenType
+        isNearLimit: true
       }
     }
   }
@@ -307,18 +223,8 @@ export class GitHubService {
   private async validateRateLimit(): Promise<void> {
     const rateLimit = await this.checkRateLimit()
     
-    if (rateLimit.shouldForceLogin) {
-      throw new GitHubServiceError(
-        'API rate limit approaching. Please login to continue.',
-        'RATE_LIMIT_FORCE_LOGIN',
-        429,
-        undefined,
-        rateLimit
-      )
-    }
-    
     if (rateLimit.isNearLimit) {
-      console.warn(`API rate limit warning: ${this.tokenType} token approaching limits`, rateLimit)
+      console.warn('API rate limit warning: user token approaching limits', rateLimit)
     }
   }
 
@@ -612,17 +518,5 @@ export async function getCurrentUser(request?: Request): Promise<{ username: str
 export function requireUserAuth(user: { username: string } | null): asserts user is { username: string } {
   if (!user) {
     throw new GitHubServiceError('Authentication required', 'AUTHENTICATION_REQUIRED', 401)
-  }
-}
-
-/**
- * 获取当前系统的限流状态（用于前端显示）
- */
-export async function getSystemRateLimitStatus(): Promise<RateLimitStatus | null> {
-  try {
-    const service = GitHubService.createWithSystemToken()
-    return await service.checkRateLimit()
-  } catch {
-    return null
   }
 }

@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
 import localFont from 'next/font/local'
 import clsx from 'clsx'
 import { Analytics } from '@vercel/analytics/next'
@@ -9,12 +8,6 @@ import { Header, Footer } from '@/components/shared'
 import { getUniqueContributorsCount } from '@/lib/server-utils'
 
 import '@/styles/tailwind.css'
-
-const inter = Inter({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-inter',
-})
 
 const monaSans = localFont({
   src: '../fonts/Mona-Sans.var.woff2',
@@ -45,7 +38,7 @@ export default async function RootLayout({
   return (
     <html
       lang="zh-CN"
-      className={clsx('h-full antialiased', inter.variable, monaSans.variable)}
+      className={clsx('h-full antialiased', monaSans.variable)}
       suppressHydrationWarning
     >
       <head>

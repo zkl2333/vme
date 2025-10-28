@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { GitHubService } from '@/lib/github-service'
+import { GitHubService, GitHubServiceError } from '@/lib/github-service'
 
 interface BatchReactionsRequest {
   issueIds: string[]
@@ -39,15 +39,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 智能创建GitHub服务（用户token → 系统token → 降级）
-    const githubService = await GitHubService.createSafely(request)
-    
-    if (!githubService) {
-      return NextResponse.json(
-        { error: 'GitHub service not available' },
-        { status: 503 }
-      )
-    }
+    // 使用用户 token 查询 reactions
+    const githubService = await GitHubService.createWithUserToken(request)
 
     const data: Record<string, any> = {}
     const errors: Record<string, string> = {}
@@ -103,6 +96,21 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Error in batch reactions API:', error)
+    
+    // 处理认证错误
+    if (error instanceof GitHubServiceError) {
+      if (error.code === 'NOT_AUTHENTICATED' || error.code === 'INVALID_TOKEN') {
+        return NextResponse.json(
+          {
+            error: 'Authentication required',
+            message: 'Please login to view reactions',
+            code: error.code
+          },
+          { status: 401 }
+        )
+      }
+    }
+    
     return NextResponse.json(
       {
         error: 'Internal server error',

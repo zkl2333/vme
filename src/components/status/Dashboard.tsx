@@ -8,29 +8,17 @@ interface RateLimitInfo {
   limit: number
   resetTime: string
   percentage: number
-  shouldForceLogin: boolean
   isNearLimit: boolean
 }
 
 interface SystemStatus {
   timestamp: string
   github: {
-    systemToken: {
-      configured: boolean
-      status: string
-      rateLimit: RateLimitInfo | null
-      error: string | null
-    }
     userToken: {
       available: boolean
       status: string
       rateLimit: RateLimitInfo | null
       error: string | null
-    }
-    smartService?: {
-      available: boolean
-      tokenType?: string
-      error?: string
     }
   }
 }
@@ -97,11 +85,6 @@ function RateLimitBar({ rateLimit }: { rateLimit: RateLimitInfo }) {
         <span>{rateLimit.percentage}% 剩余</span>
         <span>重置时间: {new Date(rateLimit.resetTime).toLocaleTimeString()}</span>
       </div>
-      {rateLimit.shouldForceLogin && (
-        <div className="mt-2 rounded bg-red-100 px-2 py-1 text-xs text-red-700">
-          ⚠️ 建议用户登录以使用个人配额
-        </div>
-      )}
     </div>
   )
 }
@@ -175,46 +158,10 @@ export default function StatusDashboard() {
       </div>
 
       {/* GitHub Token 状态 */}
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* 系统 Token */}
-        <StatusCard 
-          title="系统 Token 状态" 
-          status={
-            !status.github.systemToken.configured ? 'warning' :
-            status.github.systemToken.status === 'working' ? 'success' : 'error'
-          }
-        >
-          {!status.github.systemToken.configured ? (
-            <div className="text-yellow-700">
-              <p className="mb-2">⚠️ 系统 Token 未配置</p>
-              <p className="text-sm">请在环境变量中设置 GITHUB_TOKEN</p>
-            </div>
-          ) : status.github.systemToken.status === 'working' ? (
-            <div className="text-green-700">
-              <p className="mb-4">✅ 系统 Token 工作正常</p>
-              {status.github.systemToken.rateLimit && (
-                <RateLimitBar rateLimit={status.github.systemToken.rateLimit} />
-              )}
-            </div>
-          ) : (
-            <div className="text-red-700">
-              <p className="mb-2">❌ 系统 Token 异常</p>
-              <div className="mt-3 rounded-lg bg-red-50 border border-red-200 p-3">
-                <p className="text-sm font-medium mb-1">错误详情：</p>
-                <p className="text-sm">{status.github.systemToken.error}</p>
-                {status.github.systemToken.error?.includes('401') && (
-                  <div className="mt-2 text-xs text-red-600">
-                    💡 建议：请生成新的 GitHub Personal Access Token 并更新环境变量
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </StatusCard>
-
+      <div className="grid gap-6">
         {/* 用户 Token */}
         <StatusCard 
-          title="用户 Token 状态" 
+          title="GitHub 用户认证状态" 
           status={
             status.github.userToken.available && status.github.userToken.status === 'working' ? 'success' : 
             status.github.userToken.status === 'not_authenticated' ? 'info' : 
@@ -223,7 +170,7 @@ export default function StatusDashboard() {
         >
           {status.github.userToken.available && status.github.userToken.status === 'working' ? (
             <div className="text-green-700">
-              <p className="mb-4">✅ 用户已登录，个人配额可用</p>
+              <p className="mb-4">✅ 用户已登录，GitHub API 可用</p>
               {status.github.userToken.rateLimit && (
                 <RateLimitBar rateLimit={status.github.userToken.rateLimit} />
               )}
@@ -231,11 +178,11 @@ export default function StatusDashboard() {
           ) : status.github.userToken.status === 'not_authenticated' ? (
             <div className="text-blue-700">
               <p className="mb-2">ℹ️ 用户未登录</p>
-              <p className="text-sm">登录后可使用个人 GitHub API 配额</p>
+              <p className="text-sm">所有功能需要登录后使用</p>
             </div>
           ) : status.github.userToken.status === 'expired' || status.github.userToken.status === 'invalid_token' ? (
             <div className="text-red-700">
-              <p className="mb-2">❌ 用户 Token 异常</p>
+              <p className="mb-2">❌ 用户认证异常</p>
               <div className="mt-3 rounded-lg bg-red-50 border border-red-200 p-3">
                 <p className="text-sm font-medium mb-1">错误详情：</p>
                 <p className="text-sm">{status.github.userToken.error}</p>
@@ -246,7 +193,7 @@ export default function StatusDashboard() {
             </div>
           ) : (
             <div className="text-blue-700">
-              <p className="mb-2">ℹ️ 用户token不可用</p>
+              <p className="mb-2">ℹ️ 用户认证不可用</p>
               {status.github.userToken.error && (
                 <p className="text-sm text-gray-600">{status.github.userToken.error}</p>
               )}
@@ -254,26 +201,6 @@ export default function StatusDashboard() {
           )}
         </StatusCard>
       </div>
-
-      {/* 智能服务状态 */}
-      {status.github.smartService && (
-        <StatusCard 
-          title="智能服务状态" 
-          status={status.github.smartService.available ? 'success' : 'error'}
-        >
-          {status.github.smartService.available ? (
-            <div className="text-green-700">
-              <p className="mb-2">✅ 智能服务正常运行</p>
-              <p className="text-sm">当前使用: {status.github.smartService.tokenType} token</p>
-            </div>
-          ) : (
-            <div className="text-red-700">
-              <p className="mb-2">❌ 智能服务不可用</p>
-              <p className="text-sm">{status.github.smartService.error}</p>
-            </div>
-          )}
-        </StatusCard>
-      )}
 
     </div>
   )
