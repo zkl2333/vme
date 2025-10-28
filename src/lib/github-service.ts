@@ -165,13 +165,13 @@ export class GitHubService {
   }
 
   // === 静态工厂方法 ===
-  
+
   /**
    * 创建使用用户 token 的服务实例
    */
   static async createWithUserToken(request: Request): Promise<GitHubService> {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user?.username) {
       throw new GitHubServiceError('User not authenticated', 'NOT_AUTHENTICATED', 401)
     }

@@ -1,11 +1,12 @@
 import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
+import { getServerSession } from 'next-auth/next'
+import { authOptions } from '@/lib/auth'
 import { getAllKfcItems } from '@/lib/server-utils'
 import { FormattedDate } from '@/components/shared/FormattedDate'
 import Image from 'next/image'
 import CopyButton from '@/components/shared/CopyButton'
 import InteractiveReactions from '@/components/reactions/Interactive'
-import TotalReactionsCount from '@/components/reactions/TotalCount'
 import Link from 'next/link'
 
 interface PageProps {
@@ -79,6 +80,10 @@ export default async function JokeDetailPage({ params }: PageProps) {
   if (!joke) {
     notFound()
   }
+
+  // 获取用户登录状态
+  const session = await getServerSession(authOptions)
+  const isAuthenticated = !!session?.user
 
   // 计算热门状态
   const totalReactions = joke.reactions?.totalCount || 0
@@ -165,48 +170,36 @@ export default async function JokeDetailPage({ params }: PageProps) {
               </div>
             </div>
 
-            {/* 分隔线 */}
-            <div className="my-8 border-t border-gray-200"></div>
+            {/* 互动区域 - 仅登录用户显示 */}
+            {isAuthenticated && (
+              <>
+                {/* 分隔线 */}
+                <div className="my-8 border-t border-gray-200"></div>
 
-            {/* 互动区域 */}
-            <div className="mb-6">
-              <div className="mb-4 flex items-center gap-2">
-                <i className="fa fa-heart text-xl text-kfc-red"></i>
-                <h2 className="text-xl font-bold text-gray-800">互动反馈</h2>
-              </div>
+                <div className="mb-6">
+                  <div className="mb-4 flex items-center gap-2">
+                    <i className="fa fa-heart text-xl text-kfc-red"></i>
+                    <h2 className="text-xl font-bold text-gray-800">互动反馈</h2>
+                  </div>
 
-              <div className="rounded-lg bg-gray-50 p-4">
-                <Suspense
-                  fallback={
-                    <div className="flex items-center gap-2 text-gray-500">
-                      <div className="h-6 w-6 animate-spin rounded-full border-2 border-kfc-red border-t-transparent"></div>
-                      <span>加载互动数据中...</span>
-                    </div>
-                  }
-                >
-                  <InteractiveReactions
-                    issueId={joke.id}
-                    className="flex-wrap gap-2"
-                  />
-                </Suspense>
-              </div>
-            </div>
-
-            {/* 统计信息 */}
-            <div className="rounded-lg bg-gradient-to-r from-kfc-yellow/20 to-orange-100/20 p-4">
-              <div className="flex flex-wrap items-center justify-center gap-6 text-center">
-                <div className="flex items-center gap-2">
-                  <i className="fa fa-eye text-kfc-red"></i>
-                  <span className="text-sm text-gray-600">段子ID: {joke.id}</span>
+                  <div className="rounded-lg bg-gray-50 p-4">
+                    <Suspense
+                      fallback={
+                        <div className="flex items-center gap-2 text-gray-500">
+                          <div className="h-6 w-6 animate-spin rounded-full border-2 border-kfc-red border-t-transparent"></div>
+                          <span>加载互动数据中...</span>
+                        </div>
+                      }
+                    >
+                      <InteractiveReactions
+                        issueId={joke.id}
+                        className="flex-wrap gap-2"
+                      />
+                    </Suspense>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <i className="fa fa-thumbs-up text-kfc-red"></i>
-                  <span className="text-sm text-gray-600">
-                    互动总数: <TotalReactionsCount issueId={joke.id} fallbackCount={totalReactions} />
-                  </span>
-                </div>
-              </div>
-            </div>
+              </>
+            )}
           </div>
         </article>
 

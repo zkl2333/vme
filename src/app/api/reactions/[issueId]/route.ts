@@ -17,10 +17,10 @@ export async function GET(
   try {
     // 使用用户 token 查询 reactions
     const githubService = await GitHubService.createWithUserToken(request)
-    
+
     // 获取实时 reactions 数据
     const stats = await githubService.getIssueStats(issueId)
-    
+
     const response = {
       issueId,
       totalCount: stats.reactions,

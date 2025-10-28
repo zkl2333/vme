@@ -7,6 +7,5 @@ export { default as ReactionsUI } from './UI'
 export { default as ReactionsLoading } from './Loading'
 export { default as ReactionsLogin } from './Login'
 export { default as LikeButton } from './LikeButton'
-export { default as TotalReactionsCount } from './TotalCount'
 
 
