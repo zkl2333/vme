@@ -1,12 +1,11 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import localFont from 'next/font/local'
-import Image from 'next/image'
 import clsx from 'clsx'
 import { Analytics } from '@vercel/analytics/next'
 
 import { Providers } from '@/app/providers'
-import Header from '@/components/shared/Header'
+import { Header, Footer } from '@/components/shared'
 import { getUniqueContributorsCount } from '@/lib/server-utils'
 
 import '@/styles/tailwind.css'
@@ -63,29 +62,7 @@ export default async function RootLayout({
           <main className="flex flex-1 flex-col">{children}</main>
 
           {/* 页脚 */}
-          <footer className="bg-gray-800 py-8 text-white">
-            <div className="container mx-auto px-4">
-              <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
-                <div className="flex items-center gap-2">
-                  <Image
-                    src="/images/logo.jpg"
-                    alt="KFC"
-                    width={50}
-                    height={50}
-                    className="h-10 w-10 rounded-full"
-                  />
-                  <span className="font-bold">肯德基疯狂星期四段子库</span>
-                </div>
-
-                <div className="text-center text-sm text-gray-400 md:text-right">
-                  <p>本网站仅为“疯狂星期四”梗文化交流，与肯德基品牌无关联</p>
-                  <p className="mt-1">
-                    v50是文化，不是交易（但你真的可以v我50）
-                  </p>
-                </div>
-              </div>
-            </div>
-          </footer>
+          <Footer />
         </Providers>
         <Analytics />
       </body>
