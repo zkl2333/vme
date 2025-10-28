@@ -48,15 +48,47 @@ async function createData() {
   // 记录更改的文件
   const changedFiles: string[] = []
 
+  // 统计贡献者信息
+  const contributorMap = new Map<string, {
+    username: string
+    count: number
+    avatarUrl: string
+    url: string
+  }>()
+
+  data.forEach((item) => {
+    const { username, avatarUrl, url } = item.author
+    if (contributorMap.has(username)) {
+      contributorMap.get(username)!.count++
+    } else {
+      contributorMap.set(username, {
+        username,
+        count: 1,
+        avatarUrl,
+        url,
+      })
+    }
+  })
+
+  // 转换为数组并按贡献数排序
+  const contributors = Array.from(contributorMap.values())
+    .sort((a, b) => b.count - a.count)
+
+  // 获取前10名贡献者用于排行榜
+  const topContributors = contributors.slice(0, 10)
+
   // 生成汇总信息
   const summary = {
     totalItems: data.length,
+    totalContributors: contributors.length,
     months: Object.entries(dataByMonth)
       .map(([month, items]) => ({
         month,
         count: items.length,
       }))
       .sort((a, b) => b.month.localeCompare(a.month)), // 按月份降序排序
+    contributors,
+    topContributors,
     updatedAt: new Date().toISOString(),
   }
 
