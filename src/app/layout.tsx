@@ -6,7 +6,7 @@ import clsx from 'clsx'
 import { Analytics } from '@vercel/analytics/next'
 
 import { Providers } from '@/app/providers'
-import LoginButton from '@/components/shared/LoginButton'
+import Header from '@/components/shared/Header'
 import { getUniqueContributorsCount } from '@/lib/server-utils'
 
 import '@/styles/tailwind.css'
@@ -57,67 +57,7 @@ export default async function RootLayout({
       </head>
       <body className="bg-kfc-pattern flex min-h-screen flex-col bg-kfc-cream font-kfc text-gray-800">
         <Providers>
-          {/* 顶部导航栏 */}
-          <header className="sticky top-0 z-50 bg-kfc-red text-white shadow-md transition-all duration-300">
-            <div className="container mx-auto flex flex-col items-center justify-between px-4 py-3 md:flex-row">
-              <div className="mb-2 flex items-center gap-3 md:mb-0">
-                <a href="/" className="flex items-center gap-3">
-                  <Image
-                    src="https://picsum.photos/seed/kfcicon/50/50"
-                    alt="KFC"
-                    width={50}
-                    height={50}
-                    className="h-10 w-10 animate-chicken-rotate rounded-full object-cover"
-                  />
-                  <h1 className="text-shadow-kfc text-xl font-bold md:text-2xl">
-                    肯德基疯狂星期四
-                    <span className="text-kfc-yellow">段子库</span>
-                  </h1>
-                </a>
-              </div>
-              <div className="flex items-center gap-4">
-                {/* 页面导航 */}
-                <nav className="hidden md:flex items-center gap-4">
-                  <a
-                    href="/jokes"
-                    className="flex items-center gap-1 rounded-xl bg-white/10 px-3 py-2 text-sm font-medium text-white transition-all duration-300 hover:bg-white/20"
-                  >
-                    <i className="fa fa-list"></i>
-                    段子列表
-                  </a>
-                  <a
-                    href="/leaderboard"
-                    className="flex items-center gap-1 rounded-xl bg-white/10 px-3 py-2 text-sm font-medium text-white transition-all duration-300 hover:bg-white/20"
-                  >
-                    <i className="fa fa-trophy"></i>
-                    排行榜
-                  </a>
-                  <a
-                    href="/submit"
-                    className="flex items-center gap-1 rounded-xl bg-kfc-yellow/20 px-3 py-2 text-sm font-medium text-white transition-all duration-300 hover:bg-kfc-yellow/30 border border-kfc-yellow/50"
-                  >
-                    <i className="fa fa-plus"></i>
-                    提交我的段子
-                  </a>
-                  <a
-                    href="/status"
-                    className="flex items-center gap-1 rounded-xl bg-blue-500/20 px-3 py-2 text-sm font-medium text-white transition-all duration-300 hover:bg-blue-500/30 border border-blue-500/50"
-                  >
-                    <i className="fa fa-heartbeat"></i>
-                    系统状态
-                  </a>
-                </nav>
-                
-                <div className="hidden items-center gap-1 rounded-full bg-white/10 px-3 py-1 text-sm md:flex">
-                  <i className="fa fa-users text-kfc-yellow"></i>
-                  <span>
-                    贡献者: <span>{contributorsCount}</span>
-                  </span>
-                </div>
-                <LoginButton />
-              </div>
-            </div>
-          </header>
+          <Header contributorsCount={contributorsCount} />
 
           {/* 主内容 */}
           <main className="flex flex-1 flex-col">{children}</main>
