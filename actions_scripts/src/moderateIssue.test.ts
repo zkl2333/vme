@@ -116,21 +116,21 @@ describe('moderateIssue', () => {
 
     mockedFindSimilarIssue.mockResolvedValueOnce(null)
     nock('https://aihubmix.com')
-      .post('/v1/moderations')
+      .post('/v1/chat/completions')
       .reply(200, {
-        results: [
+        choices: [
           {
-            categories: {
-              hate: false,
-              sexual: false,
-              violence: true,
-              'hate/threatening': false,
-              'self-harm': false,
-              'sexual/minors': false,
-              'violence/graphic': false,
+            message: {
+              content: JSON.stringify({
+                flagged: true,
+                categories: {
+                  hate: false,
+                  sexual: false,
+                  violence: true,
+                  'self-harm': false,
+                },
+              }),
             },
-            flagged: true,
-            category_scores: null,
           },
         ],
       })
@@ -151,21 +151,21 @@ describe('moderateIssue', () => {
 
     mockedFindSimilarIssue.mockResolvedValueOnce(null)
     nock('https://aihubmix.com')
-      .post('/v1/moderations')
+      .post('/v1/chat/completions')
       .reply(200, {
-        results: [
+        choices: [
           {
-            categories: {
-              hate: false,
-              sexual: false,
-              violence: false,
-              'hate/threatening': false,
-              'self-harm': false,
-              'sexual/minors': false,
-              'violence/graphic': false,
+            message: {
+              content: JSON.stringify({
+                flagged: true,
+                categories: {
+                  hate: false,
+                  sexual: false,
+                  violence: false,
+                  'self-harm': false,
+                },
+              }),
             },
-            flagged: true,
-            category_scores: null,
           },
         ],
       })
@@ -185,21 +185,21 @@ describe('moderateIssue', () => {
 
     mockedFindSimilarIssue.mockResolvedValueOnce(null)
     nock('https://aihubmix.com')
-      .post('/v1/moderations')
+      .post('/v1/chat/completions')
       .reply(200, {
-        results: [
+        choices: [
           {
-            categories: {
-              hate: false,
-              sexual: false,
-              violence: false,
-              'hate/threatening': false,
-              'self-harm': false,
-              'sexual/minors': false,
-              'violence/graphic': false,
+            message: {
+              content: JSON.stringify({
+                flagged: false,
+                categories: {
+                  hate: false,
+                  sexual: false,
+                  violence: false,
+                  'self-harm': false,
+                },
+              }),
             },
-            flagged: false,
-            category_scores: null,
           },
         ],
       })
@@ -215,8 +215,10 @@ describe('moderateIssue', () => {
     mockedGetIssueLabels.mockResolvedValueOnce([])
 
     mockedFindSimilarIssue.mockResolvedValueOnce(null)
+    // 由于有重试机制（3次），需要mock 3次请求
     nock('https://aihubmix.com')
-      .post('/v1/moderations')
+      .post('/v1/chat/completions')
+      .times(3)
       .reply(200, {
         error: {
           message: '接口错误',
