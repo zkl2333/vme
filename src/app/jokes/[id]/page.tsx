@@ -5,6 +5,7 @@ import { FormattedDate } from '@/components/shared/FormattedDate'
 import Image from 'next/image'
 import CopyButton from '@/components/shared/CopyButton'
 import InteractiveReactions from '@/components/reactions/Interactive'
+import TotalReactionsCount from '@/components/reactions/TotalCount'
 import Link from 'next/link'
 
 interface PageProps {
@@ -174,7 +175,7 @@ export default async function JokeDetailPage({ params }: PageProps) {
                 <div className="flex items-center gap-2">
                   <i className="fa fa-thumbs-up text-kfc-red"></i>
                   <span className="text-sm text-gray-600">
-                    互动总数: {totalReactions}
+                    互动总数: <TotalReactionsCount issueId={joke.id} fallbackCount={totalReactions} />
                   </span>
                 </div>
               </div>
