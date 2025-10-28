@@ -1,29 +1,53 @@
 import Image from 'next/image'
-import RandomJoke from '@/components/client/RandomJoke'
+import JokeDetail from '@/components/server/JokeDetail'
+import { getAllKfcItems, getRandomKfcItem } from '@/lib/server-utils'
+import { redirect } from 'next/navigation'
 
-export default function Page() {
+interface PageProps {
+  searchParams: {
+    joke?: string
+  }
+}
+
+export default async function Page({ searchParams }: PageProps) {
+  // 如果没有提供 joke 参数，获取随机段子并重定向
+  if (!searchParams.joke) {
+    const randomJoke = await getRandomKfcItem()
+    redirect(`/?joke=${randomJoke.id}`)
+  }
+
+  // 验证 jokeId 是否存在
+  const allJokes = await getAllKfcItems()
+  const jokeExists = allJokes.some((item) => item.id === searchParams.joke)
+
+  // 如果 joke ID 不存在，获取随机段子并重定向
+  if (!jokeExists) {
+    const randomJoke = await getRandomKfcItem()
+    redirect(`/?joke=${randomJoke.id}`)
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
       {/* 随机段子主题区域 */}
       <div className="mb-10">
-                 {/* 页面标题 */}
-         <div className="mb-6 text-center">
-           <div className="mb-3 flex items-center justify-center gap-2">
-             <span className="text-3xl">🎲</span>
-             <h1 className="text-3xl font-bold text-gray-800 md:text-4xl">
-               今日份快乐
-             </h1>
-             <span className="text-3xl">🍗</span>
-           </div>
-           <p className="text-lg text-gray-600">
-             来点不一样的？这个段子专治不开心
-           </p>
-         </div>
+        {/* 页面标题 */}
+        <div className="mb-6 text-center">
+          <div className="mb-3 flex items-center justify-center gap-2">
+            <span className="text-3xl">🎲</span>
+            <h1 className="text-3xl font-bold text-gray-800 md:text-4xl">
+              今日份快乐
+            </h1>
+            <span className="text-3xl">🍗</span>
+          </div>
+          <p className="text-lg text-gray-600">
+            来点不一样的？这个段子专治不开心
+          </p>
+        </div>
 
-                 {/* 随机段子展示 */}
-         <div className="mb-6">
-           <RandomJoke />
-         </div>
+        {/* 段子展示 */}
+        <div className="mb-6">
+          <JokeDetail jokeId={searchParams.joke} />
+        </div>
       </div>
 
              {/* 功能导航卡片 */}

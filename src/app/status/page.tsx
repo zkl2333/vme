@@ -1,39 +1,29 @@
 import { Suspense } from 'react'
-import JokesServer from '@/components/server/Jokes'
+import StatusDashboard from '@/components/client/StatusDashboard'
 
-// 获取URL参数的类型定义
-interface PageProps {
-  searchParams: {
-    page?: string
-  }
-}
-
-export default async function JokesPage({ searchParams }: PageProps) {
-  // 从URL参数获取页码
-  const page = parseInt(searchParams.page || '1')
-
+export default function StatusPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       {/* 页面标题 */}
       <div className="mb-8 text-center">
         <h1 className="mb-4 text-3xl font-bold text-gray-800 md:text-4xl">
-          疯狂星期四段子库
+          系统状态监控
         </h1>
         <p className="text-lg text-gray-600">
-          精选最搞笑的疯狂星期四段子，让你笑到停不下来
+          GitHub API 限流状态、环境配置和系统健康度检查
         </p>
       </div>
 
-      {/* 段子列表 */}
+      {/* 状态仪表板 */}
       <Suspense
         fallback={
           <div className="flex items-center justify-center py-12">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-kfc-red border-t-transparent"></div>
-            <span className="ml-2 text-gray-600">加载段子中...</span>
+            <span className="ml-2 text-gray-600">检查系统状态中...</span>
           </div>
         }
       >
-        <JokesServer currentPage={page} />
+        <StatusDashboard />
       </Suspense>
 
       {/* 返回首页 */}

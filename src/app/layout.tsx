@@ -7,6 +7,7 @@ import { Analytics } from '@vercel/analytics/next'
 
 import { Providers } from '@/app/providers'
 import LoginButton from '@/components/client/LoginButton'
+import { getUniqueContributorsCount } from '@/lib/server-utils'
 
 import '@/styles/tailwind.css'
 
@@ -35,11 +36,13 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const contributorsCount = await getUniqueContributorsCount()
+
   return (
     <html
       lang="zh-CN"
@@ -89,12 +92,26 @@ export default function RootLayout({
                     <i className="fa fa-trophy"></i>
                     排行榜
                   </a>
+                  <a
+                    href="/submit"
+                    className="flex items-center gap-1 rounded-xl bg-kfc-yellow/20 px-3 py-2 text-sm font-medium text-white transition-all duration-300 hover:bg-kfc-yellow/30 border border-kfc-yellow/50"
+                  >
+                    <i className="fa fa-plus"></i>
+                    提交我的段子
+                  </a>
+                  <a
+                    href="/status"
+                    className="flex items-center gap-1 rounded-xl bg-blue-500/20 px-3 py-2 text-sm font-medium text-white transition-all duration-300 hover:bg-blue-500/30 border border-blue-500/50"
+                  >
+                    <i className="fa fa-heartbeat"></i>
+                    系统状态
+                  </a>
                 </nav>
                 
                 <div className="hidden items-center gap-1 rounded-full bg-white/10 px-3 py-1 text-sm md:flex">
                   <i className="fa fa-users text-kfc-yellow"></i>
                   <span>
-                    贡献者: <span id="contributors-count">42</span>
+                    贡献者: <span>{contributorsCount}</span>
                   </span>
                 </div>
                 <LoginButton />

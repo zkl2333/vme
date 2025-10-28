@@ -1,35 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth/next'
-import { getToken } from 'next-auth/jwt'
-import { authOptions } from '@/lib/auth'
-import { Octokit } from '@octokit/core'
+import { GitHubService, GitHubServiceError, getCurrentUser, requireUserAuth } from '@/lib/github-service'
 import { LikeRequest, LikeResponse } from '@/types'
-
-
 
 export async function POST(request: NextRequest) {
   try {
-    // 获取用户session
-    const session = await getServerSession(authOptions)
-
-    if (!session?.user?.username) {
-      return NextResponse.json<LikeResponse>({
-        success: false,
-        message: '请先登录GitHub',
-      }, { status: 401 })
-    }
-
-    // 从JWT token中获取access token（仅在服务器端）
-    const secret = process.env.NEXTAUTH_SECRET
-    const token = await getToken({ req: request, secret })
-    const accessToken = token?.accessToken
-
-    if (!accessToken) {
-      return NextResponse.json<LikeResponse>({
-        success: false,
-        message: '认证信息无效，请重新登录',
-      }, { status: 401 })
-    }
+    // 获取用户认证状态
+    const user = await getCurrentUser(request)
+    requireUserAuth(user)
 
     const body: LikeRequest = await request.json()
     const { issueId, reaction } = body
@@ -43,32 +20,13 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // 创建Octokit实例，使用用户的access token
-    const octokit = new Octokit({
-      auth: accessToken,
-    })
-
-    // 验证issue是否存在
-    const graphqlQuery = `
-      query GetIssue($id: ID!) {
-        node(id: $id) {
-          ... on Issue {
-            id
-          }
-        }
-      }
-    `
+    // 创建 GitHub 服务实例（使用用户token）
+    const githubService = await GitHubService.createWithUserToken(request)
 
     try {
-      console.log('执行GraphQL查询，issueId:', issueId)
-      const graphqlResponse = await octokit.graphql(graphqlQuery, {
-        id: issueId,
-      })
-
-      console.log('GraphQL响应:', JSON.stringify(graphqlResponse, null, 2))
-
-      const issueData = (graphqlResponse as any).node
-      if (!issueData) {
+      // 验证issue是否存在
+      const issueExists = await githubService.validateIssue(issueId)
+      if (!issueExists) {
         console.log('Issue不存在:', issueId)
         return NextResponse.json<LikeResponse>({
           success: false,
@@ -78,70 +36,80 @@ export async function POST(request: NextRequest) {
 
       console.log('Issue验证成功:', issueId)
 
-      // 使用GraphQL Mutation添加reaction
-      const addReactionMutation = `
-        mutation AddReaction($input: AddReactionInput!) {
-          addReaction(input: $input) {
-            reaction {
-              id
-              content
-            }
-            subject {
-              id
-            }
-          }
-        }
-      `
+      // 添加反应
+      const reactionId = await githubService.addReaction(issueId, reaction as any)
 
-      const mutationResponse = await octokit.graphql(addReactionMutation, {
-        input: {
-          subjectId: issueId,
-          content: reaction,
-        },
-      })
-
-      console.log('GraphQL Mutation响应:', JSON.stringify(mutationResponse, null, 2))
-
-      const reactionData = (mutationResponse as any).addReaction?.reaction
-      if (!reactionData) {
-        throw new Error('添加reaction失败：GraphQL响应无效')
-      }
+      console.log('反应添加成功:', { reactionId, issueId })
 
       return NextResponse.json<LikeResponse>({
         success: true,
         message: '点赞成功',
-        reactionId: reactionData.id,
+        reactionId,
       })
 
-    } catch (graphqlError: any) {
-      console.error('GraphQL查询失败:', {
-        error: graphqlError.message,
-        status: graphqlError.status,
-        data: graphqlError.data,
-        issueId
-      })
-      return NextResponse.json<LikeResponse>({
-        success: false,
-        message: `GraphQL查询失败: ${graphqlError.message}`,
-      }, { status: 404 })
+    } catch (githubError: any) {
+      if (githubError instanceof GitHubServiceError) {
+        console.error('GitHub API错误:', {
+          code: githubError.code,
+          message: githubError.message,
+          status: githubError.status,
+          issueId
+        })
+
+        // 处理限流错误
+        if (githubError.code === 'RATE_LIMIT_FORCE_LOGIN') {
+          return NextResponse.json<LikeResponse>({
+            success: false,
+            message: 'API调用频率过高，请稍后重试',
+          }, { status: 429 })
+        }
+
+        if (githubError.code === 'NOT_FOUND') {
+          return NextResponse.json<LikeResponse>({
+            success: false,
+            message: 'Issue不存在或无权访问',
+          }, { status: 404 })
+        }
+
+        if (githubError.code === 'INVALID_DATA') {
+          return NextResponse.json<LikeResponse>({
+            success: false,
+            message: '已经点过这个反应了',
+          }, { status: 422 })
+        }
+
+        return NextResponse.json<LikeResponse>({
+          success: false,
+          message: `操作失败: ${githubError.message}`,
+        }, { status: githubError.status || 500 })
+      }
+
+      throw githubError
     }
 
   } catch (error: any) {
     console.error('点赞失败:', error)
 
-    // 处理GitHub API错误
-    if (error.status === 404) {
+    // 处理认证错误
+    if (error instanceof GitHubServiceError && error.code === 'AUTHENTICATION_REQUIRED') {
       return NextResponse.json<LikeResponse>({
         success: false,
-        message: 'Issue不存在或无权访问',
-      }, { status: 404 })
+        message: '请先登录GitHub',
+      }, { status: 401 })
     }
 
-    if (error.status === 422) {
+    if (error instanceof GitHubServiceError && error.code === 'NOT_AUTHENTICATED') {
       return NextResponse.json<LikeResponse>({
         success: false,
-        message: '已经点过这个反应了',
-      }, { status: 422 })
+        message: '请先登录GitHub',
+      }, { status: 401 })
+    }
+
+    if (error instanceof GitHubServiceError && error.code === 'INVALID_TOKEN') {
+      return NextResponse.json<LikeResponse>({
+        success: false,
+        message: '认证信息无效，请重新登录',
+      }, { status: 401 })
     }
 
     return NextResponse.json<LikeResponse>({
@@ -153,33 +121,12 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    // 获取用户session
-    const session = await getServerSession(authOptions)
-
-    if (!session?.user?.username) {
-      return NextResponse.json<LikeResponse>({
-        success: false,
-        message: '请先登录GitHub',
-      }, { status: 401 })
-    }
-
-    // 从JWT token中获取access token（仅在服务器端）
-    const secret = process.env.NEXTAUTH_SECRET
-    const token = await getToken({ req: request, secret })
-    const accessToken = token?.accessToken
-
-    if (!accessToken) {
-      return NextResponse.json<LikeResponse>({
-        success: false,
-        message: '认证信息无效，请重新登录',
-      }, { status: 401 })
-    }
+    // 获取用户认证状态
+    const user = await getCurrentUser(request)
+    requireUserAuth(user)
 
     const body: LikeRequest = await request.json()
     const { issueId, reaction } = body
-
-
-
 
     console.log('收到取消点赞请求:', { issueId, reaction })
 
@@ -190,103 +137,77 @@ export async function DELETE(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // 创建Octokit实例，使用用户的access token
-    const octokit = new Octokit({
-      auth: accessToken,
-    })
-
-    // 获取issue的reactions信息，找到用户要删除的reaction
-    const reactionsQuery = `
-      query GetIssueReactions($id: ID!) {
-        node(id: $id) {
-          ... on Issue {
-            reactions(first: 100) {
-              nodes {
-                id
-                content
-                user {
-                  login
-                }
-              }
-            }
-          }
-        }
-      }
-    `
+    // 创建 GitHub 服务实例（使用用户token）
+    const githubService = await GitHubService.createWithUserToken(request)
 
     try {
-      const graphqlResponse = await octokit.graphql(reactionsQuery, {
-        id: issueId,
-      })
+      // 删除反应
+      await githubService.removeReaction(issueId, reaction as any, user.username)
 
-      const issueData = (graphqlResponse as any).node
-      if (!issueData) {
-        return NextResponse.json<LikeResponse>({
-          success: false,
-          message: 'Issue不存在或无权访问',
-        }, { status: 404 })
-      }
-
-      const reactions = issueData.reactions.nodes || []
-
-      console.log('session.user.username', session.user.username)
-      console.log('r.content', reaction)
-      console.log('reactions', reactions)
-
-      // 找到当前用户要删除的reaction
-      const userReaction = reactions.find((r: any) =>
-        r.user.login === session.user.username && r.content === reaction
-      )
-
-      if (!userReaction) {
-        return NextResponse.json<LikeResponse>({
-          success: false,
-          message: '未找到要删除的reaction',
-        }, { status: 404 })
-      }
-
-      // 使用GraphQL Mutation删除reaction
-      const removeReactionMutation = `
-        mutation RemoveReaction($input: RemoveReactionInput!) {
-          removeReaction(input: $input) {
-            subject {
-              id
-            }
-          }
-        }
-      `
-
-      const mutationResponse = await octokit.graphql(removeReactionMutation, {
-        input: {
-          subjectId: issueId,
-          content: reaction,
-        },
-      })
-
-      console.log('GraphQL Mutation响应:', JSON.stringify(mutationResponse, null, 2))
-
-      const mutationData = (mutationResponse as any).removeReaction
-      if (!mutationData) {
-        throw new Error('删除reaction失败：GraphQL响应无效')
-      }
-
-      console.log('删除reaction成功:', mutationData)
+      console.log('删除反应成功:', { issueId, reaction, user: user.username })
 
       return NextResponse.json<LikeResponse>({
         success: true,
         message: '取消点赞成功',
       })
 
-    } catch (graphqlError: any) {
-      console.error('GraphQL查询失败:', graphqlError)
-      return NextResponse.json<LikeResponse>({
-        success: false,
-        message: `GraphQL查询失败: ${graphqlError.message}`,
-      }, { status: 404 })
+    } catch (githubError: any) {
+      if (githubError instanceof GitHubServiceError) {
+        console.error('GitHub API错误:', {
+          code: githubError.code,
+          message: githubError.message,
+          status: githubError.status,
+          issueId
+        })
+
+        // 处理限流错误
+        if (githubError.code === 'RATE_LIMIT_FORCE_LOGIN') {
+          return NextResponse.json<LikeResponse>({
+            success: false,
+            message: 'API调用频率过高，请稍后重试',
+          }, { status: 429 })
+        }
+
+        if (githubError.code === 'REACTION_NOT_FOUND') {
+          return NextResponse.json<LikeResponse>({
+            success: false,
+            message: '未找到要删除的reaction',
+          }, { status: 404 })
+        }
+
+        return NextResponse.json<LikeResponse>({
+          success: false,
+          message: `操作失败: ${githubError.message}`,
+        }, { status: githubError.status || 500 })
+      }
+
+      throw githubError
     }
 
   } catch (error: any) {
     console.error('取消点赞失败:', error)
+
+    // 处理认证错误
+    if (error instanceof GitHubServiceError && error.code === 'AUTHENTICATION_REQUIRED') {
+      return NextResponse.json<LikeResponse>({
+        success: false,
+        message: '请先登录GitHub',
+      }, { status: 401 })
+    }
+
+    if (error instanceof GitHubServiceError && error.code === 'NOT_AUTHENTICATED') {
+      return NextResponse.json<LikeResponse>({
+        success: false,
+        message: '请先登录GitHub',
+      }, { status: 401 })
+    }
+
+    if (error instanceof GitHubServiceError && error.code === 'INVALID_TOKEN') {
+      return NextResponse.json<LikeResponse>({
+        success: false,
+        message: '认证信息无效，请重新登录',
+      }, { status: 401 })
+    }
 
     return NextResponse.json<LikeResponse>({
       success: false,

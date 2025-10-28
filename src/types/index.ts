@@ -65,3 +65,16 @@ export interface LikeResponse {
   message: string
   reactionId?: string
 }
+
+// 文案提交相关类型
+export interface SubmitJokeRequest {
+  title: string
+  content: string
+}
+
+export interface SubmitJokeResponse {
+  success: boolean
+  message: string
+  issueUrl?: string
+  issueNumber?: number
+}

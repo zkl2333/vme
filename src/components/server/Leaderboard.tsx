@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import LeaderboardSortTabs from '../client/LeaderboardSortTabs'
-import { getOctokitInstance } from '@/lib/server-utils'
+import { GitHubService } from '@/lib/github-service'
 
 interface AuthorStats {
   username: string
@@ -32,8 +32,8 @@ async function getLeaderboardData(sortBy: string = 'score') {
   }
 
   try {
-    // 优先使用用户权限
-    const octokit = await getOctokitInstance()
+    // 使用智能服务创建
+    const githubService = await GitHubService.createSmart()
 
     // 动态导入服务端工具函数，避免客户端bundle包含fs模块
     const { getAllKfcItems } = await import('@/lib/server-utils')
@@ -62,39 +62,22 @@ async function getLeaderboardData(sortBy: string = 'score') {
 
       const author = authorMap.get(username)!
       author.totalPosts++
+      // 使用静态reactions数据
       author.posts.push({
         id: item.id,
         title: item.title,
-        interactions: 0,
+        interactions: item.reactions?.totalCount || 0,
         createdAt: item.createdAt,
       })
     }
 
-    // 动态导入GitHub统计工具函数
-    const { getBatchIssueStats: serverGetBatchIssueStats } = await import(
-      '@/app/lib/github-stats'
-    )
-
-    // 获取GitHub统计数据
-    const allIssueIds = allItems.map((item) => item.id)
-    const statsMap = await serverGetBatchIssueStats(octokit, allIssueIds)
-
-    // 更新作者统计数据
+    // 计算作者总互动数据
     for (const [username, author] of authorMap) {
       let totalInteractions = 0
 
-      // 更新每个段子的统计数据
-      author.posts = author.posts.map((post) => {
-        const stats = statsMap.get(post.id) || {
-          id: post.id,
-          reactions: 0,
-        }
-        totalInteractions += stats.reactions
-
-        return {
-          ...post,
-          interactions: stats.reactions,
-        }
+      // 计算总互动数
+      author.posts.forEach((post) => {
+        totalInteractions += post.interactions
       })
 
       author.totalInteractions = totalInteractions

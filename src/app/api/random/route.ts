@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getRandomKfcItem, getOctokitInstance } from '@/lib/server-utils'
-import { getIssueStats } from '@/app/lib/github-stats'
+import { getRandomKfcItem } from '@/lib/server-utils'
 
 export async function GET(request: NextRequest) {
   // 处理跨域请求
@@ -13,7 +12,7 @@ export async function GET(request: NextRequest) {
   const format = searchParams.get('format')
 
   try {
-    // 获取随机文案
+    // 获取随机文案（仅基础数据，不包含实时 reactions）
     const randomItem = await getRandomKfcItem()
 
     if (!randomItem) {
@@ -23,25 +22,20 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // 获取详细的reactions信息 - 优先使用用户权限
-    const octokit = await getOctokitInstance(request)
-    const stats = await getIssueStats(octokit, randomItem.id)
-
-    // 合并数据
-    const enrichedItem = {
-      ...randomItem,
-      reactions: {
-        totalCount: stats.reactions,
-        details: stats.reactionDetails || [],
-        nodes: stats.reactionNodes || [],
-      },
-    }
-
     if (format === 'text') {
       return new NextResponse(randomItem.body || '暂无数据', { headers })
     } else {
-      // 默认返回 JSON 格式
-      return NextResponse.json(enrichedItem, { headers })
+      // 返回基础数据，不包含实时 reactions
+      const basicItem = {
+        ...randomItem,
+        reactions: {
+          totalCount: randomItem.reactions?.totalCount || 0,
+          details: [],
+          nodes: [],
+        },
+      }
+      
+      return NextResponse.json(basicItem, { headers })
     }
   } catch (error) {
     console.error(error)
