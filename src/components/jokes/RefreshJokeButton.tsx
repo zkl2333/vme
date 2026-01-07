@@ -55,7 +55,7 @@ export default function RefreshJokeButton({ currentJokeId }: RefreshJokeButtonPr
         className="group inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-kfc-yellow to-yellow-400 px-8 py-3 font-bold text-kfc-red shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100"
       >
         <i className={`fa fa-refresh text-lg transition-transform duration-300 ${isLoading ? 'animate-spin' : 'group-hover:rotate-180'}`}></i>
-        <span>{isLoading ? '正在获取...' : '换个段子乐一乐'}</span>
+        <span>{isLoading ? '正在获取...' : '再来一条'}</span>
         {!isLoading && <span className="text-sm opacity-75">(≧∇≦)</span>}
       </button>
     </div>

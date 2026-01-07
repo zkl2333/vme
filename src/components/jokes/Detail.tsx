@@ -40,10 +40,10 @@ export default async function JokeDetail({ jokeId }: JokeDetailProps) {
           <div className="mb-6 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="rounded bg-gradient-to-r from-kfc-red to-orange-500 px-3 py-1 text-xs font-medium text-white shadow-sm">
-                今日推荐
+                今日v50文案
               </span>
               <h2 className="text-xl font-bold text-gray-800 md:text-2xl">
-                让你笑到拍桌的段子
+                这周四就发这条！
               </h2>
             </div>
           </div>
@@ -73,7 +73,7 @@ export default async function JokeDetail({ jokeId }: JokeDetailProps) {
               </div>
               <div>
                 <div className="font-semibold text-gray-900">
-                  贡献者:{' '}
+                  文案鬼才:{' '}
                   <span className="text-kfc-red hover:text-orange-500 transition-colors duration-300">
                     @{joke.author.username}
                   </span>

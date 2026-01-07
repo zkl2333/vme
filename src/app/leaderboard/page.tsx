@@ -27,10 +27,10 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
       {/* 页面标题 */}
       <div className="mb-8 text-center">
         <h1 className="mb-4 text-3xl font-bold text-gray-800 md:text-4xl">
-          梗王排行榜
+          V50 英雄榜
         </h1>
         <p className="text-lg text-gray-600">
-          看看谁是真正的梗王，谁的段子最受欢迎
+          看看谁是真正的文案鬼才，谁的文案最能打
         </p>
       </div>
 
@@ -39,7 +39,7 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
         fallback={
           <div className="flex items-center justify-center py-12">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-kfc-red border-t-transparent"></div>
-            <span className="ml-2 text-gray-600">加载排行榜中...</span>
+            <span className="ml-2 text-gray-600">正在加载英雄榜...</span>
           </div>
         }
       >

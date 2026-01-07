@@ -62,7 +62,7 @@ export default function SubmitForm() {
       const data = await response.json()
 
       if (data.success) {
-        setMessage({ type: 'success', text: '段子提交成功！感谢您的贡献！' })
+        setMessage({ type: 'success', text: '文案上交成功！感谢你的好活！' })
         setTitle('')
         setContent('')
         // 清理可能存在的草稿
@@ -86,7 +86,7 @@ export default function SubmitForm() {
             title: isExpired ? '登录已过期' : '提交段子需要登录',
             message: isExpired
               ? '您的登录已过期，请重新登录以继续提交'
-              : '登录后即可提交您的创意文案，分享快乐给更多人！',
+              : '登录后即可上交文案，分享快乐给更多人！',
           })
         } else {
           setMessage({ type: 'error', text: data.message || '提交失败，请稍后重试' })
@@ -109,7 +109,7 @@ export default function SubmitForm() {
     // 显示登录确认弹窗
     showLoginDialog({
       title: '提交段子需要登录',
-      message: '登录后即可提交您的创意文案，分享快乐给更多人！',
+      message: '登录后即可上交文案，分享快乐给更多人！',
     })
   }
 
@@ -125,10 +125,10 @@ export default function SubmitForm() {
     return (
       <div className="max-w-2xl mx-auto p-4 bg-white rounded-lg shadow-lg md:p-6">
         <h2 className="text-xl font-bold text-center mb-4 text-gray-800 md:text-2xl">
-          提交我的疯狂星期四段子
+          上交我的疯四文案
         </h2>
         <p className="text-gray-600 text-center mb-6">
-          请先登录 GitHub 账号以提交您的创意段子
+          请先登录 GitHub 账号以提交您的创意
         </p>
         <div className="flex justify-center">
           <button
@@ -157,14 +157,14 @@ export default function SubmitForm() {
   return (
     <div className="max-w-2xl mx-auto p-4 bg-white rounded-lg shadow-lg md:p-6">
       <h2 className="text-xl font-bold text-center mb-4 text-gray-800 md:mb-6 md:text-2xl">
-        提交我的疯狂星期四段子
+        上交我的疯四文案
       </h2>
 
       <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
         <div>
           <div className="flex items-center justify-between mb-2">
             <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-              段子标题 *
+              文案标题 *
             </label>
             <p className="text-xs text-gray-500">
               {title.length}/100
@@ -175,7 +175,7 @@ export default function SubmitForm() {
             id="title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="给你的段子起个有趣的标题..."
+            placeholder="给你的文案起个标题..."
             className="w-full min-h-[44px] px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-colors"
             disabled={isSubmitting}
             maxLength={100}
@@ -185,7 +185,7 @@ export default function SubmitForm() {
         <div>
           <div className="flex items-center justify-between mb-2">
             <label htmlFor="content" className="block text-sm font-medium text-gray-700">
-              段子内容 *
+              文案内容 *
             </label>
             <p className="text-xs text-gray-500">
               {content.length}/2000
@@ -195,7 +195,7 @@ export default function SubmitForm() {
             id="content"
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="写下你的疯狂星期四段子..."
+            placeholder="开始你的表演..."
             rows={6}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-colors resize-none"
             disabled={isSubmitting}
@@ -224,10 +224,10 @@ export default function SubmitForm() {
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              提交中...
+              上交中...
             </span>
           ) : (
-            '提交段子'
+            '确认上交'
           )}
         </button>
       </form>

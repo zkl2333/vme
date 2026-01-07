@@ -15,22 +15,24 @@ export default async function JokesPage({ searchParams }: PageProps) {
   return (
     <div className="container mx-auto px-4 py-8">
       {/* 页面标题 */}
-      <div className="mb-8 text-center">
-        <h1 className="mb-4 text-3xl font-bold text-gray-800 md:text-4xl">
-          疯狂星期四段子库
+      <div className="mb-8 text-center md:mb-10">
+        <h1 className="mb-3 text-3xl font-bold text-gray-800 md:text-4xl">
+          疯四文案仓库
         </h1>
-        <p className="text-lg text-gray-600">
-          精选最搞笑的疯狂星期四段子，让你笑到停不下来
+        <p className="mx-auto max-w-2xl text-base text-gray-600 md:text-lg">
+          历年疯四文案大赏，总有一条能骗到v50
         </p>
       </div>
 
       {/* 段子列表 */}
       <Suspense
         fallback={
-          <div className="flex items-center justify-center py-12">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-kfc-red border-t-transparent"></div>
-            <span className="ml-2 text-gray-600">加载段子中...</span>
+        <div className="flex h-64 items-center justify-center rounded-2xl bg-white p-8 shadow-kfc">
+          <div className="flex items-center text-kfc-red">
+            <i className="fa fa-spinner fa-spin mr-3 text-2xl"></i>
+            <span className="ml-2 text-gray-600">正在加载文案...</span>
           </div>
+        </div>
         }
       >
         <JokesList currentPage={page} />

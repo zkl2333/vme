@@ -74,7 +74,7 @@ function LoginConfirmDialogContent({
           <div className="text-sm text-blue-800">
             <p className="mb-1 font-medium">登录后您可以：</p>
             <ul className="space-y-1 text-blue-700">
-              <li>• 给喜欢的段子点赞</li>
+              <li>• 给喜欢的文案点赞</li>
               <li>• 提交自己的创意文案</li>
               <li>• 参与社区互动</li>
             </ul>

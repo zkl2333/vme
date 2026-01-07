@@ -93,13 +93,13 @@ export default async function JokeDetailPage({ params }: PageProps) {
     <div className="container mx-auto px-4 py-8">
       {/* 返回按钮 */}
       <div className="mb-6">
-        <Link
+        <a
           href="/jokes"
-          className="inline-flex items-center gap-2 text-gray-600 transition-colors hover:text-kfc-red"
+          className="group inline-flex items-center text-sm font-medium text-gray-500 transition-colors duration-300 hover:text-kfc-red"
         >
-          <i className="fa fa-arrow-left"></i>
-          <span>返回段子列表</span>
-        </Link>
+          <i className="fa fa-arrow-left mr-2 transition-transform duration-300 group-hover:-translate-x-1"></i>
+          <span>返回文案库</span>
+        </a>
       </div>
 
       {/* 段子详情卡片 */}
@@ -120,10 +120,10 @@ export default async function JokeDetailPage({ params }: PageProps) {
           <div className="relative z-10 p-5 md:p-8 lg:p-12">
             {/* 段子内容 */}
             <div className="mb-6 md:mb-8">
-              <div className="mb-3 flex items-center gap-2 md:mb-4">
-                <i className="fa fa-quote-left text-xl text-kfc-yellow md:text-2xl"></i>
-                <h1 className="text-xl font-bold text-gray-800 md:text-2xl">段子内容</h1>
-              </div>
+            <div className="flex items-center gap-2">
+              <span className="text-2xl md:text-3xl">📝</span>
+              <h1 className="text-xl font-bold text-gray-800 md:text-2xl">文案内容</h1>
+            </div>
 
               <div className="group relative">
                 <div className="min-h-[120px] rounded-lg border-l-4 border-kfc-yellow bg-gray-50/50 px-4 py-3 text-base leading-relaxed transition-colors duration-300 group-hover:bg-gray-50 md:px-6 md:py-4 md:text-lg lg:text-xl">
@@ -142,7 +142,7 @@ export default async function JokeDetailPage({ params }: PageProps) {
             <div className="mb-6">
               <div className="mb-3 flex items-center gap-2 md:mb-4">
                 <i className="fa fa-user text-lg text-kfc-red md:text-xl"></i>
-                <h2 className="text-lg font-bold text-gray-800 md:text-xl">段子贡献者</h2>
+                <h2 className="text-lg font-bold text-gray-800 md:text-xl">文案鬼才</h2>
               </div>
 
               <div className="flex items-center gap-3 rounded-lg bg-gray-50 p-3 md:gap-4 md:p-4">
@@ -205,13 +205,13 @@ export default async function JokeDetailPage({ params }: PageProps) {
 
         {/* 底部操作按钮 - 优化移动端布局 */}
         <div className="mt-6 flex flex-col gap-3 md:mt-8 md:flex-row md:justify-center md:gap-4">
-          <Link
-            href="/jokes"
-            className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-kfc-red px-6 py-3 font-bold text-white transition-all duration-300 hover:bg-kfc-darkRed hover:shadow-lg"
-          >
-            <i className="fa fa-list"></i>
-            浏览更多段子
-          </Link>
+        <a
+          href="/jokes"
+          className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 font-bold text-gray-800 shadow-kfc transition-all duration-300 hover:bg-gray-50 hover:shadow-xl hover:text-kfc-red"
+        >
+          <span>再来一条</span>
+          <i className="fa fa-arrow-right"></i>
+        </a>
 
           <Link
             href="/"

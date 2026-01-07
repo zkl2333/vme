@@ -39,7 +39,7 @@ export default function LikeButton({
       // 显示登录确认弹窗
       showLoginDialog({
         title: '互动需要登录',
-        message: '登录后即可给段子添加表情反应，还能提交自己的创意文案！',
+        message: '登录后即可互动，还能投稿自己的创意文案！',
       })
       return
     }

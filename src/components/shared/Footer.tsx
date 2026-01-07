@@ -20,7 +20,7 @@ export default function Footer() {
             <div>
               <h3 className="text-base font-black md:text-lg">肯德基疯狂星期四</h3>
               <p className="text-xs text-kfc-yellow">
-                让快乐传递 <span className="inline-block">🍗</span>
+                让v50传递 <span className="inline-block">🍗</span>
               </p>
             </div>
           </div>
@@ -37,19 +37,19 @@ export default function Footer() {
               href="/jokes"
               className="transition-colors duration-300 hover:text-kfc-yellow"
             >
-              段子列表
+              文案库
             </a>
             <a
               href="/leaderboard"
               className="transition-colors duration-300 hover:text-kfc-yellow"
             >
-              排行榜
+              英雄榜
             </a>
             <a
               href="/submit"
               className="transition-colors duration-300 hover:text-kfc-yellow"
             >
-              提交段子
+              我要投稿
             </a>
             <a
               href="/status"
@@ -68,13 +68,13 @@ export default function Footer() {
           <div className="text-white/80">
             <p>© {currentYear} 疯狂星期四段子库</p>
             <p className="mt-1 text-xs text-white/60">
-              本网站仅为梗文化交流，与肯德基品牌无关联
+              本站纯属娱乐，请勿用于非法诈骗 (但可以用于合法骗吃骗喝)
             </p>
           </div>
 
           <div className="text-center md:text-right">
             <p className="text-sm font-medium text-kfc-yellow md:text-base">
-              v50是文化，不是交易
+              v50不是交易，是信仰
             </p>
             <p className="text-xs text-white/60">（但你真的可以v我50）</p>
           </div>

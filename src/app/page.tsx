@@ -35,12 +35,12 @@ export default async function Page({ searchParams }: PageProps) {
           <div className="mb-2 flex items-center justify-center gap-2 md:mb-3">
             <span className="text-2xl md:text-3xl">🎲</span>
             <h1 className="text-2xl font-bold text-gray-800 md:text-3xl lg:text-4xl">
-              今日份快乐
+              今日疯四文案
             </h1>
             <span className="text-2xl md:text-3xl">🍗</span>
           </div>
           <p className="text-base text-gray-600 md:text-lg">
-            来点不一样的？这个段子专治不开心
+            复制粘贴，坐等v50
           </p>
         </div>
 
@@ -60,10 +60,10 @@ export default async function Page({ searchParams }: PageProps) {
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-kfc-red text-white md:h-12 md:w-12">
                 <i className="fa fa-list text-lg md:text-xl"></i>
               </div>
-              <h3 className="text-lg font-bold text-gray-800 md:text-xl">段子列表</h3>
+              <h3 className="text-lg font-bold text-gray-800 md:text-xl">文案仓库</h3>
             </div>
             <p className="mb-4 text-sm text-gray-600 md:text-base">
-              浏览所有精选的疯狂星期四段子，按时间排序，找到让你笑出声的梗
+              历年疯四文案大赏，总有一条能骗到v50
             </p>
             <a
               href="/jokes"
@@ -83,10 +83,10 @@ export default async function Page({ searchParams }: PageProps) {
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-kfc-red text-white md:h-12 md:w-12">
                 <i className="fa fa-trophy text-lg md:text-xl"></i>
               </div>
-              <h3 className="text-lg font-bold text-gray-800 md:text-xl">梗王排行榜</h3>
+              <h3 className="text-lg font-bold text-gray-800 md:text-xl">V50 英雄榜</h3>
             </div>
             <p className="mb-4 text-sm text-gray-600 md:text-base">
-              看看谁是真正的梗王，谁的段子最受欢迎，谁最会v50
+              谁的文案最能打？谁是疯四之王？
             </p>
             <a
               href="/leaderboard"
@@ -114,23 +114,23 @@ export default async function Page({ searchParams }: PageProps) {
           <div className="relative z-10 bg-gradient-to-r from-kfc-red to-kfc-darkRed p-4 text-white md:p-6 lg:p-8">
             <div className="max-w-xl">
               <h2 className="mb-3 text-xl font-bold md:mb-4 md:text-2xl lg:text-3xl">
-                成为下一个梗王
+                我要投稿
               </h2>
               <p className="mb-4 text-sm text-white/90 md:mb-6 md:text-base">
-                分享你的疯狂星期四段子，让全网为你笑出声，说不定还能收获一群愿意v你50的朋友
+                独乐乐不如众乐乐，把你的私藏文案交出来，造福广大疯四信徒
               </p>
 
               <a
                 href="/submit"
                 className="shine-effect flex min-h-[44px] items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-base font-bold text-kfc-red shadow-lg transition-all duration-300 hover:shadow-xl md:px-6 md:py-3 md:text-lg"
               >
-                <i className="fa fa-paper-plane"></i> 提交我的段子
+                <i className="fa fa-paper-plane"></i> 上交文案
               </a>
 
               <div className="mt-4 flex items-center gap-2 text-xs md:mt-6 md:text-sm">
                 <i className="fa fa-lightbulb-o text-kfc-yellow"></i>
                 <span>
-                  提示：段子越贴近&quot;v50&quot;和&quot;疯狂星期四&quot;梗，越容易被推荐
+                  提示：越离谱越容易被推荐
                 </span>
               </div>
             </div>

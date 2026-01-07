@@ -78,7 +78,7 @@ export default function Header({ contributorsCount }: HeaderProps) {
                 </h1>
                 <p className="text-xs font-medium text-kfc-yellow">
                   <span className="inline-block animate-bounce">🍗</span>{' '}
-                  {contributorsCount} 位段子手在线
+                  {contributorsCount} 人正在等待v50
                 </p>
               </div>
             </a>
@@ -91,21 +91,21 @@ export default function Header({ contributorsCount }: HeaderProps) {
               className="nav-link group relative flex items-center gap-2 rounded-xl bg-white/10 px-4 py-2.5 text-sm font-semibold text-white backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/20 hover:shadow-lg"
             >
               <i className="fa fa-list transition-transform duration-300 group-hover:scale-110"></i>
-              <span>段子列表</span>
+              <span>文案库</span>
             </a>
             <a
               href="/leaderboard"
               className="nav-link group relative flex items-center gap-2 rounded-xl bg-white/10 px-4 py-2.5 text-sm font-semibold text-white backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/20 hover:shadow-lg"
             >
               <i className="fa fa-trophy transition-transform duration-300 group-hover:scale-110"></i>
-              <span>排行榜</span>
+              <span>英雄榜</span>
             </a>
             <a
               href="/submit"
               className="nav-link group relative flex items-center gap-2 rounded-xl border-2 border-kfc-yellow/50 bg-kfc-yellow/20 px-4 py-2.5 text-sm font-semibold text-white backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-kfc-yellow hover:bg-kfc-yellow/30 hover:shadow-lg"
             >
               <i className="fa fa-plus transition-transform duration-300 group-hover:rotate-90"></i>
-              <span>提交段子</span>
+              <span>我要投稿</span>
             </a>
             <a
               href="/status"
@@ -146,7 +146,7 @@ export default function Header({ contributorsCount }: HeaderProps) {
               className="flex items-center gap-3 rounded-lg bg-white/10 px-4 py-3 text-sm font-semibold text-white backdrop-blur-sm transition-all duration-300 hover:bg-white/20"
             >
               <i className="fa fa-list w-5"></i>
-              <span>段子列表</span>
+              <span>文案库</span>
             </a>
             <a
               href="/leaderboard"
@@ -154,7 +154,7 @@ export default function Header({ contributorsCount }: HeaderProps) {
               className="flex items-center gap-3 rounded-lg bg-white/10 px-4 py-3 text-sm font-semibold text-white backdrop-blur-sm transition-all duration-300 hover:bg-white/20"
             >
               <i className="fa fa-trophy w-5"></i>
-              <span>排行榜</span>
+              <span>英雄榜</span>
             </a>
             <a
               href="/submit"
@@ -162,7 +162,7 @@ export default function Header({ contributorsCount }: HeaderProps) {
               className="flex items-center gap-3 rounded-lg border-2 border-kfc-yellow/50 bg-kfc-yellow/20 px-4 py-3 text-sm font-semibold text-white backdrop-blur-sm transition-all duration-300 hover:border-kfc-yellow hover:bg-kfc-yellow/30"
             >
               <i className="fa fa-plus w-5"></i>
-              <span>提交我的段子</span>
+              <span>我要投稿</span>
             </a>
             <a
               href="/status"
@@ -176,7 +176,7 @@ export default function Header({ contributorsCount }: HeaderProps) {
               <i className="fa fa-users text-kfc-yellow"></i>
               <span>
                 <span className="font-semibold">{contributorsCount}</span>{' '}
-                位段子手
+                人正在等待v50
               </span>
             </div>
           </nav>

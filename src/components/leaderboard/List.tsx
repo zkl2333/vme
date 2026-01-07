@@ -124,7 +124,7 @@ export default async function LeaderboardServer({
       <div className="rounded-lg bg-red-50 p-8 text-center">
         <div className="text-6xl">😅</div>
         <h2 className="mt-4 text-2xl font-bold text-red-600">
-          排行榜暂时无法加载
+          英雄榜暂时无法加载
         </h2>
         <p className="mt-2 text-red-500">请稍后再试</p>
       </div>
@@ -135,7 +135,7 @@ export default async function LeaderboardServer({
     <>
       <div className="mb-6 flex items-center justify-between">
         <h2 className="flex items-center gap-2 text-2xl font-bold text-gray-800">
-          <i className="fa fa-book text-kfc-red"></i> 梗王排行榜
+          <i className="fa fa-book text-kfc-red"></i> V50 英雄榜
         </h2>
 
         {/* 排序选择 */}
@@ -147,7 +147,7 @@ export default async function LeaderboardServer({
         {data.authors.length >= 3 && (
           <div className="mb-6 md:mb-8">
             <h2 className="mb-4 text-center text-xl font-bold text-gray-800 md:mb-6 md:text-2xl">
-              🥇 殿堂级梗王 🥇
+              🥇 殿堂级文案鬼才 🥇
             </h2>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
               {data.authors.slice(0, 3).map((author, index) => {
@@ -221,7 +221,7 @@ export default async function LeaderboardServer({
                     </h3>
 
                     <div className="mb-3 space-y-1 text-xs text-gray-600 md:mb-4 md:text-sm">
-                      <div>发布 {author.totalPosts} 个段子</div>
+                      <div>贡献 {author.totalPosts} 条文案</div>
                       <div>
                         获得 {author.totalInteractions.toLocaleString()} 次互动
                       </div>
@@ -237,7 +237,7 @@ export default async function LeaderboardServer({
                             .replace('-700', '') + '20',
                       }}
                     >
-                      综合评分: {Math.round(author.score)}
+                      V50 指数: {Math.round(author.score)}
                     </div>
 
                     {/* GitHub 链接 */}
@@ -271,7 +271,7 @@ export default async function LeaderboardServer({
         {data.authors.length > 3 && (
           <div>
             <h2 className="mb-4 text-center text-xl font-bold text-gray-800 md:mb-6 md:text-2xl">
-              📊 完整排行榜
+              📊 完整英雄榜
             </h2>
             <div className="space-y-3 md:space-y-4">
               {data.authors.slice(3, 10).map((author, index) => (
@@ -300,7 +300,7 @@ export default async function LeaderboardServer({
                         @{author.username}
                       </h3>
                       <div className="text-xs text-gray-500 md:text-sm">
-                        {author.totalPosts} 个段子 • 评分{' '}
+                        {author.totalPosts} 条文案 • V50指数{' '}
                         {Math.round(author.score)}
                       </div>
                     </div>

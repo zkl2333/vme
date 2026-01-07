@@ -6,10 +6,10 @@ export default function SubmitPage() {
       <div className="container mx-auto px-4 py-12">
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-red-500 to-yellow-500 bg-clip-text text-transparent mb-4">
-            提交我的疯狂星期四段子
+            上交我的疯四文案
           </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            分享你的创意段子，让更多人感受疯狂星期四的快乐！
+            别藏着掖着了，把你的好活交出来！
           </p>
         </div>
 
@@ -37,7 +37,7 @@ export default function SubmitPage() {
               <div className="text-3xl mb-3">🏆</div>
               <h3 className="font-bold text-gray-800 mb-2">获得认可</h3>
               <p className="text-sm text-gray-600">
-                优质文案会获得更多点赞，还能在排行榜上展示
+                优质文案会获得更多点赞，还能荣登英雄榜
               </p>
             </div>
           </div>

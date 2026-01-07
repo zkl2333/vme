@@ -72,9 +72,9 @@ export default function Pagination({
           <span className="font-semibold">
             {Math.min(currentPage * pageSize, totalItems)}
           </span>{' '}
-          个段子， 共{' '}
+          条文案， 共{' '}
           <span className="font-semibold text-kfc-red">{totalItems}</span>{' '}
-          个段子
+          条文案
         </div>
 
         <div className="text-sm text-gray-500">
