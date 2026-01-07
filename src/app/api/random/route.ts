@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getRandomKfcItem } from '@/lib/server-utils'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   // 处理跨域请求
   const headers = new Headers()

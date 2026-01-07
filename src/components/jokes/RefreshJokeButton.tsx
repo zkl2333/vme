@@ -19,7 +19,7 @@ export default function RefreshJokeButton({ currentJokeId }: RefreshJokeButtonPr
     setIsLoading(true)
     try {
       // 获取随机段子 ID
-      const res = await fetch('/api/random/id')
+      const res = await fetch('/api/random/id', { cache: 'no-store' })
       if (!res.ok) {
         throw new Error('获取随机段子失败')
       }
@@ -27,7 +27,7 @@ export default function RefreshJokeButton({ currentJokeId }: RefreshJokeButtonPr
 
       // 如果获取到的是相同的段子，再试一次
       if (id === currentJokeId) {
-        const retryRes = await fetch('/api/random/id')
+        const retryRes = await fetch('/api/random/id', { cache: 'no-store' })
         if (retryRes.ok) {
           const retryData = await retryRes.json()
           router.push(`/?joke=${retryData.id}`)

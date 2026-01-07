@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { getRandomKfcItem } from '@/lib/server-utils'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   try {
     const randomJoke = await getRandomKfcItem()
