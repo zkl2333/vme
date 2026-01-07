@@ -40,7 +40,7 @@ export default async function JokeDetail({ jokeId }: JokeDetailProps) {
         <div className="relative z-10">
           <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
             <div className="inline-block -rotate-2 border-2 border-black bg-kfc-red px-4 py-1 text-sm font-black uppercase italic text-white shadow-neo-sm">
-              Today's Special / 今日主打
+              Today&apos;s Special / 今日主打
             </div>
             <h2 className="text-2xl font-black italic tracking-tighter text-black md:text-3xl">
               周四限定 <span className="text-kfc-red underline">文案鬼才</span>

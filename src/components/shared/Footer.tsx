@@ -60,7 +60,7 @@ export default function Footer() {
 
           <div className="text-center md:text-right">
             <p className="text-base font-black italic text-kfc-yellow md:text-lg">
-              "V ME 50 IS A LIFESTYLE"
+              &quot;V ME 50 IS A LIFESTYLE&quot;
             </p>
           </div>
         </div>
