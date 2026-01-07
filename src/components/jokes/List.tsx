@@ -19,14 +19,13 @@ export default async function JokesList({ currentPage }: JokesListProps) {
   return (
     <section id="jokes-list" className="mb-12">
       {/* 列表标题 */}
-      <div className="mb-6 flex items-center justify-between">
-        <h2 className="flex items-center gap-2 text-2xl font-bold text-gray-800">
-          <i className="fa fa-book text-kfc-red"></i> 文案总库
+      <div className="mb-8 flex items-center justify-between border-b-4 border-black pb-4">
+        <h2 className="flex items-center gap-2 text-2xl font-black uppercase italic text-black md:text-3xl">
+          <i className="fa fa-folder-open text-kfc-red"></i> All Entries
         </h2>
-        <div className="flex items-center gap-2 rounded-full bg-white px-3 py-1 text-sm shadow-sm">
-          <span>
-            共收录: <span className="font-bold text-kfc-red">{total}</span>
-            条文案
+        <div className="flex items-center gap-2 border-2 border-black bg-kfc-yellow px-4 py-1 shadow-neo-sm">
+          <span className="text-sm font-bold uppercase text-black">
+            Total: <span className="font-black">{total}</span>
           </span>
         </div>
       </div>

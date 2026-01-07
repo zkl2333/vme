@@ -61,24 +61,23 @@ export default function Pagination({
   }
 
   return (
-    <div className="mt-8">
-      <div className="mb-4 flex flex-col items-center justify-between gap-4 sm:flex-row">
-        <div className="text-sm text-gray-600">
-          显示第{' '}
-          <span className="font-semibold">
+    <div className="mt-12 border-t-2 border-black pt-8">
+      <div className="mb-6 flex flex-col items-center justify-between gap-4 sm:flex-row">
+        <div className="text-sm font-bold uppercase text-black">
+          Showing{' '}
+          <span className="bg-kfc-yellow px-1">
             {(currentPage - 1) * pageSize + 1}
           </span>{' '}
           -
-          <span className="font-semibold">
+          <span className="bg-kfc-yellow px-1">
             {Math.min(currentPage * pageSize, totalItems)}
           </span>{' '}
-          条文案， 共{' '}
-          <span className="font-semibold text-kfc-red">{totalItems}</span>{' '}
-          条文案
+          of{' '}
+          <span className="font-black text-kfc-red">{totalItems}</span>
         </div>
 
-        <div className="text-sm text-gray-500">
-          第 {currentPage} 页 / 共 {totalPages} 页
+        <div className="text-sm font-bold uppercase text-black">
+          Page {currentPage} / {totalPages}
         </div>
       </div>
 
@@ -88,12 +87,12 @@ export default function Pagination({
             <Link
               scroll={false}
               href={buildUrl(currentPage - 1)}
-              className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition-colors hover:border-kfc-red hover:bg-kfc-red hover:text-white"
+              className="flex min-h-[44px] min-w-[44px] items-center justify-center border-2 border-black bg-white text-black shadow-neo-sm transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-black hover:text-white hover:shadow-none"
             >
               <i className="fa fa-chevron-left text-sm"></i>
             </Link>
           ) : (
-            <div className="flex min-h-[44px] min-w-[44px] cursor-not-allowed items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-300">
+            <div className="flex min-h-[44px] min-w-[44px] cursor-not-allowed items-center justify-center border-2 border-black bg-gray-100 text-gray-400 opacity-50 shadow-neo-sm">
               <i className="fa fa-chevron-left text-sm"></i>
             </div>
           )}
@@ -103,12 +102,12 @@ export default function Pagination({
               <Link
                 scroll={false}
                 href={buildUrl(1)}
-                className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition-colors hover:border-kfc-red hover:bg-kfc-red hover:text-white"
+                className="flex min-h-[44px] min-w-[44px] items-center justify-center border-2 border-black bg-white font-black text-black shadow-neo-sm transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-black hover:text-white hover:shadow-none"
               >
                 1
               </Link>
               {pageNumbers[0] > 2 && (
-                <span className="flex min-h-[44px] min-w-[44px] items-center justify-center text-gray-400">
+                <span className="flex min-h-[44px] min-w-[44px] items-center justify-center font-black text-black">
                   ...
                 </span>
               )}
@@ -120,10 +119,10 @@ export default function Pagination({
               scroll={false}
               key={page}
               href={buildUrl(page)}
-              className={`flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg border transition-colors ${
+              className={`flex min-h-[44px] min-w-[44px] items-center justify-center border-2 border-black font-black shadow-neo-sm transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none ${
                 currentPage === page
-                  ? 'border-kfc-red bg-kfc-red text-white'
-                  : 'border-gray-200 bg-white text-gray-600 hover:border-kfc-red hover:bg-kfc-red hover:text-white'
+                  ? 'bg-kfc-red text-white'
+                  : 'bg-white text-black hover:bg-black hover:text-white'
               }`}
             >
               {page}
@@ -133,14 +132,14 @@ export default function Pagination({
           {pageNumbers[pageNumbers.length - 1] < totalPages && (
             <>
               {pageNumbers[pageNumbers.length - 1] < totalPages - 1 && (
-                <span className="flex min-h-[44px] min-w-[44px] items-center justify-center bg-white text-gray-400">
+                <span className="flex min-h-[44px] min-w-[44px] items-center justify-center font-black text-black">
                   ...
                 </span>
               )}
               <Link
                 scroll={false}
                 href={buildUrl(totalPages)}
-                className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition-colors hover:border-kfc-red hover:bg-kfc-red hover:text-white"
+                className="flex min-h-[44px] min-w-[44px] items-center justify-center border-2 border-black bg-white font-black text-black shadow-neo-sm transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-black hover:text-white hover:shadow-none"
               >
                 {totalPages}
               </Link>
@@ -151,12 +150,12 @@ export default function Pagination({
             <Link
               scroll={false}
               href={buildUrl(currentPage + 1)}
-              className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition-colors hover:border-kfc-red hover:bg-kfc-red hover:text-white"
+              className="flex min-h-[44px] min-w-[44px] items-center justify-center border-2 border-black bg-white text-black shadow-neo-sm transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-black hover:text-white hover:shadow-none"
             >
               <i className="fa fa-chevron-right text-sm"></i>
             </Link>
           ) : (
-            <div className="flex min-h-[44px] min-w-[44px] cursor-not-allowed items-center justify-center rounded-lg border border-gray-200 text-gray-300">
+            <div className="flex min-h-[44px] min-w-[44px] cursor-not-allowed items-center justify-center border-2 border-black bg-gray-100 text-gray-400 opacity-50 shadow-neo-sm">
               <i className="fa fa-chevron-right text-sm"></i>
             </div>
           )}

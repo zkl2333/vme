@@ -8,59 +8,30 @@ export default {
       fontSize: {
         '2xs': '.6875rem',
       },
-      fontFamily: {
-        sans: 'var(--font-inter)',
-        display: 'var(--font-mona-sans)',
-        kfc: ['"Helvetica Neue"', 'Arial', 'sans-serif'],
-        funny: ['"Comic Sans MS"', '"Bubblegum Sans"', 'cursive'],
-      },
       colors: {
         kfc: {
-          red: '#E02020',
-          darkRed: '#C11111',
-          yellow: '#FFC72C',
-          lightYellow: '#FFE082',
-          brown: '#8B4513',
-          cream: '#FFF8E1',
+          red: '#C41200', // 更深更复古的红
+          yellow: '#FFC72C', // 亮黄
+          cream: '#F4F1EA', // 牛皮纸/旧报纸底色
+          black: '#121212', // 墨黑
         },
       },
       boxShadow: {
-        kfc: '0 4px 14px 0 rgba(224, 32, 32, 0.3)',
-        'kfc-hover': '0 8px 24px 0 rgba(224, 32, 32, 0.4)',
+        'neo': '4px 4px 0px 0px #000000',
+        'neo-sm': '2px 2px 0px 0px #000000',
+        'neo-lg': '6px 6px 0px 0px #000000',
+        'neo-xl': '8px 8px 0px 0px #000000',
+        'neo-red': '4px 4px 0px 0px #C41200',
+        'neo-yellow': '4px 4px 0px 0px #FFC72C',
       },
-      opacity: {
-        2.5: '0.025',
-        7.5: '0.075',
-        15: '0.15',
+      borderWidth: {
+        '3': '3px',
       },
-      animation: {
-        'chicken-rotate': 'chickenRotate 6s ease-in-out infinite',
-        'pulse-soft': 'pulseSoft 2s infinite',
-        'slide-up': 'slideUp 0.6s ease-out forwards',
-        'float-effect': 'float 3s ease-in-out infinite',
-        shine: 'shine 3s infinite',
-      },
-      keyframes: {
-        chickenRotate: {
-          '0%, 100%': { transform: 'rotate(-5deg) scale(1)' },
-          '50%': { transform: 'rotate(5deg) scale(1.05)' },
-        },
-        pulseSoft: {
-          '0%, 100%': { transform: 'scale(1)' },
-          '50%': { transform: 'scale(1.05)' },
-        },
-        slideUp: {
-          from: { opacity: '0', transform: 'translateY(20px)' },
-          to: { opacity: '1', transform: 'translateY(0)' },
-        },
-        float: {
-          '0%, 100%': { transform: 'translateY(0)' },
-          '50%': { transform: 'translateY(-10px)' },
-        },
-        shine: {
-          '0%': { transform: 'rotate(30deg) translateX(-100%)' },
-          '100%': { transform: 'rotate(30deg) translateX(100%)' },
-        },
+      fontFamily: {
+        sans: ['"PingFang SC"', '"Microsoft YaHei"', '"Heiti SC"', 'var(--font-inter)', 'sans-serif'],
+        display: ['var(--font-mona-sans)', '"PingFang SC"', '"Microsoft YaHei"', 'sans-serif'],
+        kfc: ['"PingFang SC"', '"Microsoft YaHei"', 'Arial', 'sans-serif'],
+        funny: ['"Comic Sans MS"', '"Bubblegum Sans"', '"PingFang SC"', '"Microsoft YaHei"', 'cursive'],
       },
     },
   },

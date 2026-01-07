@@ -27,113 +27,91 @@ export default async function Page({ searchParams }: PageProps) {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 md:py-8">
-      {/* 随机段子主题区域 */}
-      <div className="mb-8 md:mb-10">
-        {/* 页面标题 */}
-        <div className="mb-6 text-center">
-          <div className="mb-2 flex items-center justify-center gap-2 md:mb-3">
-            <span className="text-2xl md:text-3xl">🎲</span>
-            <h1 className="text-2xl font-bold text-gray-800 md:text-3xl lg:text-4xl">
-              今日疯四文案
-            </h1>
-            <span className="text-2xl md:text-3xl">🍗</span>
-          </div>
-          <p className="text-base text-gray-600 md:text-lg">
-            复制粘贴，坐等v50
+    <div className="container mx-auto px-4 py-8 md:py-16">
+      {/* 疯狂星期四海报风格 Hero */}
+      <div className="relative mb-16 text-center md:mb-24">
+        <div className="absolute -top-10 left-0 -rotate-12 border-2 border-black bg-white px-4 py-1 text-sm font-black uppercase shadow-neo-sm md:text-base">
+          Every Thursday
+        </div>
+        <div className="absolute -right-5 top-0 rotate-12 border-2 border-black bg-kfc-yellow px-4 py-1 text-sm font-black uppercase shadow-neo-sm md:text-base">
+          V Me 50
+        </div>
+        
+        <h1 className="mb-6 text-6xl font-black italic tracking-tighter text-black md:text-8xl lg:text-9xl">
+          疯狂<span className="text-kfc-red underline decoration-black decoration-8 underline-offset-8">星期四</span>
+        </h1>
+        
+        <div className="mx-auto max-w-3xl border-4 border-black bg-white p-4 shadow-neo">
+          <p className="text-lg font-black uppercase leading-tight md:text-2xl">
+            Copy. Paste. Get v50. <br />
+            在这里，炸鸡是配角，段子才是灵魂。
           </p>
         </div>
+      </div>
 
-        {/* 段子展示 */}
-        <div className="mb-6">
-          <JokeDetail jokeId={searchParams.joke} />
+      {/* 今日主打段子 - 伪新闻门户风 */}
+      <div className="mb-20">
+        <div className="mb-6 flex items-center gap-4">
+          <div className="bg-black px-4 py-1 text-lg font-black uppercase italic text-white shadow-neo-sm">
+            Top Headline / 头条
+          </div>
+          <div className="h-1 flex-1 bg-black"></div>
+        </div>
+        <JokeDetail jokeId={searchParams.joke} />
+      </div>
+
+      {/* 功能导航 - 模块化网格 */}
+      <div className="grid gap-6 md:grid-cols-2">
+        <div className="group border-3 border-black bg-white p-6 shadow-neo transition-all hover:-translate-x-1 hover:-translate-y-1 hover:shadow-neo-xl">
+          <div className="mb-4 flex h-12 w-12 items-center justify-center border-2 border-black bg-kfc-red text-white shadow-neo-sm">
+            <i className="fa fa-list text-2xl"></i>
+          </div>
+          <h3 className="mb-2 text-2xl font-black uppercase italic">文案仓库</h3>
+          <p className="mb-6 font-bold text-gray-600">历年疯四文案大赏，总有一条能骗到v50</p>
+          <a
+            href="/jokes"
+            className="inline-block border-2 border-black bg-black px-6 py-2 text-lg font-black uppercase italic text-white shadow-neo-sm transition-all hover:bg-kfc-red"
+          >
+            Enter Gallery
+          </a>
+        </div>
+
+        <div className="group border-3 border-black bg-white p-6 shadow-neo transition-all hover:-translate-x-1 hover:-translate-y-1 hover:shadow-neo-xl">
+          <div className="mb-4 flex h-12 w-12 items-center justify-center border-2 border-black bg-kfc-yellow text-black shadow-neo-sm">
+            <i className="fa fa-trophy text-2xl"></i>
+          </div>
+          <h3 className="mb-2 text-2xl font-black uppercase italic">V50 英雄榜</h3>
+          <p className="mb-6 font-bold text-gray-600">谁的文案最能打？谁是疯四之王？</p>
+          <a
+            href="/leaderboard"
+            className="inline-block border-2 border-black bg-black px-6 py-2 text-lg font-black uppercase italic text-white shadow-neo-sm transition-all hover:bg-kfc-yellow hover:text-black"
+          >
+            Check Ranking
+          </a>
         </div>
       </div>
 
-      {/* 功能导航卡片 */}
-      <div className="grid gap-4 md:gap-6 md:grid-cols-2">
-        {/* 段子列表卡片 */}
-        <div className="group relative overflow-hidden rounded-2xl bg-white p-4 shadow-kfc transition-all duration-300 hover:shadow-kfc-hover md:p-6">
-          <div className="absolute right-0 top-0 -mr-16 -mt-16 hidden h-32 w-32 rounded-full bg-kfc-red/10 transition-all duration-300 group-hover:bg-kfc-red/20 md:block"></div>
-          <div className="relative z-10">
-            <div className="mb-3 flex items-center gap-3 md:mb-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-kfc-red text-white md:h-12 md:w-12">
-                <i className="fa fa-list text-lg md:text-xl"></i>
-              </div>
-              <h3 className="text-lg font-bold text-gray-800 md:text-xl">文案仓库</h3>
-            </div>
-            <p className="mb-4 text-sm text-gray-600 md:text-base">
-              历年疯四文案大赏，总有一条能骗到v50
+      {/* 提交段子区 - 极致疯狂风格 */}
+      <section id="submit-joke" className="mt-16 md:mt-24">
+        <div className="relative border-4 border-black bg-kfc-red p-8 shadow-neo-xl md:p-12 lg:p-16">
+          <div className="absolute -left-6 -top-6 hidden rotate-12 border-2 border-black bg-kfc-yellow px-6 py-2 text-xl font-black uppercase italic text-black shadow-neo-sm md:block">
+            We Need You!
+          </div>
+          
+          <div className="relative z-10 mx-auto max-w-3xl text-center">
+            <h2 className="mb-6 text-4xl font-black italic uppercase text-white drop-shadow-[3px_3px_0px_rgba(0,0,0,1)] md:text-6xl">
+              我要投稿 / SUBMIT
+            </h2>
+            <p className="mb-10 text-lg font-bold text-white md:text-xl">
+              把你的私藏文案交出来，造福广大疯四信徒。越离谱，越容易被推荐！
             </p>
+
             <a
-              href="/jokes"
-              className="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-kfc-red px-4 py-2 font-bold text-white transition-all duration-300 hover:bg-kfc-darkRed"
+              href="/submit"
+              className="inline-block border-4 border-black bg-white px-10 py-4 text-2xl font-black uppercase italic text-black shadow-neo transition-all hover:translate-x-1 hover:translate-y-1 hover:bg-kfc-yellow hover:shadow-none"
             >
-              开始浏览
-              <i className="fa fa-arrow-right"></i>
+              Upload Now!
             </a>
-          </div>
-        </div>
-
-        {/* 排行榜卡片 */}
-        <div className="group relative overflow-hidden rounded-2xl bg-white p-4 shadow-kfc transition-all duration-300 hover:shadow-kfc-hover md:p-6">
-          <div className="absolute right-0 top-0 -mr-16 -mt-16 hidden h-32 w-32 rounded-full bg-kfc-red/10 transition-all duration-300 group-hover:bg-kfc-red/20 md:block"></div>
-          <div className="relative z-10">
-            <div className="mb-3 flex items-center gap-3 md:mb-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-kfc-red text-white md:h-12 md:w-12">
-                <i className="fa fa-trophy text-lg md:text-xl"></i>
-              </div>
-              <h3 className="text-lg font-bold text-gray-800 md:text-xl">V50 英雄榜</h3>
-            </div>
-            <p className="mb-4 text-sm text-gray-600 md:text-base">
-              谁的文案最能打？谁是疯四之王？
-            </p>
-            <a
-              href="/leaderboard"
-              className="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-kfc-red px-4 py-2 font-bold text-white transition-all duration-300 hover:bg-kfc-darkRed"
-            >
-              查看排行
-              <i className="fa fa-crown"></i>
-            </a>
-          </div>
-        </div>
-      </div>
-
-      {/* 提交段子区（强化参与引导） */}
-      <section id="submit-joke" className="mt-8 md:mt-12">
-        <div className="relative overflow-hidden rounded-2xl shadow-kfc">
-          <div className="absolute right-0 top-0 hidden h-full w-1/3 opacity-10 md:block">
-            <Image
-              src="https://picsum.photos/seed/kfcbg/400/400"
-              alt=""
-              width={400}
-              height={400}
-              className="h-full w-full object-cover"
-            />
-          </div>
-          <div className="relative z-10 bg-gradient-to-r from-kfc-red to-kfc-darkRed p-4 text-white md:p-6 lg:p-8">
-            <div className="max-w-xl">
-              <h2 className="mb-3 text-xl font-bold md:mb-4 md:text-2xl lg:text-3xl">
-                我要投稿
-              </h2>
-              <p className="mb-4 text-sm text-white/90 md:mb-6 md:text-base">
-                独乐乐不如众乐乐，把你的私藏文案交出来，造福广大疯四信徒
-              </p>
-
-              <a
-                href="/submit"
-                className="shine-effect flex min-h-[44px] items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-base font-bold text-kfc-red shadow-lg transition-all duration-300 hover:shadow-xl md:px-6 md:py-3 md:text-lg"
-              >
-                <i className="fa fa-paper-plane"></i> 上交文案
-              </a>
-
-              <div className="mt-4 flex items-center gap-2 text-xs md:mt-6 md:text-sm">
-                <i className="fa fa-lightbulb-o text-kfc-yellow"></i>
-                <span>
-                  提示：越离谱越容易被推荐
-                </span>
-              </div>
-            </div>
           </div>
         </div>
       </section>

@@ -142,50 +142,40 @@ export default async function LeaderboardServer({
         <SortTabs currentSort={data.sortBy} />
       </div>
 
-      <div className="space-y-6 rounded-2xl bg-white p-4 shadow-kfc md:space-y-8 md:p-6">
+      <div className="border-4 border-black bg-white p-6 shadow-neo-xl md:p-8">
         {/* Top 3 特殊展示 */}
         {data.authors.length >= 3 && (
-          <div className="mb-6 md:mb-8">
-            <h2 className="mb-4 text-center text-xl font-bold text-gray-800 md:mb-6 md:text-2xl">
-              🥇 殿堂级文案鬼才 🥇
+          <div className="mb-12">
+            <h2 className="mb-8 text-center text-3xl font-black uppercase italic text-black md:text-4xl">
+              <span className="bg-black px-4 py-1 text-white">Hall of Fame</span> 殿堂级鬼才
             </h2>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
               {data.authors.slice(0, 3).map((author, index) => {
                 const getRankStyle = (rank: number) => {
                   switch (rank) {
                     case 1:
                       return {
-                        border: 'border-yellow-200',
-                        bg: 'bg-gradient-to-b from-yellow-50 to-white',
-                        badgeBg:
-                          'bg-gradient-to-r from-yellow-400 to-yellow-500',
-                        avatarBorder: 'border-yellow-400',
-                        textColor: 'text-yellow-700',
+                        bg: 'bg-kfc-yellow',
+                        badge: '1ST',
+                        title: 'text-black',
                       }
                     case 2:
                       return {
-                        border: 'border-gray-200',
-                        bg: 'bg-gradient-to-b from-gray-50 to-white',
-                        badgeBg: 'bg-gradient-to-r from-gray-400 to-gray-500',
-                        avatarBorder: 'border-gray-400',
-                        textColor: 'text-gray-700',
+                        bg: 'bg-gray-300',
+                        badge: '2ND',
+                        title: 'text-black',
                       }
                     case 3:
                       return {
-                        border: 'border-orange-200',
-                        bg: 'bg-gradient-to-b from-orange-50 to-white',
-                        badgeBg:
-                          'bg-gradient-to-r from-orange-400 to-orange-500',
-                        avatarBorder: 'border-orange-400',
-                        textColor: 'text-orange-700',
+                        bg: 'bg-orange-300',
+                        badge: '3RD',
+                        title: 'text-black',
                       }
                     default:
                       return {
-                        border: 'border-gray-200',
                         bg: 'bg-white',
-                        badgeBg: 'bg-gray-400',
-                        avatarBorder: 'border-gray-300',
-                        textColor: 'text-gray-700',
+                        badge: '?',
+                        title: 'text-black',
                       }
                   }
                 }
@@ -195,49 +185,41 @@ export default async function LeaderboardServer({
                 return (
                   <div
                     key={author.username}
-                    className={`relative rounded-xl border-2 ${style.border} ${style.bg} p-4 pt-6 text-center shadow-lg transition-transform hover:scale-105 md:p-6`}
+                    className={`relative border-4 border-black ${style.bg} p-6 pt-10 text-center shadow-neo transition-transform hover:-translate-y-2 hover:shadow-neo-xl`}
                   >
-                    {/* 排名徽章 - 优化位置避免被裁剪 */}
-                    <div
-                      className={`absolute -top-2 left-1/2 flex h-7 w-7 -translate-x-1/2 items-center justify-center rounded-full ${style.badgeBg} text-xs font-bold text-white shadow-md md:-top-3 md:h-8 md:w-8 md:text-sm`}
-                    >
-                      {index + 1}
+                    {/* 排名徽章 */}
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 border-2 border-black bg-black px-3 py-1 text-xl font-black italic text-white shadow-neo-sm">
+                      {style.badge}
                     </div>
 
                     {/* 头像 */}
-                    <div className="mb-3 flex justify-center md:mb-4">
-                      <Image
-                        src={author.avatarUrl}
-                        alt={`${author.username}的头像`}
-                        width={80}
-                        height={80}
-                        className={`h-16 w-16 rounded-full border-2 ${style.avatarBorder} shadow-md md:h-20 md:w-20 md:border-4`}
-                      />
+                    <div className="mb-4 flex justify-center">
+                      <div className="border-3 border-black bg-white p-1">
+                        <Image
+                          src={author.avatarUrl}
+                          alt={`${author.username}的头像`}
+                          width={80}
+                          height={80}
+                          className="h-20 w-20 object-cover"
+                        />
+                      </div>
                     </div>
 
                     {/* 用户信息 */}
-                    <h3 className="mb-2 text-base font-bold text-gray-900 md:text-lg">
+                    <h3 className={`mb-2 text-xl font-black ${style.title}`}>
                       @{author.username}
                     </h3>
 
-                    <div className="mb-3 space-y-1 text-xs text-gray-600 md:mb-4 md:text-sm">
-                      <div>贡献 {author.totalPosts} 条文案</div>
-                      <div>
-                        获得 {author.totalInteractions.toLocaleString()} 次互动
+                    <div className="mb-4 space-y-1 text-sm font-bold text-black/80">
+                      <div className="uppercase">Posts: {author.totalPosts}</div>
+                      <div className="uppercase">
+                        Reactions: {author.totalInteractions.toLocaleString()}
                       </div>
                     </div>
 
                     {/* 综合评分 */}
-                    <div
-                      className={`rounded-full px-3 py-1.5 text-xs font-bold ${style.textColor} bg-opacity-20 md:px-4 md:py-2 md:text-sm`}
-                      style={{
-                        backgroundColor:
-                          style.textColor
-                            .replace('text-', '')
-                            .replace('-700', '') + '20',
-                      }}
-                    >
-                      V50 指数: {Math.round(author.score)}
+                    <div className="inline-block border-2 border-black bg-white px-4 py-1 text-sm font-black uppercase text-black shadow-neo-sm">
+                      Power: {Math.round(author.score)}
                     </div>
 
                     {/* GitHub 链接 */}
@@ -245,20 +227,9 @@ export default async function LeaderboardServer({
                       href={author.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="mt-3 inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 md:mt-4"
+                      className="mt-4 block border-t-2 border-black pt-2 text-xs font-bold uppercase text-black hover:text-white hover:bg-black transition-colors"
                     >
-                      <span>GitHub</span>
-                      <svg
-                        className="h-3 w-3"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
+                      View GitHub Profile
                     </Link>
                   </div>
                 )
@@ -267,49 +238,51 @@ export default async function LeaderboardServer({
           </div>
         )}
 
-        {/* 完整排行榜 - 优化移动端布局 */}
+        {/* 完整排行榜 */}
         {data.authors.length > 3 && (
           <div>
-            <h2 className="mb-4 text-center text-xl font-bold text-gray-800 md:mb-6 md:text-2xl">
-              📊 完整英雄榜
+            <h2 className="mb-6 border-b-4 border-black pb-2 text-2xl font-black uppercase italic text-black md:text-3xl">
+              Leaderboard / 完整榜单
             </h2>
-            <div className="space-y-3 md:space-y-4">
+            <div className="space-y-4">
               {data.authors.slice(3, 10).map((author, index) => (
                 <div
                   key={author.username}
-                  className="flex flex-col gap-3 rounded-lg border border-gray-200 bg-white p-3 shadow-sm transition-shadow hover:shadow-md md:flex-row md:items-center md:justify-between md:p-4"
+                  className="flex flex-col gap-4 border-3 border-black bg-white p-4 shadow-neo transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none md:flex-row md:items-center md:justify-between"
                 >
-                  <div className="flex items-center gap-3 md:gap-4">
+                  <div className="flex items-center gap-4">
                     {/* 排名 */}
-                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gray-100 text-sm font-bold text-gray-700">
-                      {index + 4}
+                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center border-2 border-black bg-black text-lg font-black text-white">
+                      #{index + 4}
                     </div>
 
                     {/* 头像 */}
-                    <Image
-                      src={author.avatarUrl}
-                      alt={`${author.username}的头像`}
-                      width={48}
-                      height={48}
-                      className="h-10 w-10 flex-shrink-0 rounded-full md:h-12 md:w-12"
-                    />
+                    <div className="border-2 border-black p-0.5">
+                      <Image
+                        src={author.avatarUrl}
+                        alt={`${author.username}的头像`}
+                        width={48}
+                        height={48}
+                        className="h-10 w-10 object-cover"
+                      />
+                    </div>
 
                     {/* 用户信息 */}
                     <div className="flex-1">
-                      <h3 className="text-sm font-semibold text-gray-900 md:text-base">
+                      <h3 className="text-lg font-black text-black">
                         @{author.username}
                       </h3>
-                      <div className="text-xs text-gray-500 md:text-sm">
-                        {author.totalPosts} 条文案 • V50指数{' '}
-                        {Math.round(author.score)}
+                      <div className="text-xs font-bold uppercase text-gray-500">
+                        {author.totalPosts} Posts • Score: {Math.round(author.score)}
                       </div>
                     </div>
                   </div>
 
                   {/* 统计数据 */}
-                  <div className="text-left md:text-right">
-                    <div className="text-sm font-semibold text-kfc-red md:text-base">
-                      {author.totalInteractions.toLocaleString()} 次互动
+                  <div className="flex items-center gap-2 border-l-2 border-black pl-4">
+                     <i className="fa fa-heart text-kfc-red"></i>
+                    <div className="text-lg font-black text-black">
+                      {author.totalInteractions.toLocaleString()}
                     </div>
                   </div>
                 </div>

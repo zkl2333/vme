@@ -2,22 +2,7 @@ import { IconLink } from '@/components/IconLink'
 
 export default function NotFound() {
   return (
-    <div className="relative isolate flex flex-1 flex-col items-center justify-center overflow-hidden bg-gray-950 text-center">
-      {/* 背景渐变效果 */}
-      <svg
-        aria-hidden="true"
-        className="absolute left-1/2 top-[-10vh] -z-10 h-[120vh] w-[120vw] min-w-[60rem] -translate-x-1/2"
-      >
-        <defs>
-          <radialGradient id="gradient" cy="0%">
-            <stop offset="0%" stopColor="rgba(224, 32, 32, 0.3)" />
-            <stop offset="53.95%" stopColor="rgba(255, 199, 44, 0.15)" />
-            <stop offset="100%" stopColor="rgba(10, 14, 23, 0)" />
-          </radialGradient>
-        </defs>
-        <rect width="100%" height="100%" fill="url(#gradient)" />
-      </svg>
-
+    <div className="relative isolate flex flex-1 flex-col items-center justify-center overflow-hidden bg-gray-900 text-center">
       {/* 404 错误内容 */}
       <div className="relative z-10 max-w-2xl px-6">
         {/* 404 数字 */}
@@ -36,7 +21,7 @@ export default function NotFound() {
         </p>
 
         {/* 幽默提示 */}
-        <div className="mt-6 rounded-2xl bg-white/10 p-6 backdrop-blur-sm">
+        <div className="mt-6 rounded-2xl bg-white/5 p-6">
           <div className="flex items-center justify-center gap-3 mb-3">
             <span className="text-2xl">🍗</span>
             <span className="text-kfc-yellow font-semibold">今日份幽默</span>
@@ -51,7 +36,7 @@ export default function NotFound() {
         <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:justify-center">
           <IconLink
             href="/"
-            className="flex items-center gap-2 rounded-xl bg-kfc-red px-6 py-3 font-bold text-white shadow-kfc transition-all duration-300 hover:bg-kfc-darkRed hover:shadow-kfc-hover"
+            className="flex items-center gap-2 rounded-xl bg-kfc-red px-6 py-3 font-bold text-white shadow-sm transition-all hover:bg-red-700 hover:shadow-md"
           >
             <span>🏠</span>
             回到段子首页
@@ -60,7 +45,7 @@ export default function NotFound() {
           <a
             href="https://github.com/zkl2333/vme/issues/new?assignees=&labels=%E6%96%87%E6%A1%88&projects=&template=data_provided.md&title="
             target="_blank"
-            className="flex items-center gap-2 rounded-xl bg-kfc-yellow px-6 py-3 font-bold text-kfc-red shadow-md transition-all duration-300 hover:bg-kfc-lightYellow hover:shadow-lg"
+            className="flex items-center gap-2 rounded-xl bg-kfc-yellow px-6 py-3 font-bold text-gray-900 shadow-sm transition-all hover:bg-yellow-500 hover:shadow-md"
           >
             <span>✍️</span>
             写个新段子

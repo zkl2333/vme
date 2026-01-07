@@ -46,7 +46,7 @@ export default function LoginButton() {
   return (
     <button
       onClick={() => signIn('github')}
-      className="flex items-center gap-2 rounded-full bg-kfc-yellow px-4 py-2 text-sm font-bold text-kfc-red transition-all duration-300 hover:bg-kfc-lightYellow hover:shadow-lg"
+      className="flex items-center gap-2 rounded-full bg-kfc-yellow px-4 py-2 text-sm font-bold text-kfc-red transition-all duration-300 hover:bg-kfc-lightYellow hover:shadow-md shadow-sm"
     >
       <svg
         className="h-5 w-5"

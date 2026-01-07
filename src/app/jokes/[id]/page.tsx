@@ -158,14 +158,10 @@ export default async function JokeDetailPage({ params }: PageProps) {
 
       {/* 段子详情卡片 */}
       <div className="mx-auto max-w-4xl">
-        <article className="relative overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg">
-          {/* 装饰背景 - 移动端隐藏避免溢出 */}
-          <div className="absolute right-0 top-0 -mr-16 -mt-16 hidden h-32 w-32 rounded-full bg-kfc-yellow/10 md:block"></div>
-          <div className="absolute bottom-0 left-0 -mb-12 -ml-12 hidden h-24 w-24 rounded-full bg-kfc-red/10 md:block"></div>
-
-          {/* 热门标签 - 优化移动端位置 */}
+        <article className="relative overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+          {/* 热门标签 */}
           {isHot && (
-            <div className="absolute right-2 top-2 z-10 flex items-center gap-1.5 rounded-full bg-gradient-to-r from-kfc-red to-orange-500 px-3 py-1.5 text-xs font-bold text-white shadow-lg md:right-4 md:top-4 md:gap-2 md:px-4 md:py-2 md:text-sm">
+            <div className="absolute right-4 top-4 z-10 flex items-center gap-1.5 rounded-full bg-red-50 px-3 py-1 text-xs font-bold text-red-600 md:text-sm">
               <i className="fa fa-fire"></i>
               <span>热门</span>
             </div>
@@ -180,7 +176,7 @@ export default async function JokeDetailPage({ params }: PageProps) {
             </div>
 
               <div className="group relative">
-                <div className="min-h-[120px] rounded-lg border-l-4 border-kfc-yellow bg-gray-50/50 px-4 py-3 text-base leading-relaxed transition-colors duration-300 group-hover:bg-gray-50 md:px-6 md:py-4 md:text-lg lg:text-xl">
+                <div className="min-h-[120px] rounded-lg bg-gray-50 px-4 py-3 text-base leading-relaxed text-gray-800 transition-colors duration-300 hover:bg-gray-100 md:px-6 md:py-4 md:text-lg lg:text-xl">
                   <p className="whitespace-pre-wrap">{joke.body}</p>
                 </div>
                 <div className="mt-3 flex justify-end md:mt-4">
@@ -190,7 +186,7 @@ export default async function JokeDetailPage({ params }: PageProps) {
             </div>
 
             {/* 分隔线 */}
-            <div className="my-6 border-t border-gray-200 md:my-8"></div>
+            <div className="my-6 border-t border-gray-100 md:my-8"></div>
 
             {/* 作者信息 */}
             <div className="mb-6">
@@ -206,9 +202,8 @@ export default async function JokeDetailPage({ params }: PageProps) {
                     alt={`${joke.author.username}的头像`}
                     width={64}
                     height={64}
-                    className="h-12 w-12 rounded-full border-2 border-kfc-yellow shadow-md transition-transform duration-300 hover:scale-110 md:h-16 md:w-16 md:border-4"
+                    className="h-12 w-12 rounded-full bg-gray-100 md:h-16 md:w-16"
                   />
-                  <div className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-white bg-green-500 md:h-5 md:w-5"></div>
                 </div>
 
                 <div className="flex-1">
@@ -228,7 +223,7 @@ export default async function JokeDetailPage({ params }: PageProps) {
             {isAuthenticated && (
               <>
                 {/* 分隔线 */}
-                <div className="my-6 border-t border-gray-200 md:my-8"></div>
+                <div className="my-6 border-t border-gray-100 md:my-8"></div>
 
                 <div className="mb-6">
                   <div className="mb-3 flex items-center gap-2 md:mb-4">
@@ -261,7 +256,7 @@ export default async function JokeDetailPage({ params }: PageProps) {
         <div className="mt-6 flex flex-col gap-3 md:mt-8 md:flex-row md:justify-center md:gap-4">
         <a
           href="/jokes"
-          className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 font-bold text-gray-800 shadow-kfc transition-all duration-300 hover:bg-gray-50 hover:shadow-xl hover:text-kfc-red"
+          className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-6 py-3 font-bold text-gray-800 transition-all hover:bg-gray-50 hover:border-gray-300"
         >
           <span>再来一条</span>
           <i className="fa fa-arrow-right"></i>
@@ -269,7 +264,7 @@ export default async function JokeDetailPage({ params }: PageProps) {
 
           <Link
             href="/"
-            className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border-2 border-kfc-red bg-white px-6 py-3 font-bold text-kfc-red transition-all duration-300 hover:bg-kfc-red hover:text-white hover:shadow-lg"
+            className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-6 py-3 font-bold text-gray-600 transition-all hover:bg-gray-50 hover:text-kfc-red"
           >
             <i className="fa fa-home"></i>
             返回首页

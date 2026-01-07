@@ -47,8 +47,9 @@ export default async function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="bg-kfc-pattern flex min-h-screen flex-col bg-kfc-cream font-kfc text-gray-800">
+      <body className="flex min-h-screen flex-col bg-kfc-cream text-gray-900">
         <Providers>
+          <div className="bg-kfc-newsprint" aria-hidden="true" />
           <Header contributorsCount={contributorsCount} />
 
           {/* 主内容 */}

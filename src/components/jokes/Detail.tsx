@@ -33,53 +33,50 @@ export default async function JokeDetail({ jokeId }: JokeDetailProps) {
 
   return (
     <section className="mb-12">
-      <div className="relative overflow-hidden rounded-2xl bg-white p-6 shadow-kfc transition-all duration-300 hover:shadow-xl md:p-8">
-        <div className="absolute right-0 top-0 -mr-16 -mt-16 h-32 w-32 rounded-full bg-kfc-yellow/10"></div>
-        <div className="absolute bottom-0 left-0 -mb-12 -ml-12 h-24 w-24 rounded-full bg-kfc-red/10"></div>
+      <div className="relative border-4 border-black bg-white p-6 shadow-neo-xl md:p-10 lg:p-12">
+        {/* 背景装饰图案 */}
+        <div className="absolute inset-0 z-0 opacity-5 bg-halftone pointer-events-none"></div>
+
         <div className="relative z-10">
-          <div className="mb-6 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="rounded bg-gradient-to-r from-kfc-red to-orange-500 px-3 py-1 text-xs font-medium text-white shadow-sm">
-                今日v50文案
-              </span>
-              <h2 className="text-xl font-bold text-gray-800 md:text-2xl">
-                这周四就发这条！
-              </h2>
+          <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+            <div className="inline-block -rotate-2 border-2 border-black bg-kfc-red px-4 py-1 text-sm font-black uppercase italic text-white shadow-neo-sm">
+              Today's Special / 今日主打
             </div>
+            <h2 className="text-2xl font-black italic tracking-tighter text-black md:text-3xl">
+              周四限定 <span className="text-kfc-red underline">文案鬼才</span>
+            </h2>
           </div>
 
-          {/* 段子内容 */}
-          <div className="mb-6 group">
-            <div className="min-h-[120px] whitespace-pre-wrap border-l-4 border-kfc-yellow px-4 py-2 text-lg leading-relaxed md:text-xl bg-gray-50/50 rounded-r-lg transition-colors duration-300 group-hover:bg-gray-50">
-              {joke.body}
+          {/* 段子内容 - 极致粗犷 */}
+          <div className="mb-10">
+            <div className="border-3 border-black bg-kfc-cream p-6 shadow-neo md:p-8">
+              <p className="text-2xl font-black italic leading-tight text-black md:text-4xl lg:text-5xl">
+                “{joke.body}”
+              </p>
             </div>
-            <div className="mt-3 flex justify-end">
+            <div className="mt-4 flex justify-end">
               <CopyButton text={joke.body} />
             </div>
           </div>
 
-          {/* 作者信息和互动数据 */}
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-t border-gray-100 pt-4">
-            <div className="flex items-center gap-3">
-              <div className="relative">
+          {/* 作者信息 - 标签风格 */}
+          <div className="mb-8 flex flex-wrap items-center justify-between gap-6 border-t-4 border-black pt-8">
+            <div className="flex items-center gap-4">
+              <div className="border-3 border-black bg-white p-1 shadow-neo-sm">
                 <Image
                   src={joke.author.avatarUrl}
                   alt="用户头像"
-                  width={48}
-                  height={48}
-                  className="h-12 w-12 rounded-full border-3 border-kfc-yellow shadow-sm transition-transform duration-300 hover:scale-110"
+                  width={64}
+                  height={64}
+                  className="h-14 w-14 object-cover md:h-20 md:w-20"
                 />
-                <div className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-green-500 border-2 border-white"></div>
               </div>
-              <div>
-                <div className="font-semibold text-gray-900">
-                  文案鬼才:{' '}
-                  <span className="text-kfc-red hover:text-orange-500 transition-colors duration-300">
-                    @{joke.author.username}
-                  </span>
+              <div className="flex flex-col leading-none">
+                <div className="text-xl font-black uppercase italic text-black md:text-2xl">
+                  Creator: <span className="text-kfc-red">@{joke.author.username}</span>
                 </div>
-                <div className="text-sm text-gray-500 flex items-center gap-1">
-                  <i className="fa fa-calendar text-xs"></i>
+                <div className="mt-2 flex items-center gap-2 text-xs font-bold uppercase text-gray-500 md:text-sm">
+                  <i className="fa fa-calendar text-black"></i>
                   <FormattedDate date={joke.createdAt} />
                 </div>
               </div>
@@ -87,17 +84,17 @@ export default async function JokeDetail({ jokeId }: JokeDetailProps) {
 
             {/* Reactions 区域 */}
             <div className="flex items-center gap-4">
-              <div className="relative">
-                <InteractiveReactions
-                  issueId={joke.id}
-                  className="flex-wrap"
-                />
-              </div>
+              <InteractiveReactions
+                issueId={joke.id}
+                className="flex-wrap"
+              />
             </div>
           </div>
 
           {/* 客户端交互按钮 */}
-          <RefreshJokeButton currentJokeId={joke.id} />
+          <div className="flex justify-center">
+            <RefreshJokeButton currentJokeId={joke.id} />
+          </div>
         </div>
       </div>
     </section>

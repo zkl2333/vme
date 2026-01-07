@@ -163,18 +163,18 @@ export default function SubmitForm() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-4 bg-white rounded-lg shadow-lg md:p-6">
-      <h2 className="text-xl font-bold text-center mb-4 text-gray-800 md:mb-6 md:text-2xl">
-        上交我的疯四文案
+    <div className="mx-auto max-w-2xl border-4 border-black bg-white p-6 shadow-neo-xl md:p-8">
+      <h2 className="mb-6 text-center text-3xl font-black italic uppercase text-black md:mb-8 md:text-4xl">
+        上交我的<span className="text-kfc-red underline decoration-4">疯四文案</span>
       </h2>
 
-      <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <div className="flex items-center justify-between mb-2">
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-              文案标题 *
+          <div className="mb-2 flex items-center justify-between">
+            <label htmlFor="title" className="block text-sm font-black uppercase text-black">
+              文案标题 / Title *
             </label>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs font-bold text-gray-500">
               {title.length}/100
             </p>
           </div>
@@ -184,18 +184,18 @@ export default function SubmitForm() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="给你的文案起个标题..."
-            className="w-full min-h-[44px] px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-colors"
+            className="w-full min-h-[44px] border-2 border-black bg-white px-4 py-3 font-bold text-black shadow-neo-sm transition-all placeholder:text-gray-400 focus:bg-kfc-cream focus:shadow-neo focus:outline-none"
             disabled={isSubmitting}
             maxLength={100}
           />
         </div>
 
         <div>
-          <div className="flex items-center justify-between mb-2">
-            <label htmlFor="content" className="block text-sm font-medium text-gray-700">
-              文案内容 *
+          <div className="mb-2 flex items-center justify-between">
+            <label htmlFor="content" className="block text-sm font-black uppercase text-black">
+              文案内容 / Content *
             </label>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs font-bold text-gray-500">
               {content.length}/2000
             </p>
           </div>
@@ -205,17 +205,17 @@ export default function SubmitForm() {
             onChange={(e) => setContent(e.target.value)}
             placeholder="开始你的表演..."
             rows={6}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-colors resize-none"
+            className="w-full resize-none border-2 border-black bg-white px-4 py-3 font-bold text-black shadow-neo-sm transition-all placeholder:text-gray-400 focus:bg-kfc-cream focus:shadow-neo focus:outline-none"
             disabled={isSubmitting}
             maxLength={2000}
           />
         </div>
 
         {message && (
-          <div className={`p-3 rounded-lg text-sm md:p-4 ${
+          <div className={`border-2 border-black p-4 font-bold shadow-neo-sm ${
             message.type === 'success'
-              ? 'bg-green-50 text-green-700 border border-green-200'
-              : 'bg-red-50 text-red-700 border border-red-200'
+              ? 'bg-green-100 text-green-800'
+              : 'bg-red-100 text-red-800'
           }`}>
             {message.text}
           </div>
@@ -224,25 +224,24 @@ export default function SubmitForm() {
         <button
           type="submit"
           disabled={isSubmitting || !title.trim() || !content.trim()}
-          className="w-full min-h-[48px] bg-gradient-to-r from-red-500 to-yellow-500 hover:from-red-600 hover:to-yellow-600 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-4 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 disabled:scale-100 disabled:cursor-not-allowed"
+          className="w-full border-3 border-black bg-kfc-yellow px-6 py-4 text-xl font-black uppercase text-black shadow-neo transition-all hover:translate-x-1 hover:translate-y-1 hover:bg-black hover:text-white hover:shadow-none disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500 disabled:shadow-none"
         >
           {isSubmitting ? (
-            <span className="flex items-center justify-center">
-              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              上交中...
+            <span className="flex items-center justify-center gap-2">
+              <i className="fa fa-spinner fa-spin"></i>
+              SUBMITTING...
             </span>
           ) : (
-            '确认上交'
+            '确认上交 / SUBMIT'
           )}
         </button>
       </form>
 
-      <div className="mt-4 p-3 bg-yellow-50 rounded-lg border border-yellow-200 md:mt-6 md:p-4">
-        <h3 className="text-sm font-medium text-yellow-800 mb-2">提交须知：</h3>
-        <ul className="text-xs text-yellow-700 space-y-1">
+      <div className="mt-8 border-2 border-black bg-kfc-cream p-4 shadow-neo-sm">
+        <h3 className="mb-2 text-sm font-black uppercase text-black">
+          <i className="fa fa-info-circle mr-2"></i>提交须知：
+        </h3>
+        <ul className="space-y-1 text-xs font-bold text-gray-700">
           <li>• 请确保内容原创，避免重复提交</li>
           <li>• 内容应当积极健康，符合社区规范</li>
           <li>• 提交后将自动创建 GitHub Issue，经审核后显示</li>

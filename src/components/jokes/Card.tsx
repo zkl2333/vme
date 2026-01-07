@@ -30,54 +30,56 @@ export default function JokeCard({
   const isHot = totalReactions >= 10
 
   return (
-    <div className="group relative overflow-hidden rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-all duration-300 hover:shadow-lg md:p-6">
-      {/* 热门标签 - 优化位置避免被裁剪 */}
+    <div className="group relative border-3 border-black bg-white p-4 transition-all hover:-translate-x-1 hover:-translate-y-1 hover:shadow-neo-xl shadow-neo md:p-6">
+      {/* 热门标签 - 暴躁风 */}
       {isHot && (
-        <div className="absolute right-2 top-2 z-10 rounded-full bg-kfc-red px-2.5 py-1 text-xs font-bold text-white shadow-lg md:px-3">
-          热门
+        <div className="absolute -right-2 -top-2 z-10 -rotate-3 border-2 border-black bg-kfc-yellow px-3 py-1 text-xs font-black uppercase italic text-black shadow-neo-sm">
+          HOT! 爆款
         </div>
       )}
 
       {/* 段子内容 */}
       <div className="mb-4">
-        <p className="overflow-auto text-sm leading-relaxed whitespace-pre-wrap line-clamp-6 md:text-base">
+        <p className="text-justify-cn text-base font-bold leading-snug text-black whitespace-pre-wrap line-clamp-6 md:text-lg">
           {item.body}
         </p>
-        <div className="mt-2 flex items-center justify-between gap-2">
+        <div className="mt-4 flex items-center justify-between gap-2">
           <Link
             href={`/jokes/${item.id}`}
-            className="inline-flex items-center gap-1 text-sm text-kfc-red transition-colors hover:text-kfc-darkRed hover:underline"
+            className="border-2 border-black bg-white px-3 py-1 text-xs font-black uppercase tracking-tighter transition-all hover:bg-black hover:text-white"
           >
-            <span>查看详情</span>
-            <i className="fa fa-arrow-right text-xs"></i>
+            Read More / 详情
           </Link>
           <CopyButton text={item.body} />
         </div>
       </div>
 
-      {/* 作者信息和互动数据 - 优化移动端布局 */}
-      <div className="flex flex-col gap-3 border-t border-gray-100 pt-3 md:pt-4">
-        <div className="flex items-center gap-2">
-          <Image
-            src={item.author.avatarUrl}
-            alt={`${item.author.username}的头像`}
-            width={40}
-            height={40}
-            className="h-8 w-8 rounded-full border-2 border-gray-200 md:h-10 md:w-10"
-          />
-          <span className="text-sm text-gray-700">
-            @{item.author.username}
-          </span>
+      {/* 作者信息和互动数据 */}
+      <div className="flex flex-col gap-3 border-t-2 border-black pt-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="border-2 border-black shadow-neo-sm">
+              <Image
+                src={item.author.avatarUrl}
+                alt={`${item.author.username}的头像`}
+                width={40}
+                height={40}
+                className="h-8 w-8 object-cover md:h-10 md:w-10"
+              />
+            </div>
+            <div className="flex flex-col leading-none">
+              <span className="text-sm font-black text-black">
+                @{item.author.username}
+              </span>
+              <div className="mt-1 text-[10px] font-bold uppercase text-gray-500">
+                <FormattedDate date={item.createdAt} />
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* 日期 */}
-        <div className="flex items-center gap-1 text-xs text-gray-500 md:text-sm">
-          <i className="fa fa-calendar"></i>
-          <FormattedDate date={item.createdAt} />
-        </div>
-
-        {/* 互动数据展示 - 独立一行避免超出 */}
-        <div className="min-w-0 overflow-hidden">
+        {/* 互动数据展示 */}
+        <div className="min-w-0 overflow-hidden pt-1">
           {waitForBatchData ? (
             <ReactionsLoading />
           ) : (
