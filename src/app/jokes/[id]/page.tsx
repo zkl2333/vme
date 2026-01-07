@@ -8,11 +8,67 @@ import Image from 'next/image'
 import CopyButton from '@/components/shared/CopyButton'
 import InteractiveReactions from '@/components/reactions/Interactive'
 import Link from 'next/link'
+import { IKfcItem } from '@/types'
 
 interface PageProps {
   params: {
     id: string
   }
+}
+
+function isIssueNumberParam(id: string) {
+  return /^\d+$/.test(id)
+}
+
+async function fetchIssueByNumber(issueNumber: number): Promise<IKfcItem | null> {
+  const owner = process.env.GITHUB_OWNER || 'zkl2333'
+  const repo = process.env.GITHUB_REPO || 'vme'
+
+  try {
+    const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/issues/${issueNumber}`, {
+      headers: {
+        Accept: 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+        'User-Agent': 'vme',
+      },
+      next: { revalidate: 60 },
+    })
+
+    if (!response.ok) return null
+
+    const issue = await response.json()
+
+    if (!issue?.node_id || !issue?.user?.login) return null
+    if (issue?.pull_request) return null
+
+    return {
+      id: issue.node_id,
+      title: issue.title || '',
+      url: issue.html_url || '',
+      body: issue.body || '',
+      createdAt: issue.created_at || new Date().toISOString(),
+      updatedAt: issue.updated_at || issue.created_at || new Date().toISOString(),
+      author: {
+        username: issue.user.login,
+        avatarUrl: issue.user.avatar_url,
+        url: issue.user.html_url,
+      },
+      reactions: {
+        totalCount: issue.reactions?.total_count || 0,
+      },
+    }
+  } catch {
+    return null
+  }
+}
+
+async function getJokeForParams(id: string): Promise<IKfcItem | null> {
+  if (isIssueNumberParam(id)) {
+    return fetchIssueByNumber(Number(id))
+  }
+
+  const items = await getAllKfcItems()
+  return items.find((item) => item.id === id) || null
 }
 
 // 生成静态参数（可选，用于优化）
@@ -26,8 +82,7 @@ export async function generateStaticParams() {
 
 // 生成页面元数据
 export async function generateMetadata({ params }: PageProps) {
-  const items = await getAllKfcItems()
-  const joke = items.find((item) => item.id === params.id)
+  const joke = await getJokeForParams(params.id)
 
   if (!joke) {
     return {
@@ -74,8 +129,7 @@ export async function generateMetadata({ params }: PageProps) {
 export const revalidate = 3600 // 1小时重新验证一次
 
 export default async function JokeDetailPage({ params }: PageProps) {
-  const items = await getAllKfcItems()
-  const joke = items.find((item) => item.id === params.id)
+  const joke = await getJokeForParams(params.id)
 
   if (!joke) {
     notFound()

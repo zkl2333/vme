@@ -51,6 +51,8 @@ export async function POST(request: NextRequest) {
         message: '文案提交成功！感谢您的贡献，您的文案正在等待审核。',
         issueUrl: issueData.html_url,
         issueNumber: issueData.number,
+        issueId: issueData.id,
+        detailPath: `/jokes/${issueData.number}`,
       })
 
     } catch (githubError: any) {

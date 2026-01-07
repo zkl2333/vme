@@ -62,11 +62,19 @@ export default function SubmitForm() {
       const data = await response.json()
 
       if (data.success) {
-        setMessage({ type: 'success', text: '文案上交成功！感谢你的好活！' })
+        setMessage({ type: 'success', text: '文案上交成功！正在跳转到详情页...' })
         setTitle('')
         setContent('')
         // 清理可能存在的草稿
         localStorage.removeItem(FORM_STORAGE_KEY)
+
+        const targetUrl = data.detailPath || (data.issueNumber ? `/jokes/${data.issueNumber}` : data.issueUrl)
+
+        if (targetUrl) {
+          setTimeout(() => {
+            window.location.assign(targetUrl)
+          }, 800)
+        }
       } else {
         // 处理认证错误
         if (response.status === 401) {

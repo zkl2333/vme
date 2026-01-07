@@ -98,4 +98,6 @@ export interface SubmitJokeResponse {
   message: string
   issueUrl?: string
   issueNumber?: number
+  issueId?: string
+  detailPath?: string
 }
