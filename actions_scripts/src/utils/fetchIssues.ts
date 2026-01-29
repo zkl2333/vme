@@ -7,6 +7,7 @@ export interface IssueNode {
   body: string
   createdAt: string
   updatedAt: string
+  imageHashes?: string[]  // 图片感知哈希缓存
   author: {
     username: string
     avatarUrl: string

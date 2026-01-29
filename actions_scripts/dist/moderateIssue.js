@@ -1,5 +1,5 @@
 import { c as core } from './index-BHzAQa0b.js';
-import { g as github, m as moderateContent, t as triggerDataUpdate } from './moderationLogic-DkoVQbyS.js';
+import { g as github, m as moderateContent, t as triggerDataUpdate } from './moderationLogic-BG7AKrjl.js';
 import 'os';
 import 'fs';
 import 'path';
@@ -26,6 +26,7 @@ import 'url';
 import 'zlib';
 import 'string_decoder';
 import 'diagnostics_channel';
+import 'sharp';
 
 async function moderateIssue(issueNumber, issueBody) {
     // 如果没有传入参数，则使用环境变量（向后兼容）

@@ -12,6 +12,7 @@ const config = {
     dir: 'dist',
     format: 'esm',
   },
+  external: ['sharp', 'fs', 'path'], // sharp 是原生模块，需要 external
   plugins: [
     resolve({
       preferBuiltins: true,
