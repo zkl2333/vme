@@ -15,17 +15,33 @@ export async function manualModeration() {
 
   const octokit = github.getOctokit(process.env.GITHUB_TOKEN)
 
-  // 获取所有带有"文案"标签的已打开issues
-  console.log('正在获取所有带有"文案"标签的已打开issues...')
+  // 获取所有带有"文案"或"梗图"标签的已打开issues
+  console.log('正在获取所有带有"文案"或"梗图"标签的已打开issues...')
 
-  const issues = await octokit.rest.issues.listForRepo({
-    ...github.context.repo,
-    state: 'open',
-    labels: '文案',
-    per_page: 100,
-  })
+  // 分别获取两种标签的 issues
+  const [textIssues, memeIssues] = await Promise.all([
+    octokit.rest.issues.listForRepo({
+      ...github.context.repo,
+      state: 'open',
+      labels: '文案',
+      per_page: 100,
+    }),
+    octokit.rest.issues.listForRepo({
+      ...github.context.repo,
+      state: 'open',
+      labels: '梗图',
+      per_page: 100,
+    }),
+  ])
 
-  console.log(`找到 ${issues.data.length} 个带有"文案"标签的已打开issues`)
+  // 合并并去重（按 issue number）
+  const issueMap = new Map<number, typeof textIssues.data[0]>()
+  for (const issue of [...textIssues.data, ...memeIssues.data]) {
+    issueMap.set(issue.number, issue)
+  }
+  const issues = Array.from(issueMap.values())
+
+  console.log(`找到 ${issues.length} 个待审核issues（文案: ${textIssues.data.length}, 梗图: ${memeIssues.data.length}）`)
 
   let processedCount = 0
   let similarCount = 0
@@ -33,7 +49,7 @@ export async function manualModeration() {
   let approvedCount = 0
   let pendingCount = 0
 
-  for (const issue of issues.data) {
+  for (const issue of issues) {
     console.log(`\n--- 处理 Issue #${issue.number}: ${issue.title} ---`)
 
     if (!issue.body) {
