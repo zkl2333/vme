@@ -45,6 +45,7 @@ describe('moderateIssue', () => {
   beforeEach(() => {
     process.env.ISSUE_BODY = '这是一个测试的issue内容'
     process.env.AI_API_KEY = 'test-api-key'
+    process.env.AI_API_BASE_URL = 'https://aihubmix.com'
   })
 
   afterEach(() => {
@@ -52,6 +53,7 @@ describe('moderateIssue', () => {
     jest.clearAllMocks()
     delete process.env.ISSUE_BODY
     delete process.env.AI_API_KEY
+    delete process.env.AI_API_BASE_URL
   })
 
   it('当issue已有审核标签时，应该跳过审核过程', async () => {
@@ -116,20 +118,16 @@ describe('moderateIssue', () => {
 
     mockedFindSimilarIssue.mockResolvedValueOnce(null)
     nock('https://aihubmix.com')
-      .post('/v1/chat/completions')
+      .post('/v1/moderations')
       .reply(200, {
-        choices: [
+        results: [
           {
-            message: {
-              content: JSON.stringify({
-                flagged: true,
-                categories: {
-                  hate: false,
-                  sexual: false,
-                  violence: true,
-                  'self-harm': false,
-                },
-              }),
+            flagged: true,
+            categories: {
+              hate: false,
+              sexual: false,
+              violence: true,
+              'self-harm': false,
             },
           },
         ],
@@ -151,20 +149,16 @@ describe('moderateIssue', () => {
 
     mockedFindSimilarIssue.mockResolvedValueOnce(null)
     nock('https://aihubmix.com')
-      .post('/v1/chat/completions')
+      .post('/v1/moderations')
       .reply(200, {
-        choices: [
+        results: [
           {
-            message: {
-              content: JSON.stringify({
-                flagged: true,
-                categories: {
-                  hate: false,
-                  sexual: false,
-                  violence: false,
-                  'self-harm': false,
-                },
-              }),
+            flagged: true,
+            categories: {
+              hate: false,
+              sexual: false,
+              violence: false,
+              'self-harm': false,
             },
           },
         ],
@@ -185,20 +179,16 @@ describe('moderateIssue', () => {
 
     mockedFindSimilarIssue.mockResolvedValueOnce(null)
     nock('https://aihubmix.com')
-      .post('/v1/chat/completions')
+      .post('/v1/moderations')
       .reply(200, {
-        choices: [
+        results: [
           {
-            message: {
-              content: JSON.stringify({
-                flagged: false,
-                categories: {
-                  hate: false,
-                  sexual: false,
-                  violence: false,
-                  'self-harm': false,
-                },
-              }),
+            flagged: false,
+            categories: {
+              hate: false,
+              sexual: false,
+              violence: false,
+              'self-harm': false,
             },
           },
         ],
@@ -210,14 +200,14 @@ describe('moderateIssue', () => {
     expect(closeIssue).toHaveBeenCalledWith(1)
   })
 
-  it('当接口返回错误时，应该抛出错误', async () => {
+  it('当接口返回错误时，应该标记为待审', async () => {
     // 模拟issue没有任何审核标签
     mockedGetIssueLabels.mockResolvedValueOnce([])
 
     mockedFindSimilarIssue.mockResolvedValueOnce(null)
     // 由于有重试机制（3次），需要mock 3次请求
     nock('https://aihubmix.com')
-      .post('/v1/chat/completions')
+      .post('/v1/moderations')
       .times(3)
       .reply(200, {
         error: {
@@ -225,6 +215,13 @@ describe('moderateIssue', () => {
         },
       })
 
-    await expect(moderateIssue()).rejects.toThrow('接口错误')
+    // 现在不再抛错，而是标记为待审
+    await moderateIssue()
+
+    expect(addLabelsToIssue).toHaveBeenCalledWith(1, ['待审'])
+    expect(addCommentToIssue).toHaveBeenCalledWith(
+      1,
+      expect.stringContaining('自动审核暂时不可用'),
+    )
   })
 })

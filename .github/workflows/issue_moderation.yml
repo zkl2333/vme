@@ -6,7 +6,7 @@ on:
 
 jobs:
   moderate-issue:
-    if: github.event_name == 'issues' && github.event.action == 'labeled' && github.event.label.name == '文案'
+    if: github.event_name == 'issues' && github.event.action == 'labeled' && (github.event.label.name == '文案' || github.event.label.name == '梗图')
     runs-on: ubuntu-latest
     permissions:
       issues: write

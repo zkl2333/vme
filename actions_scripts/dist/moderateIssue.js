@@ -1,5 +1,5 @@
 import { c as core } from './index-BHzAQa0b.js';
-import { g as github, m as moderateContent, t as triggerDataUpdate } from './moderationLogic-ClWqjd7y.js';
+import { g as github, m as moderateContent, t as triggerDataUpdate } from './moderationLogic-DkoVQbyS.js';
 import 'os';
 import 'fs';
 import 'path';
@@ -35,10 +35,11 @@ async function moderateIssue(issueNumber, issueBody) {
         throw new Error('ISSUE_BODY 不存在');
     }
     const result = await moderateContent(targetIssueNumber, targetIssueBody, false);
-    // 如果审核通过，触发数据更新
+    // 如果审核通过（非跳过），触发数据更新
     if (result.type === 'approved') {
         await triggerDataUpdate();
     }
+    console.log(`审核完成，结果: ${result.type}`, result.message || '');
 }
 moderateIssue().catch((err) => core.setFailed(err.message));
 

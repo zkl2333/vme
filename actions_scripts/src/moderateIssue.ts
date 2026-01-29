@@ -17,10 +17,12 @@ export async function moderateIssue(issueNumber?: number, issueBody?: string) {
     false,
   )
 
-  // 如果审核通过，触发数据更新
+  // 如果审核通过（非跳过），触发数据更新
   if (result.type === 'approved') {
     await triggerDataUpdate()
   }
+
+  console.log(`审核完成，结果: ${result.type}`, result.message || '')
 }
 
 moderateIssue().catch((err) => core.setFailed(err.message))
