@@ -30,9 +30,9 @@ cd vme
 # 2. 安装依赖
 npm install
 
-# 3. 配置环境变量（用于GitHub OAuth登录功能）
+# 3. 配置环境变量
 cp env.local.example .env.local
-# 编辑 .env.local 添加你的 GitHub OAuth 应用配置
+# 编辑 .env.local 添加配置（见下方环境变量说明）
 
 # 4. 启动开发服务器
 npm run dev
@@ -81,7 +81,56 @@ GET /api/stats
 - **前端**: Next.js 14 + TypeScript + Tailwind CSS
 - **认证**: NextAuth.js + GitHub OAuth
 - **数据**: GitHub Issues + GitHub API
+- **图片存储**: Cloudflare R2
 - **部署**: Vercel
+
+### 环境变量配置
+
+#### 本地开发 (.env.local)
+
+```bash
+# GitHub OAuth（登录功能必需）
+GITHUB_CLIENT_ID=your_github_client_id
+GITHUB_CLIENT_SECRET=your_github_client_secret
+NEXTAUTH_SECRET=your_nextauth_secret
+NEXTAUTH_URL=http://localhost:3000
+
+# Cloudflare R2（梗图上传功能）
+R2_ACCOUNT_ID=your_cloudflare_account_id
+R2_ACCESS_KEY_ID=your_r2_access_key_id
+R2_SECRET_ACCESS_KEY=your_r2_secret_access_key
+R2_BUCKET_NAME=vme-images
+R2_PUBLIC_URL=https://img.example.com
+```
+
+#### GitHub Actions 配置
+
+在仓库 Settings → Secrets and variables → Actions 中配置：
+
+**Secrets**（敏感信息，加密存储）
+
+| 名称 | 用途 | 必需 |
+|-----|------|------|
+| `AI_API_KEY` | 文案审核 AI API 密钥 | 是 |
+
+**Variables**（非敏感配置，明文存储）
+
+| 名称 | 用途 | 必需 |
+|-----|------|------|
+| `AI_API_BASE_URL` | AI API 基础地址（默认 `https://api.openai.com`） | 否 |
+
+> 注：`GITHUB_TOKEN` 由 GitHub Actions 自动提供，无需手动配置。
+
+#### Vercel 部署环境变量
+
+在 Vercel 项目设置中配置上述 `.env.local` 中的所有变量。
+
+#### Cloudflare R2 配置步骤
+1. 登录 [Cloudflare 控制台](https://dash.cloudflare.com/) → R2 对象存储
+2. 创建 Bucket（如 `vme-images`）
+3. 设置 Bucket 为公开访问，或绑定自定义域名
+4. 创建 API Token（需要 R2 读写权限）
+5. 将 Account ID、Access Key ID、Secret Access Key 配置到环境变量
 
 ## 🤝 贡献指南
 

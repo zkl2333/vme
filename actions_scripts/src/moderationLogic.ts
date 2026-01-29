@@ -70,9 +70,10 @@ export async function moderateContent(
     console.log('未找到相似文案，继续审核流程')
   }
 
-  // 使用 gpt-5-nano 模型审核内容（带重试机制）
-  console.log('使用 gpt-5-nano 模型审核内容...')
-  const API_URL = 'https://aihubmix.com/v1/chat/completions'
+  // 使用 AI 模型审核内容（带重试机制）
+  console.log('使用 AI 模型审核内容...')
+  const API_BASE_URL = process.env.AI_API_BASE_URL || 'https://api.openai.com'
+  const API_URL = `${API_BASE_URL.replace(/\/$/, '')}/v1/chat/completions`
   const MAX_RETRIES = 3
   const INITIAL_BACKOFF = 1000 // 1秒
 
