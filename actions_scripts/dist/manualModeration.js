@@ -1,5 +1,5 @@
 import { c as core } from './index-BHzAQa0b.js';
-import { g as github, m as moderateContent, t as triggerDataUpdate } from './moderationLogic-BG7AKrjl.js';
+import { g as github, a as toIssuePayloadFromRestIssue, m as moderateContent, t as triggerDataUpdate } from './moderationLogic-aR_J1apW.js';
 import 'os';
 import 'fs';
 import 'path';
@@ -75,7 +75,8 @@ async function manualModeration() {
         processedCount++;
         try {
             // 使用新的审核逻辑模块
-            const result = await moderateContent(issue.number, issue.body, dryRun);
+            const issuePayload = toIssuePayloadFromRestIssue(issue);
+            const result = await moderateContent(issue.number, issue.body, dryRun, issuePayload);
             // 根据审核结果统计
             switch (result.type) {
                 case 'similar':

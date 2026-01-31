@@ -18,6 +18,16 @@ jobs:
     steps:
       - name: 检出代码
         uses: actions/checkout@v4
+      - name: 设置 Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: npm
+          cache-dependency-path: actions_scripts/package-lock.json
+      - name: 安装依赖
+        run: |
+          cd actions_scripts
+          npm ci
       - name: 运行手动审核脚本
         run: |
           cd actions_scripts
@@ -26,4 +36,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           AI_API_KEY: ${{ secrets.AI_API_KEY }}
           AI_API_BASE_URL: ${{ vars.AI_API_BASE_URL }}
+          SYNC_API_URL: ${{ vars.SYNC_API_URL }}
+          SYNC_API_KEY: ${{ secrets.SYNC_API_KEY }}
           DRY_RUN: ${{ inputs.dry_run }}

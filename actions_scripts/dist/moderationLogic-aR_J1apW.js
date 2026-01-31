@@ -3026,6 +3026,67 @@ async function findSimilarIssue(newIssue, currentIssueId) {
     return null;
 }
 
+function normalizeSyncUrl(value) {
+    if (value.endsWith('/api/sync')) {
+        return value;
+    }
+    return `${value.replace(/\/$/, '')}/api/sync`;
+}
+function toIssuePayloadFromRestIssue(issue) {
+    var _a, _b, _c, _d;
+    return {
+        id: issue.node_id || String(issue.id || ''),
+        number: issue.number,
+        title: issue.title || '',
+        body: (_a = issue.body) !== null && _a !== void 0 ? _a : '',
+        user: {
+            login: ((_b = issue.user) === null || _b === void 0 ? void 0 : _b.login) || 'unknown',
+            avatar_url: ((_c = issue.user) === null || _c === void 0 ? void 0 : _c.avatar_url) || '',
+            html_url: ((_d = issue.user) === null || _d === void 0 ? void 0 : _d.html_url) || '',
+        },
+        created_at: issue.created_at || new Date().toISOString(),
+        updated_at: issue.updated_at || new Date().toISOString(),
+        html_url: issue.html_url || '',
+    };
+}
+async function fetchIssuePayload(issueNumber) {
+    if (!process.env.GITHUB_TOKEN) {
+        throw new Error('GITHUB_TOKEN 不存在');
+    }
+    const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
+    const response = await octokit.rest.issues.get({
+        ...github.context.repo,
+        issue_number: issueNumber,
+    });
+    return toIssuePayloadFromRestIssue(response.data);
+}
+async function syncIssueToApp(issuePayload) {
+    const syncUrlRaw = process.env.SYNC_API_URL;
+    const apiKey = process.env.SYNC_API_KEY;
+    if (!syncUrlRaw || !apiKey) {
+        console.warn('SYNC_API_URL 或 SYNC_API_KEY 未配置，跳过同步');
+        return;
+    }
+    const repo = github.context.repo;
+    const syncUrl = normalizeSyncUrl(syncUrlRaw);
+    const response = await fetch(syncUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-API-Key': apiKey,
+        },
+        body: JSON.stringify({
+            mode: 'single',
+            issue: issuePayload,
+            repo: { owner: repo.owner, name: repo.repo },
+        }),
+    });
+    if (!response.ok) {
+        const text = await response.text().catch(() => '');
+        throw new Error(`Sync API 失败: ${response.status} ${response.statusText} ${text}`);
+    }
+}
+
 // omni-moderation-latest 支持的类别映射
 const categoriesTextMap = {
     'hate': '仇恨',
@@ -3123,7 +3184,7 @@ async function callModerationApi(inputs) {
     }
     throw lastError || new Error('Moderation API 调用失败');
 }
-async function moderateContent(issueNumber, issueBody, dryRun = false) {
+async function moderateContent(issueNumber, issueBody, dryRun = false, issuePayload) {
     // 检查issue是否已被审核（已有特定标签）
     const currentLabels = await getIssueLabels(issueNumber);
     const moderationLabels = ['违规', '收录', '重复', '待审'];
@@ -3222,6 +3283,13 @@ async function moderateContent(issueNumber, issueBody, dryRun = false) {
                 await addLabelsToIssue(issueNumber, ['收录']);
                 await addCommentToIssue(issueNumber, `🤝您的内容已成功收录，感谢您的贡献！`);
                 await closeIssue(issueNumber);
+                try {
+                    const payload = issuePayload || await fetchIssuePayload(issueNumber);
+                    await syncIssueToApp(payload);
+                }
+                catch (error) {
+                    console.error('同步到 vme-app 失败：', error);
+                }
             }
             else {
                 console.log('[试运行] 将标记为收录并关闭');
@@ -3252,4 +3320,4 @@ async function triggerDataUpdate() {
     await dispatchWorkflow('create_data.yml', 'main');
 }
 
-export { github as g, moderateContent as m, triggerDataUpdate as t };
+export { toIssuePayloadFromRestIssue as a, github as g, moderateContent as m, triggerDataUpdate as t };

@@ -1,6 +1,7 @@
 import core from '@actions/core'
 import github from '@actions/github'
 import { moderateContent, triggerDataUpdate } from './moderationLogic'
+import { toIssuePayloadFromRestIssue } from './syncClient'
 
 export async function manualModeration() {
   const dryRun = process.env.DRY_RUN === 'true'
@@ -61,7 +62,8 @@ export async function manualModeration() {
 
     try {
       // 使用新的审核逻辑模块
-      const result = await moderateContent(issue.number, issue.body, dryRun)
+      const issuePayload = toIssuePayloadFromRestIssue(issue)
+      const result = await moderateContent(issue.number, issue.body, dryRun, issuePayload)
 
       // 根据审核结果统计
       switch (result.type) {

@@ -63,6 +63,13 @@ afterAll(() => {
 describe('manualModeration', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    jest.spyOn(console, 'log').mockImplementation(() => {})
+    jest.spyOn(console, 'error').mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    ;(console.log as jest.Mock).mockRestore()
+    ;(console.error as jest.Mock).mockRestore()
   })
 
   test('正常审核流程', async () => {
@@ -75,8 +82,26 @@ describe('manualModeration', () => {
 
     // 验证调用了相关函数
     expect(moderateContent).toHaveBeenCalledTimes(2)
-    expect(moderateContent).toHaveBeenCalledWith(1, '这是第一个测试文案', false)
-    expect(moderateContent).toHaveBeenCalledWith(2, '这是第二个测试文案', false)
+    expect(moderateContent).toHaveBeenCalledWith(
+      1,
+      '这是第一个测试文案',
+      false,
+      expect.objectContaining({
+        number: 1,
+        title: '测试文案1',
+        body: '这是第一个测试文案',
+      })
+    )
+    expect(moderateContent).toHaveBeenCalledWith(
+      2,
+      '这是第二个测试文案',
+      false,
+      expect.objectContaining({
+        number: 2,
+        title: '测试文案2',
+        body: '这是第二个测试文案',
+      })
+    )
   })
 
   test('试运行模式', async () => {
@@ -88,7 +113,16 @@ describe('manualModeration', () => {
     await manualModeration()
 
     // 在试运行模式下，应该传递dryRun=true
-    expect(moderateContent).toHaveBeenCalledWith(1, '这是第一个测试文案', true)
+    expect(moderateContent).toHaveBeenCalledWith(
+      1,
+      '这是第一个测试文案',
+      true,
+      expect.objectContaining({
+        number: 1,
+        title: '测试文案1',
+        body: '这是第一个测试文案',
+      })
+    )
 
     // 清理环境变量
     delete process.env.DRY_RUN
@@ -103,8 +137,26 @@ describe('manualModeration', () => {
     await manualModeration()
 
     expect(moderateContent).toHaveBeenCalledTimes(2)
-    expect(moderateContent).toHaveBeenCalledWith(1, '这是第一个测试文案', false)
-    expect(moderateContent).toHaveBeenCalledWith(2, '这是第二个测试文案', false)
+    expect(moderateContent).toHaveBeenCalledWith(
+      1,
+      '这是第一个测试文案',
+      false,
+      expect.objectContaining({
+        number: 1,
+        title: '测试文案1',
+        body: '这是第一个测试文案',
+      })
+    )
+    expect(moderateContent).toHaveBeenCalledWith(
+      2,
+      '这是第二个测试文案',
+      false,
+      expect.objectContaining({
+        number: 2,
+        title: '测试文案2',
+        body: '这是第二个测试文案',
+      })
+    )
   })
 
   test('处理API错误', async () => {
@@ -114,6 +166,15 @@ describe('manualModeration', () => {
     await manualModeration()
 
     // 应该调用moderateContent但会抛出错误
-    expect(moderateContent).toHaveBeenCalledWith(1, '这是第一个测试文案', false)
+    expect(moderateContent).toHaveBeenCalledWith(
+      1,
+      '这是第一个测试文案',
+      false,
+      expect.objectContaining({
+        number: 1,
+        title: '测试文案1',
+        body: '这是第一个测试文案',
+      })
+    )
   })
 })

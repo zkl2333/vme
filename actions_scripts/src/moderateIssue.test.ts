@@ -46,6 +46,8 @@ describe('moderateIssue', () => {
     process.env.ISSUE_BODY = '这是一个测试的issue内容'
     process.env.AI_API_KEY = 'test-api-key'
     process.env.AI_API_BASE_URL = 'https://aihubmix.com'
+    jest.spyOn(console, 'log').mockImplementation(() => {})
+    jest.spyOn(console, 'error').mockImplementation(() => {})
   })
 
   afterEach(() => {
@@ -54,6 +56,8 @@ describe('moderateIssue', () => {
     delete process.env.ISSUE_BODY
     delete process.env.AI_API_KEY
     delete process.env.AI_API_BASE_URL
+    ;(console.log as jest.Mock).mockRestore()
+    ;(console.error as jest.Mock).mockRestore()
   })
 
   it('当issue已有审核标签时，应该跳过审核过程', async () => {
