@@ -34,7 +34,5 @@ https://vme.im/submit
 
 ## 🔗 相关仓库
 
-```
-https://github.com/vme-im/vme-content
-https://github.com/vme-im/vme-app
-```
+- [vme-content](https://github.com/vme-im/vme-content) - 文案数据与自动化脚本
+- [vme-app](https://github.com/vme-im/vme-app) - Web 应用与同步服务
